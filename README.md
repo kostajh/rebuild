@@ -30,10 +30,11 @@ The local tasks subdir, typically in a `resources` directory in your git repo,
 should contain a Drush script, `tasks.script`. This is where you define the actions
 that occur when rebuilding your development environment.
 
-For example, your local tasks directory might look like:
-
-	-	local_tasks
-		- tasks.script
+Drush Rebuild doesn't make many assumptions about your development workflow
+(i.e. Drush Make, entire codebase is in the Git repo, symlinks setup from a repo
+to another directory, etc), nor does it care about extra steps you need to take
+when configuring a development environment, like disabling caching, adjusting
+connections with 3rd party services, and so on.
 
 By default, drush rebuild will create a backup of your environment
 by using Drush 5's archive-dump command.
@@ -46,3 +47,4 @@ is a drush script written in PHP.
 ## Example usage
 
 `drush rebuild @mysite.local`
+
