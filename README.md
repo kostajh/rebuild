@@ -6,7 +6,8 @@ staging environments at your own risk.
 
 ## Installation
 
-Clone this repository to `~/.drush/drush_rebuild`.
+Clone this repository to `~/.drush/drush_rebuild`. Type `drush help rebuild` for
+an overview of available options.
 
 ## Usage
 
