@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * Implements hook_drush_help().
+ */
+function rebuild_drush_help($section) {
+  switch ($section) {
+    case 'meta:rebuild:title':
+      return dt('Rebuild commands');
+  }
+}
+
+/**
  * Implements hook_drush_command().
  */
 function rebuild_drush_command() {
