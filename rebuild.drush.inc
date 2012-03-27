@@ -9,7 +9,7 @@ function rebuild_drush_command() {
     'arguments' => array(
     ),
     'options' => array(
-      'dry-run' => 'Dry run. Read comments from local tasks and explain what the command will do.', // Not implemented
+      'view-script' => 'View the rebuild script.',
       'no-backup' => 'Do not backup the local dev environment before rebuilding. Not recommended.',
     ),
     'aliases' => array('rb'),
@@ -28,6 +28,25 @@ function drush_rebuild($environment = NULL) {
     return drush_set_error(dt('You must specify a drush alias with the rebuild command.'));
   }
   $env = drush_sitealias_get_record($environment);
+  if (!$env) {
+    return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $alias_name)));
+  } else {
+    drush_log(dt('Loaded alias for !name', array('!name' => $alias_name)), 'success');
+  }
+
+  // Check if we can load the local tasks file
+  $local_tasks = drush_rebuild_get_local_tasks($env);
+  if (!file_exists($local_tasks)) {
+    return;
+  }
+
+  // Check if we are only viewing the script
+  if (drush_get_option('view-script')) {
+    drush_log(dt('Loading script at !path', array('!path' => $local_tasks)), 'success');
+    drush_print();
+    drush_print_file($local_tasks);
+    return;
+  }
 
   // Check backup options
   if (drush_get_option('no-backup')) {
@@ -43,7 +62,6 @@ function drush_rebuild($environment = NULL) {
   // any additional scripts in the local tasks directory.
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name?', array('!name' => $alias_name)))) {
     // Get path to local task drush script, define command to execute
-    $local_tasks = drush_rebuild_get_local_tasks($env);
     $command = 'drush ' . $alias_name . ' php-script ' . $local_tasks;
     if (!drush_get_option('no-backup')) {
       $backup_path = drush_archive_dump($alias_name);
