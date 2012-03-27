@@ -4,6 +4,12 @@
 environments. It is not meant to be used for deploying to production. Rebuild
 staging environments at your own risk.
 
+## Installation
+
+Clone this repository to `~/.drush/drush_rebuild`.
+
+## Usage
+
 Drush Rebuild relies on Drush aliases. Typical Drush
 aliases are extended by providing a path to a Git repository as well as a path
 to local tasks per alias to be performed when rebuilding. Any additional
@@ -34,7 +40,13 @@ Drush Rebuild doesn't make many assumptions about your development workflow
 (i.e. Drush Make, entire codebase is in the Git repo, symlinks setup from a repo
 to another directory, etc), nor does it care about extra steps you need to take
 when configuring a development environment, like disabling caching, adjusting
-connections with 3rd party services, and so on.
+connections with 3rd party services, and so on. All of that should be defined in
+`tasks.script`.
+
+This means that you can create rebuild task scripts for your different sites, yet
+have a single mechanism to trigger a rebuild. So your themer or site builder
+doesn't have to know about drush rsync or drush sql-sync, they can just run
+the rebuild command and have a working local development environment.
 
 By default, drush rebuild will create a backup of your environment
 by using Drush 5's archive-dump command.
