@@ -35,6 +35,9 @@ function rebuild_drush_command() {
 
 /**
  * Rebuild a local development environment.
+ *
+ * @param string $environment
+ *   An alias for a developmented environment.
  */
 function drush_rebuild($environment = NULL) {
   $args = func_get_args();
@@ -93,6 +96,11 @@ function drush_rebuild($environment = NULL) {
 
 /**
  * Check to see if local tasks directory exists, otherwise show an error.
+ *
+ * @param array $env
+ *   A fully loaded site alias record.
+ * @return string $local_tasks_path
+ *   A path to the tasks.script file for the alias.
  */
 function drush_rebuild_get_local_tasks($env) {
   $local_tasks = $env['path-aliases']['%local-tasks'];
@@ -105,5 +113,6 @@ function drush_rebuild_get_local_tasks($env) {
   if ($local_tasks && !file_exists($local_tasks . '/tasks.script')) {
     return drush_set_error(dt('Local tasks directory exists, but could not find a `tasks.script` file.'));
   }
-  return $local_tasks . '/tasks.script';
+  $local_tasks_path = $local_tasks . '/tasks.script';
+  return $local_tasks_path;
 }
