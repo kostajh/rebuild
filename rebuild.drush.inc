@@ -13,6 +13,11 @@ function rebuild_drush_command() {
       'no-backup' => 'Do not backup the local dev environment before rebuilding. Not recommended.',
     ),
     'aliases' => array('rb'),
+    'examples' => array(
+      'drush rebuild @mysite.dev' => 'Rebuild the enviornment at @mysite.dev',
+      'drush rebuild @mysite.dev --view-script' => 'View the script for rebuilding @mysite.dev. Does not execute any tasks.',
+      'drush rebuild @mysite.dev --no-backup' => 'Skips creating an archive dump of the environment @mysite.dev before rebuilding the environment.',
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
   return $items;
