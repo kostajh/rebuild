@@ -12,9 +12,8 @@ an overview of available options.
 ## Usage
 
 Drush Rebuild relies on Drush aliases. Typical Drush
-aliases are extended by providing a path to a Git repository as well as a path
-to local tasks per alias to be performed when rebuilding. Any additional
-values can be defined in a `rebuild` array in your alias.
+aliases are extended by a path to local tasks to be performed when rebuilding.
+Any additional values can be defined in a `rebuild` array in your alias.
 
 For example:
 
@@ -23,11 +22,11 @@ For example:
 	$aliases['dev'] = array(
 	  'root' => '/path/to/site',
 	  'path-aliases' => array(
-	    '%git-repo' => '/path/to/git-repo',
   	  '%local-tasks' => '/path/to/local-tasks-dir',
 	  ),
 	  'rebuild' => array(
 	  	'drupal_5_site_root' => '/path/to/drupal5/siteroot',
+	  	'git_repo' => '/path/to/site/repo',
 	  ),
 	);
 
