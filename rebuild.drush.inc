@@ -34,6 +34,15 @@ function rebuild_drush_command() {
 }
 
 /**
+ * Implements hook_COMMAND_init().
+ */
+function drush_rebuild_init() {
+  if ((int)DRUSH_VERSION < 5) {
+    drush_die(dt('Drush Rebuild requires Drush 5 or higher.'));
+  }
+}
+
+/**
  * Rebuild a local development environment.
  *
  * @param string $environment
