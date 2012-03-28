@@ -76,7 +76,7 @@ function drush_rebuild($environment = NULL) {
   }
   drush_log($backup_info, $status);
 
-  // Execute local tasks. The `tasks.script` file is responsible for calling
+  // Execute local tasks. The `tasks.php` file is responsible for calling
   // any additional scripts in the local tasks directory.
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name?', array('!name' => $alias_name)))) {
     // Get path to local task drush script, define command to execute
@@ -100,7 +100,7 @@ function drush_rebuild($environment = NULL) {
  * @param array $env
  *   A fully loaded site alias record.
  * @return string $local_tasks_path
- *   A path to the tasks.script file for the alias.
+ *   A path to the tasks.php file for the alias.
  */
 function drush_rebuild_get_local_tasks($env) {
   $local_tasks = $env['path-aliases']['%local-tasks'];
@@ -110,9 +110,9 @@ function drush_rebuild_get_local_tasks($env) {
   if (!file_exists($local_tasks)) {
     return drush_set_error(dt('No local tasks directory found.'));
   }
-  if ($local_tasks && !file_exists($local_tasks . '/tasks.script')) {
-    return drush_set_error(dt('Local tasks directory exists, but could not find a `tasks.script` file.'));
+  if ($local_tasks && !file_exists($local_tasks . '/tasks.php')) {
+    return drush_set_error(dt('Local tasks directory exists, but could not find a `tasks.php` file.'));
   }
-  $local_tasks_path = $local_tasks . '/tasks.script';
+  $local_tasks_path = $local_tasks . '/tasks.php';
   return $local_tasks_path;
 }

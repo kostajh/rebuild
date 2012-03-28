@@ -1,3 +1,5 @@
+<?php
+
 #!/usr/bin/env drush
 
 // Example rebuild script

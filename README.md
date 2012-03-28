@@ -34,7 +34,7 @@ For example:
 	?>
 
 The local tasks subdir, typically in a `resources` directory in your git repo,
-should contain a Drush script, `tasks.script`. This is where you define the actions
+should contain a Drush script, `tasks.php`. This is where you define the actions
 that occur when rebuilding your development environment.
 
 Drush Rebuild doesn't make many assumptions about your development workflow
@@ -42,7 +42,7 @@ Drush Rebuild doesn't make many assumptions about your development workflow
 to another directory, etc), nor does it care about extra steps you need to take
 when configuring a development environment, like disabling caching, adjusting
 connections with 3rd party services, and so on. All of that should be defined in
-`tasks.script`.
+`tasks.php`.
 
 This means that you can create rebuild task scripts for your different sites, yet
 have a single mechanism to trigger a rebuild. So your themer or site builder
@@ -52,9 +52,9 @@ the rebuild command and have a working local development environment.
 By default, drush rebuild will create a backup of your environment
 by using Drush 5's archive-dump command.
 
-## tasks.script
+## tasks.php
 
-`example.tasks.script` contains some usage examples of local tasks. `tasks.script`
+`example.tasks.php` contains some usage examples of local tasks. `tasks.php`
 is a drush script written in PHP.
 
 ## Example usage
