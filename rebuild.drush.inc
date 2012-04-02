@@ -21,12 +21,14 @@ function rebuild_drush_command() {
     'options' => array(
       'view-script' => 'View the rebuild script.',
       'no-backup' => 'Do not backup the local dev environment before rebuilding. Not recommended.',
+      'no-bootstrap' => 'Do not bootstrap the local dev site. Helpful if your local site database is empty.',
     ),
     'aliases' => array('rb'),
     'examples' => array(
       'drush rebuild @mysite.dev' => 'Rebuild the enviornment at @mysite.dev',
       'drush rebuild @mysite.dev --view-script' => 'View the script for rebuilding @mysite.dev. Does not execute any tasks.',
       'drush rebuild @mysite.dev --no-backup' => 'Skips creating an archive dump of the environment @mysite.dev before rebuilding the environment.',
+      'drush rebuild @mysite.dev --no-bootstrap' => 'Executes rebuild tasks for @mysite.dev without bootstrapping.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -90,10 +92,14 @@ function drush_rebuild($environment = NULL) {
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name?', array('!name' => $alias_name)))) {
     // Get path to local task drush script, define command to execute
     $command = 'drush ' . $alias_name . ' php-script ' . $local_tasks;
+    // Pass alias name if no bootstrap requested
+    if (drush_get_option('no-bootstrap')) {
+      $command = 'drush php-script ' . $local_tasks . ' ' . $alias_name;
+    }
     if (!drush_get_option('no-backup')) {
       $backup_path = drush_archive_dump($alias_name);
     }
-    drush_shell_exec_interactive('drush ' . $alias_name . ' php-script ' . $local_tasks);
+    drush_shell_exec_interactive($command);
     if (file_exists($backup_path)) {
       drush_print(dt('Please review your rebuilt environment at !path.', array('!path' => $env['uri'])));
       drush_print(dt('If you are not satisfied, you can restore your previous environment from the archive at !path', array('!path' => $backup_path)));
