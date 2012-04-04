@@ -99,7 +99,12 @@ function drush_rebuild($environment = NULL) {
     if (!drush_get_option('no-backup')) {
       $backup_path = drush_archive_dump($alias_name);
     }
+
+    // @TODO: Replace with drush_invoke_process()
+    // @see https://drupal.org/node/1507310
     drush_shell_exec_interactive($command);
+
+    // Show information about restoring the previous environment.
     if (file_exists($backup_path)) {
       drush_print(dt('Please review your rebuilt environment at !path.', array('!path' => $env['uri'])));
       drush_print(dt('If you are not satisfied, you can restore your previous environment from the archive at !path', array('!path' => $backup_path)));
