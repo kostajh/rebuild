@@ -97,7 +97,13 @@ function drush_rebuild($environment = NULL) {
       $command = 'drush php-script ' . $local_tasks . ' ' . $alias_name;
     }
     if (!drush_get_option('no-backup')) {
-      $backup_path = drush_archive_dump($alias_name);
+      $archive_dump = drush_invoke_process($alias_name, 'archive-dump');
+      $backup_path = $archive_dump['object'];
+      if (!file_exists($backup_path)) {
+        if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?')) {
+          return;
+        }
+      }
     }
 
     // @TODO: Replace with drush_invoke_process()
