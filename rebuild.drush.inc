@@ -100,7 +100,7 @@ function drush_rebuild($environment = NULL) {
       $archive_dump = drush_invoke_process($alias_name, 'archive-dump');
       $backup_path = $archive_dump['object'];
       if (!file_exists($backup_path)) {
-        if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?')) {
+        if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
           return;
         }
       }
