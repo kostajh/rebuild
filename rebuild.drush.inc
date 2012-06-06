@@ -110,7 +110,7 @@ function drush_rebuild($environment = NULL) {
 
     // @TODO: Replace with drush_invoke_process()
     // @see https://drupal.org/node/1507310
-
+    drush_shell_exec_interactive($command);
 
     // Show information about restoring the previous environment.
     if (file_exists($backup_path)) {
