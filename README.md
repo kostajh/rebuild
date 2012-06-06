@@ -5,10 +5,9 @@ environments.
 
 ## Installation
 
-Clone this repository to `~/.drush/drush_rebuild`. Type `drush help rebuild` for
-an overview of available options.
+Type `drush dl rebuild`, and Drush Rebuild should download to `~/.drush/rebuild`.
 
-Type `drush dl rebuild`, and Drush Rebuild should be downloaded to `~/.drush/rebuild`.
+Type `drush help rebuild` for an overview of available options.
 
 Type `drush topic rebuild-readme` for usage and `drush topic rebuild-example` for an example.
 
