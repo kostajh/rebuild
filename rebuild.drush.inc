@@ -32,6 +32,25 @@ function rebuild_drush_command() {
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
+
+  $items['rebuild-readme'] = array(
+    'description' => 'Drush Rebuild README',
+    'hidden' => TRUE,
+    'topic' => TRUE,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'callback' => 'drush_print_file',
+    'callback arguments' => array('README.md'),
+  );
+
+  $items['rebuild-example'] = array(
+    'description' => 'Example Drush Rebuild file',
+    'hidden' => TRUE,
+    'topic' => TRUE,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'callback' => 'drush_print_file',
+    'callback arguments' => array('example.tasks.php'),
+  );
+
   return $items;
 }
 
