@@ -1,13 +1,16 @@
 ## Drush Rebuild
 
-[Drush Rebuild]() is a Drush extension for rebuilding local development
-environments. It is not meant to be used for deploying to production. Rebuild
-staging environments at your own risk.
+`Drush Rebuild` is a Drush extension that facilitates rebuilding local development
+environments.
 
 ## Installation
 
 Clone this repository to `~/.drush/drush_rebuild`. Type `drush help rebuild` for
 an overview of available options.
+
+Type `drush dl rebuild`, and Drush Rebuild should be downloaded to `~/.drush/rebuild`.
+
+Type `drush topic rebuild-readme` for usage and `drush topic rebuild-example` for an example.
 
 ## Usage
 
