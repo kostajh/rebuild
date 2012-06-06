@@ -96,7 +96,9 @@ function drush_rebuild($environment = NULL) {
     if (drush_get_option('no-bootstrap')) {
       $command = 'drush php-script ' . $local_tasks . ' ' . $alias_name;
     }
-    if (!drush_get_option('no-backup')) {
+    // Ensure that settings.php is in place before trying to generate a backup.
+    // @todo make this a more robust check
+    if (!drush_get_option('no-backup') && file_exists($env['root'] . '/sites/default/settings.php')) {
       $archive_dump = drush_invoke_process($alias_name, 'archive-dump');
       $backup_path = $archive_dump['object'];
       if (!file_exists($backup_path)) {
@@ -108,7 +110,7 @@ function drush_rebuild($environment = NULL) {
 
     // @TODO: Replace with drush_invoke_process()
     // @see https://drupal.org/node/1507310
-    drush_shell_exec_interactive($command);
+
 
     // Show information about restoring the previous environment.
     if (file_exists($backup_path)) {
