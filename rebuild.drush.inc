@@ -78,8 +78,6 @@ function drush_rebuild($environment = NULL) {
   $env = drush_sitealias_get_record($environment);
   if (!$env) {
     return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $alias_name)));
-  } else {
-    drush_log(dt('Loaded alias for !name', array('!name' => $alias_name)), 'success');
   }
 
   // Check if we can load the local tasks file
