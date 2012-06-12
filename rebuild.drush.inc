@@ -108,7 +108,8 @@ function drush_rebuild($environment = NULL) {
 
   // Execute local tasks. The `tasks.php` file is responsible for calling
   // any additional scripts in the local tasks directory.
-  if (drush_confirm(dt('Proceed with rebuilding the environment for !name?', array('!name' => $alias_name)))) {
+  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $alias_name, '!dir' => $env['root'])), 'warning');
+  if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
     // Get path to local task drush script, define command to execute
     $command = 'drush ' . $alias_name . ' php-script ' . $local_tasks;
     // Pass alias name if no bootstrap requested
