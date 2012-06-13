@@ -51,6 +51,15 @@ function rebuild_drush_command() {
     'callback arguments' => array('example.tasks.php'),
   );
 
+  $items['rebuild-version'] = array(
+    'description' => 'Show drush rebuild version.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH, // No bootstrap.
+    'options' => array(
+      'pipe' => 'Print just the version number, and nothing else.',
+      'self-update' => 'Check for pending updates to Drush itself.',
+    ),
+  );
+
   return $items;
 }
 
@@ -61,6 +70,18 @@ function drush_rebuild_init() {
   if ((int)DRUSH_VERSION < 5) {
     drush_die(dt('Drush Rebuild requires Drush 5 or higher.'));
   }
+  drush_print($drush_info_file);
+  $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
+  $drush_rebuild_info = parse_ini_file($drush_info_file);
+  drush_print_r($drush_rebuild_info);
+  define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['drush_rebuild_version']);
+}
+
+/**
+ * Called for `drush rebuild version` or `drush rebuild --version`
+ */
+function drush_rebuild_version() {
+  drush_print(dt("drush rebuild version !version", array('!version' => DRUSH_REBUILD_VERSION)));
 }
 
 /**
