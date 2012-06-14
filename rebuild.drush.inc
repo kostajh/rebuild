@@ -38,6 +38,7 @@ function rebuild_drush_command() {
     'hidden' => TRUE,
     'topic' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'aliases' => array('rebuild-docs'),
     'callback' => 'drush_print_file',
     'callback arguments' => array('README.md'),
   );
