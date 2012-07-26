@@ -67,6 +67,10 @@ function drush_rebuild_init() {
   if ((int)DRUSH_VERSION < 5) {
     drush_die(dt('Drush Rebuild requires Drush 5 or higher.'));
   }
+  // Check to see if a .rebuild file exists in the drush directory
+  if (!drush_cache_get('rebuild', 'rebuild')) {
+    drush_cache_set('rebuild', NULL, 'rebuild', DRUSH_CACHE_PERMANENT);
+  }
 }
 
 /**
@@ -77,6 +81,38 @@ function drush_rebuild_version() {
   $drush_rebuild_info = parse_ini_file($drush_info_file);
   define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['drush_rebuild_version']);
   drush_print(dt("drush rebuild version: !version", array('!version' => DRUSH_REBUILD_VERSION)));
+}
+
+/**
+ * Loads rebuild meta-data for an alias. If no data is found, a new entry is
+ * added to the data file.
+ *
+ * @param string $alias
+ * @param return array
+ *        An array of rebuild meta-data for a given alias.
+ */
+function _drush_rebuild_load_metadata($alias) {
+  if (file_exists('~/.drush/.rebuild') && $json = file_get_contents('~/.drush/.rebuild')) {
+    foreach ((array) json_decode($json, TRUE) as $key => $value) {
+      drush_print($key . ' ' . $value);
+      // $this->$key = $value;
+    }
+    return TRUE;
+  }
+}
+
+/**
+ * Displays rebuild data for the alias.
+ *
+ * @param array $data
+ */
+function _drush_rebuild_show_rebuild_data($data) {
+  if (!($data['last_rebuild'])) {
+    return;
+  }
+  // Display time of last rebuild and average time for rebuilding site
+  drush_log(dt('This environment was last rebuilt on !date. Average time for rebuilding !name is !time',
+      array('!date' => date('i', $data['last_rebuild']), '!time' => date('i', array_sum($data['rebuild_times'])))));
 }
 
 /**
@@ -127,6 +163,13 @@ function drush_rebuild($environment = NULL) {
   // Execute local tasks. The `tasks.php` file is responsible for calling
   // any additional scripts in the local tasks directory.
   drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $alias_name, '!dir' => $env['root'])), 'warning');
+
+  // Load metadata
+  $data = _drush_rebuild_load_metadata($alias_name);
+
+  // Show rebuild meta-data for the alias
+  _drush_rebuild_show_rebuild_data($data);
+
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
     // Get path to local task drush script, define command to execute
     $command = 'drush ' . $alias_name . ' php-script ' . $local_tasks;
@@ -149,6 +192,9 @@ function drush_rebuild($environment = NULL) {
     // @TODO: Replace with drush_invoke_process()
     // @see https://drupal.org/node/1507310
     drush_shell_exec_interactive($command);
+
+    // Update meta-data
+    _drush_rebuild_update_metadata($alias_name);
 
     // Show information about restoring the previous environment.
     if (file_exists($backup_path)) {

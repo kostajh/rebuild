@@ -62,3 +62,18 @@ is a drush script written in PHP.
 
 `drush rebuild @mysite.local`
 
+## Meta-data
+
+Drush Rebuild stores information about each site in a data file stored at
+`~/drush/.rebuild`. This data is stored in a JSON array.
+
+Here is the structure:
+
+$rebuild_info = array(
+	'alias-name' => array(
+		'last_rebuild' => 'UNIX timestamp of last rebuild',
+		'rebuild_times' => array('rebuild time in seconds', 'rebuild time 2'),
+		'db_size' => 'Size, in bytes, of the database',
+	),
+);
+
