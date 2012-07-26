@@ -57,7 +57,29 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['rebuild-info'] = array(
+    'description' => 'Displays rebuild info for an alias.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'callback' => 'drush_rebuild_info',
+    'aliases' => array('rbi'),
+  );
+
   return $items;
+}
+
+/**
+ * Display rebuild info for an alias.
+ */
+function drush_rebuild_info($environment = NULL) {
+  // @todo if environment isn't set, show info about all aliases
+  $args = func_get_args();
+  $alias_name = $args[0];
+  $data = _drush_rebuild_load_metadata($alias_name);
+  if (!$data->data['last_rebuild']) {
+    drush_log(dt('There isn\'t any rebuild info to display for !name', array('!name' => $alias_name)), 'error');
+  } else {
+    _drush_rebuild_show_rebuild_data($data);
+  }
 }
 
 /**
@@ -66,10 +88,6 @@ function rebuild_drush_command() {
 function drush_rebuild_init() {
   if ((int)DRUSH_VERSION < 5) {
     drush_die(dt('Drush Rebuild requires Drush 5 or higher.'));
-  }
-  // Check to see if a .rebuild file exists in the drush directory
-  if (!drush_cache_get('rebuild', 'rebuild')) {
-    drush_cache_set('rebuild', NULL, 'rebuild', DRUSH_CACHE_PERMANENT);
   }
 }
 
@@ -92,13 +110,15 @@ function drush_rebuild_version() {
  *        An array of rebuild meta-data for a given alias.
  */
 function _drush_rebuild_load_metadata($alias) {
-  if (file_exists('~/.drush/.rebuild') && $json = file_get_contents('~/.drush/.rebuild')) {
-    foreach ((array) json_decode($json, TRUE) as $key => $value) {
-      drush_print($key . ' ' . $value);
-      // $this->$key = $value;
-    }
-    return TRUE;
+  $data = drush_cache_get($alias, 'rebuild');
+  if (!$data) {
+    $data = array(
+      'last_rebuild' => NULL,
+      'rebuild_times' => NULL,
+    );
+    return drush_cache_set($alias, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
   }
+  return $data;
 }
 
 /**
@@ -107,12 +127,17 @@ function _drush_rebuild_load_metadata($alias) {
  * @param array $data
  */
 function _drush_rebuild_show_rebuild_data($data) {
-  if (!($data['last_rebuild'])) {
+  if (!$data->data['last_rebuild']) {
     return;
   }
   // Display time of last rebuild and average time for rebuilding site
-  drush_log(dt('This environment was last rebuilt on !date. Average time for rebuilding !name is !time',
-      array('!date' => date('i', $data['last_rebuild']), '!time' => date('i', array_sum($data['rebuild_times'])))));
+  $average_time = array_sum($data->data['rebuild_times']) / count($data->data['rebuild_times']);
+  drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).",
+      array('!name' => $data->cid, '!date' => date(DATE_RFC822, $data->data['last_rebuild']),
+        '!min' => date('i', $average_time),
+        '!sec' => date('s', $average_time),
+        '!count' => count($data->data['rebuild_times']),
+        )), 'ok');
 }
 
 /**
@@ -197,7 +222,7 @@ function drush_rebuild($environment = NULL) {
     $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
 
     // Update meta-data
-    _drush_rebuild_update_metadata($alias_name);
+    _drush_rebuild_update_metadata($alias_name, $total_rebuild_time);
 
     // Show information about restoring the previous environment.
     if (file_exists($backup_path)) {
@@ -213,6 +238,23 @@ function drush_rebuild($environment = NULL) {
   } else {
     drush_log(dt('Aborted rebuilding !name', array('!name' => $alias_name)), 'warning');
   }
+}
+
+/**
+ * Update the meta-data for an alias with the last date of last rebuild and
+ * time elapsed for last rebuild.
+ *
+ * @param string $alias
+ * @param int $total_rebuild_time
+ */
+function _drush_rebuild_update_metadata($alias, $total_rebuild_time) {
+  $cache = drush_cache_get($alias, 'rebuild');
+  $rebuild_times = $cache->data['rebuild_times'];
+  $rebuild_times[] = $total_rebuild_time;
+  $data = array();
+  $data['last_rebuild'] = time();
+  $data['rebuild_times'] = $rebuild_times;
+  drush_cache_set($alias, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
 }
 
 /**

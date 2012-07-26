@@ -64,16 +64,6 @@ is a drush script written in PHP.
 
 ## Meta-data
 
-Drush Rebuild stores information about each site in a data file stored at
-`~/drush/.rebuild`. This data is stored in a JSON array.
-
-Here is the structure:
-
-$rebuild_info = array(
-	'alias-name' => array(
-		'last_rebuild' => 'UNIX timestamp of last rebuild',
-		'rebuild_times' => array('rebuild time in seconds', 'rebuild time 2'),
-		'db_size' => 'Size, in bytes, of the database',
-	),
-);
+Drush Rebuild stores information about each site in a drush cache file in the
+`rebuild` bin. Each alias gets its own cache ID in the bin.
 
