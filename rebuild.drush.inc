@@ -191,7 +191,10 @@ function drush_rebuild($environment = NULL) {
 
     // @TODO: Replace with drush_invoke_process()
     // @see https://drupal.org/node/1507310
-    drush_shell_exec_interactive($command);
+    $begin_rebuild_time = time();
+    $ret = drush_shell_exec_interactive($command);
+    $rebuild_completed_time = time();
+    $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
 
     // Update meta-data
     _drush_rebuild_update_metadata($alias_name);
@@ -200,6 +203,12 @@ function drush_rebuild($environment = NULL) {
     if (file_exists($backup_path)) {
       drush_print(dt('Please review your rebuilt environment at !path.', array('!path' => $env['uri'])));
       drush_print(dt('If you are not satisfied, you can restore your previous environment from the archive at !path', array('!path' => $backup_path)));
+    }
+    if ($ret) {
+      drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
+        array('!min' => date("i", $total_rebuild_time), '!sec' => date("s", $total_rebuild_time))), 'ok');
+    } else {
+      drush_log(dt('Rebuild failed to complete successfully.'), 'error');
     }
   } else {
     drush_log(dt('Aborted rebuilding !name', array('!name' => $alias_name)), 'warning');
