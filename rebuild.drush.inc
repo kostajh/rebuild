@@ -14,6 +14,9 @@ function rebuild_drush_help($section) {
  * Implements hook_drush_command().
  */
 function rebuild_drush_command() {
+  // Set path to Drush Rebuild extension
+  $rebuild_dir = drush_server_home() . '/.drush/rebuild';
+
   $items['rebuild'] = array(
     'description' => 'Rebuilds a local Drupal environment.',
     'arguments' => array(
@@ -40,7 +43,7 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'aliases' => array('rebuild-docs'),
     'callback' => 'drush_print_file',
-    'callback arguments' => array('README.md'),
+    'callback arguments' => array($rebuild_dir . '/README.md'),
   );
 
   $items['rebuild-example'] = array(
@@ -49,7 +52,7 @@ function rebuild_drush_command() {
     'topic' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_print_file',
-    'callback arguments' => array('example.tasks.php'),
+    'callback arguments' => array($rebuild_dir . '/example.tasks.php'),
   );
 
   $items['rebuild-version'] = array(
