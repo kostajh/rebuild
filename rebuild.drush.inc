@@ -22,6 +22,7 @@ function rebuild_drush_command() {
     'arguments' => array(
     ),
     'options' => array(
+      'source' => 'The drush alias to use as the source for the rebuild.',
       'view-script' => 'View the rebuild script.',
       'no-backup' => 'Do not backup the local dev environment before rebuilding. Not recommended.',
       'no-bootstrap' => 'Do not bootstrap the local dev site. Helpful if your local site database is empty.',
@@ -215,6 +216,11 @@ function drush_rebuild($environment = NULL) {
           return;
         }
       }
+    }
+
+    // If a source was specified, append this to the command
+    if ($source = drush_get_option('source')) {
+      $command .= ' --source=' . $source;
     }
 
     // @TODO: Replace with drush_invoke_process()
