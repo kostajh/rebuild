@@ -136,11 +136,12 @@ function _drush_rebuild_show_rebuild_data($data) {
   }
   // Display time of last rebuild and average time for rebuilding site
   $average_time = array_sum($data->data['rebuild_times']) / count($data->data['rebuild_times']);
-  drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).",
+  drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).\n!source",
       array('!name' => $data->cid, '!date' => date(DATE_RFC822, $data->data['last_rebuild']),
         '!min' => date('i', $average_time),
         '!sec' => date('s', $average_time),
         '!count' => count($data->data['rebuild_times']),
+        '!source' => isset($data->source) ? '- Source for current rebuild: ' . $data->source : NULL,
         )), 'ok');
 }
 
@@ -195,6 +196,10 @@ function drush_rebuild($environment = NULL) {
 
   // Load metadata
   $data = _drush_rebuild_load_metadata($alias_name);
+  $source = drush_get_option('source');
+  if ($source) {
+    $data->source = $source;
+  }
 
   // Show rebuild meta-data for the alias
   _drush_rebuild_show_rebuild_data($data);
@@ -219,7 +224,7 @@ function drush_rebuild($environment = NULL) {
     }
 
     // If a source was specified, append this to the command
-    if ($source = drush_get_option('source')) {
+    if ($source) {
       $command .= ' --source=' . $source;
     }
 
