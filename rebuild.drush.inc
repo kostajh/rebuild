@@ -228,6 +228,8 @@ function drush_rebuild($environment = NULL) {
       $command .= ' --source=' . $source;
     }
 
+    $command .= ' --allow-additional-options';
+
     // @TODO: Replace with drush_invoke_process()
     // @see https://drupal.org/node/1507310
     $begin_rebuild_time = time();
