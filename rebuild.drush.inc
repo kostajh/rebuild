@@ -300,28 +300,6 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   return TRUE;
 }
 
-function _drush_rebuild_checklist() {
-  // first run drush rebuild
-
-// * pull latest repo from git
-// * create new database
-// * setup site in MAMP
-// * move example aliase in ~/.drush
-// * update settings in aliase to match my local & staging environments
-// * add a 'local.settings.php' file and update 'username:password', 'datatbase name' and 'base_url'
-
-// ### bash run
-
-// $ drush rebuild @ALIASE.local --source=@ALIASE.stage --no-backup
-
-// // if error, try
-// $ drush sql-sync @ALIASE.stage @ALIASE.local --verbose
-
-// // To pull the latest files down to your local development environment, run this command:
-// $ drush rsync @ALIASE.stage:%files/ @ALIASE.local:%files --verbose
-
-}
-
 /**
  * Rebuild a local development environment.
  *
