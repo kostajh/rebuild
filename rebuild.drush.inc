@@ -53,7 +53,7 @@ function rebuild_drush_command() {
     'topic' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_print_file',
-    'callback arguments' => array($rebuild_dir . '/example.tasks.php'),
+    'callback arguments' => array($rebuild_dir . '/examples/example.rebuild.info'),
   );
 
   $items['rebuild-version'] = array(
@@ -145,6 +145,183 @@ function _drush_rebuild_show_rebuild_data($data) {
         )), 'ok');
 }
 
+function _drush_rebuild_load_env($environment, $alias_name) {
+  if (!$environment) {
+    // Enforce the syntax. `drush rebuild @target --source=@source`
+    return drush_set_error(dt('You must specify a drush alias with the rebuild command.'));
+  }
+  $env = drush_sitealias_get_record($environment);
+  if (!$env) {
+    return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $alias_name)));
+  }
+  return $env;
+}
+
+function _drush_rebuild_load_manifest($env) {
+  // Check if we can load the local tasks file.
+  if (!isset($env['path-aliases']['%rebuild'])) {
+    return drush_set_error(dt('Please add a %rebuild entry to the path-aliases section of the Drush alias for !name', array('!name' => $alias_name)));
+  }
+  // Check if the file exists.
+  $rebuild_manifest_path = $env['path-aliases']['%rebuild'];
+  if (!file_exists($rebuild_manifest_path)) {
+    return drush_set_error(dt('Could not load rebuild.info file at !path', array('!path' => $rebuild_manifest_path)));
+  }
+  $rebuild_manifest = parse_ini_file($rebuild_manifest_path);
+  return $rebuild_manifest;
+}
+
+function _drush_rebuild_view_script($env) {
+  $rebuild_manifest = $env['path-aliases']['%rebuild'];
+  drush_log(dt('Loading script at !path', array('!path' => $rebuild_manifest)), 'success');
+  drush_print();
+  return drush_print_file($rebuild_manifest);
+}
+
+function _drush_rebuild($target_alias, $manifest, $source, $env) {
+  $description = $manifest['description'];
+  $type = $manifest['type'];
+  $version = $manifest['version'];
+  $remotes = isset($manifest['remotes']) ? $manifest['remotes'] : NULL;
+  $pre_process = isset($manifest['pre_process']) ? $manifest['pre_process'] : NULL;
+  $post_process = isset($manifest['post_process']) ? $manifest['post_process'] : NULL;
+
+  if ($remotes) {
+    if (isset($manifest['sql-sync'])) {
+      $sql_sync_options = $manifest['sql-sync'];
+    }
+    if (isset($manifest['rsync']['type'])) {
+      // Two types supported: files only, or entire directory
+      $rsync_type = $manifest['rsync']['type'];
+    }
+  }
+  if (isset($manifest['variables'])) {
+    $variables = $manifest['variables'];
+  }
+  if (isset($manifest['uli'])) {
+    $uli = $manifest['uli'];
+  }
+  if (isset($manifest['modules_enable'])) {
+    $modules_enable = $manifest['modules_enable'];
+  }
+  if (isset($manifest['modules_disable'])) {
+    $modules_disable = $manifest['modules_disable'];
+  }
+
+  // Pre Process
+  if (isset($pre_process)) {
+    drush_log('Executing pre process files', 'ok');
+    foreach ($pre_process as $filename) {
+      try {
+        $rebuild_filepath = $env['path-aliases']['%rebuild'];
+        $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
+        if (file_exists($file)) {
+          $ret = drush_invoke_process($env, 'php-script', array($file));
+          drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
+        }
+      } catch (Exception $e) {
+        return drush_set_error(dt('Failed to execute !file script.', array('!file' => $file)));
+      }
+    }
+  }
+
+  // SQL Sync.
+  drush_log('Beginning sql-sync', 'ok');
+  try {
+    $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias));
+    drush_log(dt('Synced database from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
+  } catch (Exception $e) {
+    return drush_set_error(dt('There was an error in sql-sync. %e', array('%e' => print_r($e, TRUE))));
+  }
+
+  // Rsync.
+  drush_log('Starting rsync');
+  try {
+    // $ret = drush_invoke_process($env, 'rsync', array("$source:%files/", "$target_alias:%files"), array(), array('interactive' => TRUE));
+    drush_log(dt('Rsynced directory from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
+  } catch (Exception $e) {
+    return drush_set_error(dt('There was an error in rsync. %e', array('%e' => print_r($e, TRUE))));
+  }
+
+  // Variables
+  if (is_array($variables)) {
+    drush_log('Setting variables', 'ok');
+    foreach ($variables as $key => $value) {
+      try {
+        $ret = drush_invoke_process($env, 'variable-set', array($key, $value));
+        drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)), 'ok');
+      } catch (Exception $e) {
+        return drush_set_error(dt('There was an error while attempting to set variables.'));
+      }
+    }
+  }
+  // Modules
+  if (is_array($modules_enable)) {
+    drush_log('Enabling modules', 'ok');
+    try {
+      $ret = drush_invoke_process($env, 'pm-enable', $modules_enable);
+      drush_log(dt('Enabled modules: !module.', array('!module' => implode(",", $modules_enable))), 'ok');
+    } catch (Exception $e) {
+      return drush_set_error(dt('There was an error while attempting to enable modules'));
+    }
+  }
+  if (is_array($modules_disable)) {
+    drush_log('Disabling modules', 'ok');
+    try {
+      $ret = drush_invoke_process($env, 'pm-disable', $modules_disable);
+      drush_log(dt('Disabled modules: !module.', array('!module' => implode(", ", $modules_disable))), 'ok');
+    } catch (Exception $e) {
+      return drush_set_error(dt('There was an error while attempting to disable modules'));
+    }
+  }
+
+  // Post Process
+  if (isset($post_process)) {
+    drush_log('Executing post process files', 'ok');
+    foreach ($post_process as $filename) {
+      try {
+        $rebuild_filepath = $env['path-aliases']['%rebuild'];
+        $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
+        if (file_exists($file)) {
+          $ret = drush_invoke_process($env, 'php-script', array($file));
+          drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
+        }
+      } catch (Exception $e) {
+        return drush_set_error(dt('Failed to execute !file script.', array('!file' => $file)));
+      }
+    }
+  }
+
+  // Log the user in
+  if ($uli) {
+    drush_log('Logging you in to the site.', 'ok');
+    drush_invoke_process($env, 'uli');
+  }
+  return TRUE;
+}
+
+function _drush_rebuild_checklist() {
+  // first run drush rebuild
+
+// * pull latest repo from git
+// * create new database
+// * setup site in MAMP
+// * move example aliase in ~/.drush
+// * update settings in aliase to match my local & staging environments
+// * add a 'local.settings.php' file and update 'username:password', 'datatbase name' and 'base_url'
+
+// ### bash run
+
+// $ drush rebuild @ALIASE.local --source=@ALIASE.stage --no-backup
+
+// // if error, try
+// $ drush sql-sync @ALIASE.stage @ALIASE.local --verbose
+
+// // To pull the latest files down to your local development environment, run this command:
+// $ drush rsync @ALIASE.stage:%files/ @ALIASE.local:%files --verbose
+
+}
+
 /**
  * Rebuild a local development environment.
  *
@@ -152,33 +329,22 @@ function _drush_rebuild_show_rebuild_data($data) {
  *   An alias for a developmented environment.
  */
 function drush_rebuild($environment = NULL) {
-  // Output version informatino and return
+  // Output version information and return.
   if (drush_get_option('version')) {
     return drush_rebuild_version();
   }
+
   $args = func_get_args();
   $alias_name = $args[0];
-  if (!$environment) {
-    return drush_set_error(dt('You must specify a drush alias with the rebuild command.'));
-  }
-  $env = drush_sitealias_get_record($environment);
-  if (!$env) {
-    return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $alias_name)));
-  }
 
-  // Check if we can load the local tasks file
-  $local_tasks = drush_rebuild_get_local_tasks($env);
-  if (!file_exists($local_tasks)) {
-    return;
-  }
+  $env = _drush_rebuild_load_env($environment);
 
-  // Check if we are only viewing the script
+  // Check if we are only viewing the script.
   if (drush_get_option('view-script')) {
-    drush_log(dt('Loading script at !path', array('!path' => $local_tasks)), 'success');
-    drush_print();
-    drush_print_file($local_tasks);
-    return;
+    return _drush_rebuild_view_script($env);
   }
+
+  $rebuild_manifest = _drush_rebuild_load_manifest($env);
 
   // Check backup options
   if (drush_get_option('no-backup')) {
@@ -196,63 +362,55 @@ function drush_rebuild($environment = NULL) {
 
   // Load metadata
   $data = _drush_rebuild_load_metadata($alias_name);
-  $source = drush_get_option('source');
-  if ($source) {
-    $data->source = $source;
+  if ($rebuild_manifest['type'] == 'remote') {
+    $source = drush_get_option('source');
+    if ($source) {
+      if ($source == $alias_name) {
+        return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
+      }
+      $data->source = $source;
+    } else {
+      return drush_set_error(dt('There was no source specified for the rebuild!'));
+    }
   }
+
 
   // Show rebuild meta-data for the alias
   _drush_rebuild_show_rebuild_data($data);
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
-    // Get path to local task drush script, define command to execute
-    $command = 'drush ' . $alias_name . ' php-script ' . $local_tasks;
-    // Pass alias name if no bootstrap requested
-    if (drush_get_option('no-bootstrap')) {
-      $command = 'drush php-script ' . $local_tasks . ' ' . $alias_name;
-    }
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check
     if (!drush_get_option('no-backup') && file_exists($env['root'] . '/sites/default/settings.php')) {
-      $archive_dump = drush_invoke_process($alias_name, 'archive-dump');
-      $backup_path = $archive_dump['object'];
-      if (!file_exists($backup_path)) {
-        if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
-          return;
-        }
-      }
+      _drush_rebuild_backup_environment($alias_name);
     }
 
-    // If a source was specified, append this to the command
-    if ($source) {
-      $command .= ' --source=' . $source;
-    }
-
-    $command .= ' --allow-additional-options';
-
-    // @TODO: Replace with drush_invoke_process()
-    // @see https://drupal.org/node/1507310
     $begin_rebuild_time = time();
-    $ret = drush_shell_exec_interactive($command);
-    $rebuild_completed_time = time();
-    $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
-
-    // Update meta-data
-    _drush_rebuild_update_metadata($alias_name, $total_rebuild_time);
-
-    // Show information about restoring the previous environment.
-    if (file_exists($backup_path)) {
-      drush_print(dt('Please review your rebuilt environment at !path.', array('!path' => $env['uri'])));
-      drush_print(dt('If you are not satisfied, you can restore your previous environment from the archive at !path', array('!path' => $backup_path)));
-    }
-    if ($ret) {
-      drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
+    try {
+      $ret = _drush_rebuild($alias_name, $rebuild_manifest, $source, $env);
+      if ($ret) {
+        $rebuild_completed_time = time();
+        $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
+        // Update meta-data
+        _drush_rebuild_update_metadata($alias_name, $total_rebuild_time);
+        drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
         array('!min' => date("i", $total_rebuild_time), '!sec' => date("s", $total_rebuild_time))), 'ok');
-    } else {
-      drush_log(dt('Rebuild failed to complete successfully.'), 'error');
+      }
+    } catch (Exception $e) {
+      return drush_log(dt('Rebuild failed to complete successfully.'), 'error');
     }
   } else {
     drush_log(dt('Aborted rebuilding !name', array('!name' => $alias_name)), 'warning');
+  }
+}
+
+function _drush_rebuild_backup_environment($alias_name) {
+  $archive_dump = drush_invoke_process($alias_name, 'archive-dump');
+  $backup_path = $archive_dump['object'];
+  if (!file_exists($backup_path)) {
+    if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
+      return;
+    }
   }
 }
 
@@ -271,27 +429,4 @@ function _drush_rebuild_update_metadata($alias, $total_rebuild_time) {
   $data['last_rebuild'] = time();
   $data['rebuild_times'] = $rebuild_times;
   drush_cache_set($alias, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
-}
-
-/**
- * Check to see if local tasks directory exists, otherwise show an error.
- *
- * @param array $env
- *   A fully loaded site alias record.
- * @return string $local_tasks_path
- *   A path to the tasks.php file for the alias.
- */
-function drush_rebuild_get_local_tasks($env) {
-  $local_tasks = $env['path-aliases']['%local-tasks'];
-  if (!$local_tasks) {
-    return drush_set_error(dt('Please define a local tasks directory in your environment\'s alias.'));
-  }
-  if (!file_exists($local_tasks)) {
-    return drush_set_error(dt('No local tasks directory found.'));
-  }
-  if ($local_tasks && !file_exists($local_tasks . '/tasks.php')) {
-    return drush_set_error(dt('Local tasks directory exists, but could not find a `tasks.php` file.'));
-  }
-  $local_tasks_path = $local_tasks . '/tasks.php';
-  return $local_tasks_path;
 }
