@@ -24,9 +24,6 @@ uli = 1
 modules_enable[] = devel
 modules_enable[] = devel_node_access
 ; Modules to disable
-modules[disable] = devel
-; Define verbosity for reporting
-; Options are: debug, verbose, none
 modules_disable[] = overlay
 ; Specify any PHP scripts that should be executed during the rebuild process.
 ; The scripts will be executed using drush php-eval. pre_process files will be
