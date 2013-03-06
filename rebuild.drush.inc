@@ -226,7 +226,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   // SQL Sync.
   drush_log('Beginning sql-sync', 'ok');
   try {
-    $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias));
+    $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias), array('--quiet'));
     drush_log(dt('Synced database from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
   } catch (Exception $e) {
     return drush_set_error(dt('There was an error in sql-sync. %e', array('%e' => print_r($e, TRUE))));
@@ -246,7 +246,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
     drush_log('Setting variables', 'ok');
     foreach ($variables as $key => $value) {
       try {
-        $ret = drush_invoke_process($env, 'variable-set', array($key, $value));
+        $ret = drush_invoke_process($env, 'variable-set', array($key, $value), array('--quiet'));
         drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)), 'ok');
       } catch (Exception $e) {
         return drush_set_error(dt('There was an error while attempting to set variables.'));
@@ -257,7 +257,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   if (is_array($modules_enable)) {
     drush_log('Enabling modules', 'ok');
     try {
-      $ret = drush_invoke_process($env, 'pm-enable', $modules_enable);
+      $ret = drush_invoke_process($env, 'pm-enable', $modules_enable, array('--quiet'));
       drush_log(dt('Enabled modules: !module.', array('!module' => implode(",", $modules_enable))), 'ok');
     } catch (Exception $e) {
       return drush_set_error(dt('There was an error while attempting to enable modules'));
@@ -266,7 +266,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   if (is_array($modules_disable)) {
     drush_log('Disabling modules', 'ok');
     try {
-      $ret = drush_invoke_process($env, 'pm-disable', $modules_disable);
+      $ret = drush_invoke_process($env, 'pm-disable', $modules_disable, array('--quiet'));
       drush_log(dt('Disabled modules: !module.', array('!module' => implode(", ", $modules_disable))), 'ok');
     } catch (Exception $e) {
       return drush_set_error(dt('There was an error while attempting to disable modules'));
@@ -293,7 +293,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   // Log the user in
   if ($uli) {
     drush_log('Logging you in to the site.', 'ok');
-    drush_invoke_process($env, 'uli');
+    drush_invoke_process($env, 'uli', array('--quiet'));
   }
   return TRUE;
 }
