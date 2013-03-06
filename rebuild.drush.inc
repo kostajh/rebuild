@@ -23,16 +23,14 @@ function rebuild_drush_command() {
     ),
     'options' => array(
       'source' => 'The drush alias to use as the source for the rebuild.',
-      'view-script' => 'View the rebuild script.',
-      'no-backup' => 'Do not backup the local dev environment before rebuilding. Not recommended.',
-      'no-bootstrap' => 'Do not bootstrap the local dev site. Helpful if your local site database is empty.',
+      'view-manifest' => 'View the rebuild manifest.',
+      'backup' => 'Backup the local dev environment before rebuilding.',
     ),
     'aliases' => array('rb'),
     'examples' => array(
       'drush rebuild @mysite.dev' => 'Rebuild the enviornment at @mysite.dev',
-      'drush rebuild @mysite.dev --view-script' => 'View the script for rebuilding @mysite.dev. Does not execute any tasks.',
-      'drush rebuild @mysite.dev --no-backup' => 'Skips creating an archive dump of the environment @mysite.dev before rebuilding the environment.',
-      'drush rebuild @mysite.dev --no-bootstrap' => 'Executes rebuild tasks for @mysite.dev without bootstrapping.',
+      'drush rebuild @mysite.dev --view-manifest' => 'View the manifest for rebuilding @mysite.dev. Does not execute any tasks.',
+      'drush rebuild @mysite.dev --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -171,9 +169,9 @@ function _drush_rebuild_load_manifest($env) {
   return $rebuild_manifest;
 }
 
-function _drush_rebuild_view_script($env) {
+function _drush_rebuild_view_manifest($env) {
   $rebuild_manifest = $env['path-aliases']['%rebuild'];
-  drush_log(dt('Loading script at !path', array('!path' => $rebuild_manifest)), 'success');
+  drush_log(dt('Loading manifest at !path', array('!path' => $rebuild_manifest)), 'success');
   drush_print();
   return drush_print_file($rebuild_manifest);
 }
@@ -318,8 +316,8 @@ function drush_rebuild($environment = NULL) {
   $env = _drush_rebuild_load_env($environment);
 
   // Check if we are only viewing the script.
-  if (drush_get_option('view-script')) {
-    return _drush_rebuild_view_script($env);
+  if (drush_get_option('view-manifest')) {
+    return _drush_rebuild_view_manifest($env);
   }
 
   $rebuild_manifest = _drush_rebuild_load_manifest($env);
@@ -352,14 +350,13 @@ function drush_rebuild($environment = NULL) {
     }
   }
 
-
   // Show rebuild meta-data for the alias
   _drush_rebuild_show_rebuild_data($data);
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check
-    if (!drush_get_option('no-backup') && file_exists($env['root'] . '/sites/default/settings.php')) {
+    if (drush_get_option('backup') && file_exists($env['root'] . '/sites/default/settings.php')) {
       _drush_rebuild_backup_environment($alias_name);
     }
 
