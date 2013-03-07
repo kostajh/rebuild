@@ -143,6 +143,25 @@ class DrushRebuild {
   }
 
   /**
+   * Update the meta-data for an alias.
+   *
+   * Meta-data will be updated with the last date of last rebuild and time elapsed
+   * for last rebuild.
+   *
+   * @param int $total_rebuild_time
+   *   The amount of time elapsed in seconds for the rebuild.
+   */
+  public function updateMetadata($total_rebuild_time) {
+    $cache = drush_cache_get($this->target, 'rebuild');
+    $rebuild_times = $cache->data['rebuild_times'];
+    $rebuild_times[] = $total_rebuild_time;
+    $data = array();
+    $data['last_rebuild'] = time();
+    $data['rebuild_times'] = $rebuild_times;
+    drush_cache_set($this->target, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
+  }
+
+  /**
    * Backup the local environment using Drush archive-dump.
    *
    * @param string $alias_name

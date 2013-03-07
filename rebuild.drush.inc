@@ -100,62 +100,6 @@ function drush_rebuild_info($environment = NULL) {
 }
 
 /**
- * Validate the manifest against the allowed keys.
- *
- * @param array $manifest
- *   The rebuild info file as an array.
- *
- * @return bool
- *   TRUE if manifest is valid, array of invalid keys otherwise.
- */
-function _drush_rebuild_validate_manifest($manifest) {
-  $valid_options = array(
-    'description',
-    'version',
-    'type',
-    'remotes',
-    'sql_sync',
-    'variables',
-    'uli',
-    'modules_enable',
-    'modules_disable',
-    'pre_process',
-    'post_process',
-  );
-}
-
-
-
-/**
- * Rebuild a local development environment.
- *
- * @param string $target_alias
- *   The environment to be rebuilt.
- * @param array $manifest
- *   The rebuild info file options.
- * @param string $source
- *   The site environment to use as the source for the rebuild.
- * @param array $env
- *   The Drush site environment for the target site.
- */
-function _drush_rebuild($target_alias, $manifest, $source, $env) {
-
-
-  // Execute pre-process scripts.
-
-
-  // Execute rsync.
-  // drush_log('Starting rsync');
-  // @todo Implement.
-  // drush_log(dt('Rsynced directory from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
-
-
-
-
-  return TRUE;
-}
-
-/**
  * Rebuild a local development environment.
  *
  * @param string $environment
@@ -232,7 +176,7 @@ function drush_rebuild($environment = NULL) {
       $rebuild_completed_time = time();
       $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
       // Update meta-data
-      _drush_rebuild_update_metadata($alias_name, $total_rebuild_time);
+      $drush_rebuild->updateMetadata($total_rebuild_time);
       drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
         array(
           '!min' => date("i", $total_rebuild_time),
@@ -250,25 +194,3 @@ function drush_rebuild($environment = NULL) {
     drush_log(dt('Aborted rebuilding !name', array('!name' => $alias_name)), 'warning');
   }
 }
-
-/**
- * Update the meta-data for an alias.
- *
- * Meta-data will be updated with the last date of last rebuild and time elapsed
- * for last rebuild.
- *
- * @param string $alias
- *   The site alias to update.
- * @param int $total_rebuild_time
- *   The amount of time elapsed in seconds for the rebuild.
- */
-function _drush_rebuild_update_metadata($alias, $total_rebuild_time) {
-  $cache = drush_cache_get($alias, 'rebuild');
-  $rebuild_times = $cache->data['rebuild_times'];
-  $rebuild_times[] = $total_rebuild_time;
-  $data = array();
-  $data['last_rebuild'] = time();
-  $data['rebuild_times'] = $rebuild_times;
-  drush_cache_set($alias, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
-}
-
