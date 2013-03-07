@@ -291,6 +291,9 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
           $ret = drush_invoke_process($env, 'php-script', array($file));
           drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
         }
+        else {
+          drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
+        }
       }
       catch (Exception $e) {
         return drush_set_error(dt('Failed to execute !file script.', array('!file' => $file)));
@@ -366,6 +369,9 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
         if (file_exists($file)) {
           $ret = drush_invoke_process($env, 'php-script', array($file));
           drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
+        }
+        else {
+          drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
         }
       }
       catch (Exception $e) {
