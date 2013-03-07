@@ -284,53 +284,50 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   if (isset($pre_process)) {
     drush_log('Executing pre process files', 'ok');
     foreach ($pre_process as $filename) {
-      try {
-        $rebuild_filepath = $env['path-aliases']['%rebuild'];
-        $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
-        if (file_exists($file)) {
-          $ret = drush_invoke_process($env, 'php-script', array($file));
+      $rebuild_filepath = $env['path-aliases']['%rebuild'];
+      $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
+      if (file_exists($file)) {
+        $ret = drush_invoke_process($env, 'php-script', array($file));
+        if ($ret['error_status'] == 0) {
           drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
         }
         else {
-          drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
+          drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
         }
       }
-      catch (Exception $e) {
-        return drush_set_error(dt('Failed to execute !file script.', array('!file' => $file)));
+      else {
+        drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
       }
     }
   }
 
   // Execute sql-sync.
-  drush_log('Beginning sql-sync', 'ok');
-  try {
+  if (!empty($remotes)) {
+    drush_log('Beginning sql-sync', 'ok');
     $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias), array_merge($sql_sync_options, array('--quiet')));
-    drush_log(dt('Synced database from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
-  }
-  catch (Exception $e) {
-    return drush_set_error(dt('There was an error in sql-sync. %e', array('%e' => print_r($e, TRUE))));
+    if ($ret['error_status'] == 0) {
+      drush_log(dt('Synced database from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
+    }
+    else {
+      drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+    }
   }
 
   // Execute rsync.
-  drush_log('Starting rsync');
-  try {
-    // @todo Implement.
-    drush_log(dt('Rsynced directory from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
-  }
-  catch (Exception $e) {
-    return drush_set_error(dt('There was an error in rsync. %e', array('%e' => print_r($e, TRUE))));
-  }
+  // drush_log('Starting rsync');
+  // @todo Implement.
+  // drush_log(dt('Rsynced directory from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
 
   // Set variables.
   if (is_array($variables)) {
     drush_log('Setting variables', 'ok');
     foreach ($variables as $key => $value) {
-      try {
-        $ret = drush_invoke_process($env, 'variable-set', array($key, $value), array('--quiet'));
+      $ret = drush_invoke_process($env, 'variable-set', array($key, $value), array('--quiet'));
+      if ($ret['error_status'] == 0) {
         drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)), 'ok');
       }
-      catch (Exception $e) {
-        return drush_set_error(dt('There was an error while attempting to set variables.'));
+      else {
+        drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
       }
     }
   }
@@ -338,24 +335,24 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   // Enable modules.
   if (is_array($modules_enable)) {
     drush_log('Enabling modules', 'ok');
-    try {
-      $ret = drush_invoke_process($env, 'pm-enable', $modules_enable, array('--quiet'));
+    $ret = drush_invoke_process($env, 'pm-enable', $modules_enable, array('--quiet'));
+    if ($ret['error_status'] == 0) {
       drush_log(dt('Enabled modules: !module.', array('!module' => implode(",", $modules_enable))), 'ok');
     }
-    catch (Exception $e) {
-      return drush_set_error(dt('There was an error while attempting to enable modules'));
+    else {
+      drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
     }
   }
 
   // Disable modules.
   if (is_array($modules_disable)) {
     drush_log('Disabling modules', 'ok');
-    try {
-      $ret = drush_invoke_process($env, 'pm-disable', $modules_disable, array('--quiet'));
+    $ret = drush_invoke_process($env, 'pm-disable', $modules_disable, array('--quiet'));
+    if ($ret['error_status'] == 0) {
       drush_log(dt('Disabled modules: !module.', array('!module' => implode(", ", $modules_disable))), 'ok');
     }
-    catch (Exception $e) {
-      return drush_set_error(dt('There was an error while attempting to disable modules'));
+    else {
+      drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
     }
   }
 
@@ -363,19 +360,19 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   if (isset($post_process)) {
     drush_log('Executing post process files', 'ok');
     foreach ($post_process as $filename) {
-      try {
-        $rebuild_filepath = $env['path-aliases']['%rebuild'];
-        $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
-        if (file_exists($file)) {
-          $ret = drush_invoke_process($env, 'php-script', array($file));
+      $rebuild_filepath = $env['path-aliases']['%rebuild'];
+      $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
+      if (file_exists($file)) {
+        $ret = drush_invoke_process($env, 'php-script', array($file));
+        if ($ret['error_status'] == 0) {
           drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
         }
         else {
-          drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
+          drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
         }
       }
-      catch (Exception $e) {
-        return drush_set_error(dt('Failed to execute !file script.', array('!file' => $file)));
+      else {
+        drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
       }
     }
   }
@@ -383,7 +380,13 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   // Log the user in.
   if ($uli) {
     drush_log('Logging you in to the site.', 'ok');
-    drush_invoke_process($env, 'uli', array('--quiet'));
+    $ret = drush_invoke_process($env, 'uli', array('--quiet'));
+    if ($ret['error_status'] == 0) {
+      drush_log('Successful in logging you in.', 'ok');
+    }
+    else {
+      drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+    }
   }
   return TRUE;
 }
