@@ -249,7 +249,6 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   $remotes = isset($manifest['remotes']) ? $manifest['remotes'] : NULL;
   $pre_process = isset($manifest['pre_process']) ? $manifest['pre_process'] : NULL;
   $post_process = isset($manifest['post_process']) ? $manifest['post_process'] : NULL;
-
   if ($remotes) {
     $sql_sync_options = array();
     if (isset($manifest['sql_sync'])) {
@@ -325,6 +324,17 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   if (is_array($variables)) {
     drush_log('Setting variables', 'ok');
     foreach ($variables as $key => $value) {
+      // If the value starts with "%" then we are referencing a variable defined
+      // in the Drush alias.
+      if (strpos($value, '%') === 0) {
+        if (isset($env['rebuild'][substr($value, 1)])) {
+          $value = $env['rebuild'][substr($value, 1)];
+        }
+        else {
+          drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
+          continue;
+        }
+      }
       $ret = drush_invoke_process($env, 'variable-set', array($key, $value), array('--quiet'));
       if ($ret['error_status'] == 0) {
         drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)), 'ok');

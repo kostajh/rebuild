@@ -10,14 +10,17 @@ remotes[] = stage
 remotes[] = prod
 ; Define options for database sync
 sql_sync[] = 'create-db'
-sql_sync['sanitize'] = 'sanitize-email'
-sql_sync['structure-tables-key'] = 'common'
+sql_sync[sanitize] = 'sanitize-email'
+sql_sync[structure-tables-key] = 'common'
 ; Define options for file sync
 ; rsync[type] = files
 ; rsync[exclude] = .htaccess
 ; Define variables to be set
-variables['preprocess_js'] = 0
-variables['preprocess_css'] = 0
+variables[preprocess_js] = 0
+variables[preprocess_css] = 0
+; Note that %email will load the variable specified in your drush alias
+; under array('rebuild' => 'email')
+variables[reroute_email_address] = %email
 ; Specify if user should be logged in after running rebuild
 uli = 1
 ; Modules to enable
