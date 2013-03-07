@@ -211,8 +211,7 @@ function _drush_rebuild_load_manifest($env) {
   if (!file_exists($rebuild_manifest_path)) {
     return drush_set_error(dt('Could not load rebuild.info file at !path', array('!path' => $rebuild_manifest_path)));
   }
-  $rebuild_manifest = parse_ini_file($rebuild_manifest_path);
-  return $rebuild_manifest;
+  return ($rebuild_manifest = parse_ini_file($rebuild_manifest_path)) ? $rebuild_manifest : drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
 }
 
 /**
@@ -406,6 +405,9 @@ function drush_rebuild($environment = NULL) {
   }
 
   $rebuild_manifest = _drush_rebuild_load_manifest($env);
+  if (!$rebuild_manifest) {
+    return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $environment)));
+  }
 
   // Check backup options.
   if (!drush_get_option('backup')) {
