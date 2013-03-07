@@ -25,8 +25,9 @@ class DrushRebuild {
    * Handles rebuilding local environment.
    */
   public function rebuild() {
-    $rebuilder = new Rebuilder();
+    $rebuilder = new Rebuilder($this);
     $rebuilder->start();
+    return $this->verify();
   }
 
   /**
@@ -80,7 +81,6 @@ class DrushRebuild {
    */
   public function loadManifest() {
     $env = $this->environment;
-    drush_print_r($env);
     // Check if we can load the local tasks file.
     if (!isset($env['path-aliases']['%rebuild'])) {
       return drush_set_error(dt('Please add a %rebuild entry to the path-aliases section of the Drush alias for !name', array('!name' => $alias_name)));
@@ -163,6 +163,11 @@ class DrushRebuild {
     return $this->manifest;
   }
 
+  public function verify() {
+    // Check to see if we can bootstrap to the site
+    return TRUE;
+  }
+
 }
 
 /**
@@ -183,16 +188,15 @@ class Rebuilder extends DrushRebuild
   public $variables;
 
   public function __construct(DrushRebuild $DrushRebuild) {
-    $this->manifest = parent::$manifest;
-    drush_print('getting manifest');
-    drush_print_r($this->manifest);
-    $this->description = $this->manifest['description'];
-    $this->description = 'test';
-    $this->type = $manifest['type'];
-    $this->version = $manifest['version'];
-    $this->remotes = isset($manifest['remotes']) ? $manifest['remotes'] : NULL;
-    $this->pre_process = isset($manifest['pre_process']) ? $manifest['pre_process'] : NULL;
-    $this->post_process = isset($manifest['post_process']) ? $manifest['post_process'] : NULL;
+    $this->environment = $DrushRebuild->environment;
+    $this->target = $DrushRebuild->alias_name;
+    $this->source = $DrushRebuild->source;
+    $this->description = $DrushRebuild->manifest['description'];
+    $this->type = $DrushRebuild->manifest['type'];
+    $this->version = $DrushRebuild->manifest['version'];
+    $this->remotes = isset($DrushRebuild->manifest['remotes']) ? $DrushRebuild->manifest['remotes'] : NULL;
+    $this->pre_process = isset($DrushRebuild->manifest['pre_process']) ? $DrushRebuild->manifest['pre_process'] : NULL;
+    $this->post_process = isset($DrushRebuild->manifest['post_process']) ? $DrushRebuild->manifest['post_process'] : NULL;
     if ($this->remotes) {
       $sql_sync_options = array();
       if (isset($manifest['sql_sync'])) {
@@ -211,25 +215,37 @@ class Rebuilder extends DrushRebuild
 
       if (isset($manifest['rsync']['type'])) {
         // Two types supported: files only, or entire directory.
-        $rsync_type = $manifest['rsync']['type'];
+        $this->rsync_type = $DrushRebuild->manifest['rsync']['type'];
       }
     }
-    if (isset($manifest['variables'])) {
-      $this->variables = $manifest['variables'];
+    if (isset($DrushRebuild->manifest['variables'])) {
+      $this->variables = $DrushRebuild->manifest['variables'];
     }
-    if (isset($manifest['uli'])) {
-      $this->uli = $manifest['uli'];
+    if (isset($DrushRebuild->manifest['uli'])) {
+      $this->uli = $DrushRebuild->manifest['uli'];
     }
-    if (isset($manifest['modules_enable'])) {
-      $this->modules_enable = $manifest['modules_enable'];
+    if (isset($DrushRebuild->manifest['modules_enable'])) {
+      $this->modules_enable = $DrushRebuild->manifest['modules_enable'];
     }
-    if (isset($manifest['modules_disable'])) {
-      $this->modules_disable = $manifest['modules_disable'];
+    if (isset($DrushRebuild->manifest['modules_disable'])) {
+      $this->modules_disable = $DrushRebuild->manifest['modules_disable'];
     }
   }
 
   public function start() {
-    $sql_sync = new SqlSync();
+    $pre_process = new DrushScript($this, 'pre_process');
+    $pre_process->start();
+    $sql_sync = new SqlSync($this);
     $sql_sync->start();
+    $variable = new Variable($this);
+    $variable->Set();
+    $module = new Module($this);
+    $module->start('enable');
+    $module->start('disable');
+    $post_process = new DrushScript($this, 'pre_process');
+    $post_process->start($this, 'post_process');
+    $uli = new UserLogin($this);
+    $uli->start();
   }
+
 }
