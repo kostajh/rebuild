@@ -143,6 +143,28 @@ function _drush_rebuild_show_rebuild_data($data) {
         )), 'ok');
 }
 
+/**
+ * Validate the manifest against the allowed keys.
+ *
+ * @param array $manifest
+ * @return TRUE if manifest is valid, array of invalid keys otherwise.
+ */
+function _drush_rebuild_validate_manifest($manifest) {
+  $valid_options = array(
+    'description',
+    'version',
+    'type',
+    'remotes',
+    'sql_sync',
+    'variables',
+    'uli',
+    'modules_enable',
+    'modules_disable',
+    'pre_process',
+    'post_process',
+  );
+}
+
 function _drush_rebuild_load_env($environment, $alias_name) {
   if (!$environment) {
     // Enforce the syntax. `drush rebuild @target --source=@source`
@@ -185,9 +207,19 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   $post_process = isset($manifest['post_process']) ? $manifest['post_process'] : NULL;
 
   if ($remotes) {
-    if (isset($manifest['sql-sync'])) {
-      $sql_sync_options = $manifest['sql-sync'];
+    $sql_sync_options = array();
+    if (isset($manifest['sql_sync'])) {
+      $sql_sync_options_raw = $manifest['sql_sync'];
+      $sql_sync_options = array();
+      foreach ($sql_sync_options_raw as $key => $value) {
+        if (is_int($key)) {
+          $sql_sync_options[] = '--' . $value;
+        } else {
+          $sql_sync_options[] = '--' . $key . '=' . $value;
+        }
+      }
     }
+
     if (isset($manifest['rsync']['type'])) {
       // Two types supported: files only, or entire directory
       $rsync_type = $manifest['rsync']['type'];
@@ -226,7 +258,7 @@ function _drush_rebuild($target_alias, $manifest, $source, $env) {
   // SQL Sync.
   drush_log('Beginning sql-sync', 'ok');
   try {
-    $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias), array('--quiet'));
+    $ret = drush_invoke_process($env, 'sql-sync', array($source, $target_alias), array_merge($sql_sync_options, array('--quiet')));
     drush_log(dt('Synced database from !source to !target', array('!source' => $source, '!target' => $target_alias)), 'ok');
   } catch (Exception $e) {
     return drush_set_error(dt('There was an error in sql-sync. %e', array('%e' => print_r($e, TRUE))));
