@@ -26,13 +26,16 @@ function rebuild_drush_command() {
     'description' => 'Rebuilds a local Drupal environment.',
     'arguments' => array(),
     'options' => array(
-      'source' => 'The drush alias to use as the source for the rebuild.',
+      'source' => array(
+        'description' => 'The drush alias to use as the source for the rebuild.',
+        'example_value' => '@mysite.local',
+      ),
       'view-manifest' => 'View the rebuild manifest.',
       'backup' => 'Backup the local dev environment before rebuilding.',
     ),
     'aliases' => array('rb'),
     'examples' => array(
-      'drush rebuild @mysite.dev' => 'Rebuild the enviornment at @mysite.dev',
+      'drush rebuild @mysite.dev --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
       'drush rebuild @mysite.dev --view-manifest' => 'View the manifest for rebuilding @mysite.dev. Does not execute any tasks.',
       'drush rebuild @mysite.dev --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
     ),
