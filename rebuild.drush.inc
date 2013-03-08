@@ -87,15 +87,13 @@ function rebuild_drush_command() {
  * Display rebuild info for an alias.
  */
 function drush_rebuild_info($environment = NULL) {
-  // @todo if environment isn't set, show info about all aliases
-  $args = func_get_args();
-  $alias_name = $args[0];
-  $data = _drush_rebuild_load_metadata($alias_name);
+  $drush_rebuild = new DrushRebuild($environment);
+  $data = $drush_rebuild->loadMetadata();
   if (!$data->data['last_rebuild']) {
     drush_log(dt('There isn\'t any rebuild info to display for !name', array('!name' => $alias_name)), 'error');
   }
   else {
-    _drush_rebuild_show_rebuild_data($data);
+    $drush_rebuild->showMetadata();
   }
 }
 
@@ -185,8 +183,7 @@ function drush_rebuild($environment = NULL) {
         'ok'
       );
     }
-    else
-    {
+    else {
       return drush_log(dt('Rebuild failed to complete successfully.'), 'error');
     }
   }

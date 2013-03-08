@@ -7,18 +7,14 @@
 
 class DrushRebuild {
 
-  public $target;
-  public $source;
-  public $manifest;
-
   /**
    * Constructor.
    *
-   * @param string $alias_name
+   * @param string $target
    *   The alias of the environment to be rebuilt.
    */
-  public function __construct($alias_name) {
-    $this->alias_name = $alias_name;
+  public function __construct($target) {
+    $this->target = $target;
   }
 
   /**
@@ -26,8 +22,10 @@ class DrushRebuild {
    */
   public function rebuild() {
     $rebuilder = new Rebuilder($this);
-    $rebuilder->start();
-    return $this->verify();
+    if (!$rebuilder->start()) {
+      return FALSE;
+    }
+    return $this->verifyCompletedRebuild();
   }
 
   /**
@@ -93,7 +91,8 @@ class DrushRebuild {
     if ($rebuild_manifest = parse_ini_file($rebuild_manifest_path)) {
       $this->manifest = $rebuild_manifest;
       return $rebuild_manifest;
-    } else {
+    }
+    else {
       drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
     }
   }
@@ -145,8 +144,8 @@ class DrushRebuild {
   /**
    * Update the meta-data for an alias.
    *
-   * Meta-data will be updated with the last date of last rebuild and time elapsed
-   * for last rebuild.
+   * Meta-data will be updated with the last date of last rebuild and time
+   * elapsed for last rebuild.
    *
    * @param int $total_rebuild_time
    *   The amount of time elapsed in seconds for the rebuild.
@@ -163,9 +162,6 @@ class DrushRebuild {
 
   /**
    * Backup the local environment using Drush archive-dump.
-   *
-   * @param string $alias_name
-   *   The environemnt to backup.
    */
   public function backupEnvironment() {
     $alias_name = $this->target;
@@ -178,44 +174,41 @@ class DrushRebuild {
     }
   }
 
-  public function getManifest() {
-    return $this->manifest;
+  /**
+   * Check requirements before rebuilding.
+   */
+  public function checkRequirements() {
+
   }
 
-  public function verify() {
-    // Check to see if we can bootstrap to the site
+  /**
+   * Verifies a completed rebuild.
+   */
+  public function verifyCompletedRebuild() {
+    // Check to see if we can bootstrap to the site.
     return TRUE;
   }
 
 }
 
 /**
-*
-*/
-class Rebuilder extends DrushRebuild
-{
-  public $description;
-  public $type;
-  public $version;
-  public $remotes;
-  public $pre_process;
-  public $post_process;
-  public $sql_sync_options;
-  public $modules_enble;
-  public $modules_disable;
-  public $uli;
-  public $variables;
+ * Handles the work of rebuilding.
+ */
+class Rebuilder extends DrushRebuild {
 
-  public function __construct(DrushRebuild $DrushRebuild) {
-    $this->environment = $DrushRebuild->environment;
-    $this->target = $DrushRebuild->alias_name;
-    $this->source = $DrushRebuild->source;
-    $this->description = $DrushRebuild->manifest['description'];
-    $this->type = $DrushRebuild->manifest['type'];
-    $this->version = $DrushRebuild->manifest['version'];
-    $this->remotes = isset($DrushRebuild->manifest['remotes']) ? $DrushRebuild->manifest['remotes'] : NULL;
-    $this->pre_process = isset($DrushRebuild->manifest['pre_process']) ? $DrushRebuild->manifest['pre_process'] : NULL;
-    $this->post_process = isset($DrushRebuild->manifest['post_process']) ? $DrushRebuild->manifest['post_process'] : NULL;
+  /**
+   * Constructor.
+   */
+  public function __construct(DrushRebuild $drush_rebuild) {
+    $this->environment = $drush_rebuild->environment;
+    $this->target = $drush_rebuild->target;
+    $this->source = $drush_rebuild->source;
+    $this->description = $drush_rebuild->manifest['description'];
+    $this->type = $drush_rebuild->manifest['type'];
+    $this->version = $drush_rebuild->manifest['version'];
+    $this->remotes = isset($drush_rebuild->manifest['remotes']) ? $drush_rebuild->manifest['remotes'] : NULL;
+    $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
+    $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
     if ($this->remotes) {
       $sql_sync_options = array();
       if (isset($manifest['sql_sync'])) {
@@ -234,37 +227,55 @@ class Rebuilder extends DrushRebuild
 
       if (isset($manifest['rsync']['type'])) {
         // Two types supported: files only, or entire directory.
-        $this->rsync_type = $DrushRebuild->manifest['rsync']['type'];
+        $this->rsync_type = $drush_rebuild->manifest['rsync']['type'];
       }
     }
-    if (isset($DrushRebuild->manifest['variables'])) {
-      $this->variables = $DrushRebuild->manifest['variables'];
+    if (isset($drush_rebuild->manifest['variables'])) {
+      $this->variables = $drush_rebuild->manifest['variables'];
     }
-    if (isset($DrushRebuild->manifest['uli'])) {
-      $this->uli = $DrushRebuild->manifest['uli'];
+    if (isset($drush_rebuild->manifest['uli'])) {
+      $this->uli = $drush_rebuild->manifest['uli'];
     }
-    if (isset($DrushRebuild->manifest['modules_enable'])) {
-      $this->modules_enable = $DrushRebuild->manifest['modules_enable'];
+    if (isset($drush_rebuild->manifest['modules_enable'])) {
+      $this->modules_enable = $drush_rebuild->manifest['modules_enable'];
     }
-    if (isset($DrushRebuild->manifest['modules_disable'])) {
-      $this->modules_disable = $DrushRebuild->manifest['modules_disable'];
+    if (isset($drush_rebuild->manifest['modules_disable'])) {
+      $this->modules_disable = $drush_rebuild->manifest['modules_disable'];
     }
   }
 
+  /**
+   * Start the rebuild.
+   */
   public function start() {
     $pre_process = new DrushScript($this, 'pre_process');
-    $pre_process->start();
+    if (!$pre_process->start()) {
+      return FALSE;
+    }
     $sql_sync = new SqlSync($this);
-    $sql_sync->start();
+    if (!$sql_sync->start()) {
+      return FALSE;
+    }
     $variable = new Variable($this);
-    $variable->Set();
+    if (!$variable->Set()) {
+      return FALSE;
+    }
     $module = new Module($this);
-    $module->start('enable');
-    $module->start('disable');
+    if (!$module->start('enable')) {
+      return FALSE;
+    }
+    if (!$module->start('disable')) {
+      return FALSE;
+    }
     $post_process = new DrushScript($this, 'pre_process');
-    $post_process->start($this, 'post_process');
+    if (!$post_process->start($this, 'post_process')) {
+      return FALSE;
+    }
     $uli = new UserLogin($this);
-    $uli->start();
+    if (!$uli->start()) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
 }

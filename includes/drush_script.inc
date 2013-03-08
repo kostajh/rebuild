@@ -1,18 +1,28 @@
 <?php
 
 /**
-*
-*/
+ * @file
+ * Drush script related code.
+ */
+
+/**
+ * Handles executing drush scripts.
+ */
 class DrushScript extends Rebuilder {
 
-  public function __construct(Rebuilder $Rebuilder, $state) {
-    $this->rebuilder = $Rebuilder;
+  /**
+   * Constructor.
+   */
+  public function __construct(Rebuilder $rebuilder, $state) {
+    $this->rebuilder = $rebuilder;
     $this->state = $state;
   }
 
+  /**
+   * Start executing drush scripts.
+   */
   public function start() {
     if (isset($this->rebuilder->$this->state)) {
-
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
 
       foreach ($this->rebuilder->$this->state as $filename) {
@@ -24,13 +34,15 @@ class DrushScript extends Rebuilder {
             drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
           }
           else {
-            drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+            return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
           }
         }
         else {
-          drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
+          return drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
         }
       }
     }
+    return TRUE;
   }
+
 }

@@ -1,23 +1,33 @@
-
 <?php
 
 /**
-*
-*/
+ * @file
+ * Variable-set related code.
+ */
+
+/**
+ * Handles variable-set functionality.
+ */
 class Variable extends Rebuilder {
 
-  public function __construct(Rebuilder $Rebuilder) {
-    $this->rebuilder = $Rebuilder;
+  /**
+   * Constructor.
+   */
+  public function __construct(Rebuilder $rebuilder) {
+    $this->rebuilder = $rebuilder;
   }
 
+  /**
+   * Set the variables.
+   */
   public function Set() {
     // Execute sql-sync.
     $variables = $this->rebuilder->variables;
     if (is_array($variables)) {
       drush_log('Setting variables', 'ok');
       foreach ($variables as $key => $value) {
-        // If the value starts with "%" then we are referencing a variable defined
-        // in the Drush alias.
+        // If the value starts with "%" then we are referencing a variable
+        // defined in the Drush alias.
         if (strpos($value, '%') === 0) {
           if (isset($this->rebuilder->environment['rebuild'][substr($value, 1)])) {
             $value = $this->rebuilder->environment['rebuild'][substr($value, 1)];
@@ -33,9 +43,10 @@ class Variable extends Rebuilder {
           drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)), 'ok');
         }
         else {
-          drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
         }
       }
     }
+    return TRUE;
   }
 }

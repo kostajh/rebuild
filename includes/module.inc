@@ -1,14 +1,28 @@
 <?php
 
 /**
-*
-*/
+ * @file
+ * Module related code.
+ */
+
+/**
+ * Handles module enable/disable functions.
+ */
 class Module extends Rebuilder {
 
-  public function __construct(Rebuilder $Rebuilder) {
-    $this->rebuilder = $Rebuilder;
+  /**
+   * Constructor.
+   */
+  public function __construct(Rebuilder $rebuilder) {
+    $this->rebuilder = $rebuilder;
   }
 
+  /**
+   * Start the process of enabling / disabling modules.
+   *
+   * @param string $op
+   *   'enable' or 'disable'
+   */
   public function start($op) {
     if ($this->op == 'enable') {
       // Enable modules.
@@ -19,7 +33,7 @@ class Module extends Rebuilder {
           drush_log(dt('Enabled modules: !module.', array('!module' => implode(",", $this->rebuilder->modules_enable))), 'ok');
         }
         else {
-          drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
         }
       }
     }
@@ -33,9 +47,10 @@ class Module extends Rebuilder {
           drush_log(dt('Disabled modules: !module.', array('!module' => implode(", ", $this->rebuilder->modules_disable))), 'ok');
         }
         else {
-          drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
         }
       }
     }
+    return TRUE;
   }
 }
