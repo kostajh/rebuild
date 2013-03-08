@@ -20,4 +20,35 @@ class Diagnostics extends DrushRebuild {
     $this->manifest = $drush_rebuild->manifest;
   }
 
+  /**
+   * Ensure that the options provided in the loaded manifest are valid.
+   *
+   * @return array
+   *   TRUE if valid, array of invalid keys otherwise.
+   */
+  public function validateManifest() {
+
+  }
+
+  /**
+   * Make sure the target site is accessible over the web.
+   */
+  public function pingHost() {
+
+  }
+
+  /**
+   * Ensure the DB credentials for the target are valid and that the DB exists.
+   */
+  public function checkDatabaseAccess() {
+
+  }
+
+  /**
+   * Check if the database exists.
+   */
+  public function checkDatabaseExists() {
+
+  }
+
 }

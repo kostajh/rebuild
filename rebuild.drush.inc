@@ -116,10 +116,13 @@ function drush_rebuild($environment = NULL) {
     return $drush_rebuild->viewManifest();
   }
 
+  // Load the rebuild manifest.
   $rebuild_manifest = $drush_rebuild->loadManifest();
   if (!$rebuild_manifest) {
     return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $environment)));
   }
+
+  // Check requirements.
 
   // Check backup options.
   if (!drush_get_option('backup')) {
