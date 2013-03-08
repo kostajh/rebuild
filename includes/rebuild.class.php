@@ -5,6 +5,9 @@
  * Contains methods for Drush Rebuild.
  */
 
+/**
+ * The main Drush Rebuild class.
+ */
 class DrushRebuild {
 
   public $environment;
@@ -33,6 +36,9 @@ class DrushRebuild {
     return $this->verifyCompletedRebuild();
   }
 
+  /**
+   * Outputs rebuild information for the alias loaded in the environment.
+   */
   public function getInfo() {
     $data = $this->loadMetadata();
     if (!$data->data['last_rebuild']) {
