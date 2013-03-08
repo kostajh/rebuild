@@ -33,6 +33,16 @@ class DrushRebuild {
     return $this->verifyCompletedRebuild();
   }
 
+  public function getInfo() {
+    $data = $this->loadMetadata();
+    if (!$data->data['last_rebuild']) {
+      drush_log(dt('There isn\'t any rebuild info to display for !name', array('!name' => $this->target)), 'error');
+    }
+    else {
+      $this->showMetadata();
+    }
+  }
+
   /**
    * Called for `drush rebuild version` or `drush rebuild --version`.
    */

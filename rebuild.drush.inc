@@ -88,13 +88,7 @@ function rebuild_drush_command() {
  */
 function drush_rebuild_info($environment = NULL) {
   $drush_rebuild = new DrushRebuild($environment);
-  $data = $drush_rebuild->loadMetadata();
-  if (!$data->data['last_rebuild']) {
-    drush_log(dt('There isn\'t any rebuild info to display for !name', array('!name' => $alias_name)), 'error');
-  }
-  else {
-    $drush_rebuild->showMetadata();
-  }
+  return $drush_rebuild->getInfo($environment);
 }
 
 /**
@@ -106,7 +100,6 @@ function drush_rebuild_info($environment = NULL) {
 function drush_rebuild($environment = NULL) {
 
   $drush_rebuild = new DrushRebuild($environment);
-  $env = $drush_rebuild->environment;
 
   // Output version information and return.
   if (drush_get_option('version')) {
@@ -136,14 +129,14 @@ function drush_rebuild($environment = NULL) {
 
   // Execute local tasks. The `tasks.php` file is responsible for calling
   // any additional scripts in the local tasks directory.
-  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $alias_name, '!dir' => $env['root'])), 'warning');
+  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $environment, '!dir' => $drush_rebuild->environment['root'])), 'warning');
 
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
   if ($rebuild_manifest['type'] == 'remote') {
     $source = drush_get_option('source');
     if ($source) {
-      if ($source == $alias_name) {
+      if ($source == $environment) {
         return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
       }
       $drush_rebuild->source = $source;
@@ -160,7 +153,7 @@ function drush_rebuild($environment = NULL) {
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check.
-    if (drush_get_option('backup') && file_exists($env['root'] . '/sites/default/settings.php')) {
+    if (drush_get_option('backup') && file_exists($drush_rebuild->environment['root'] . '/sites/default/settings.php')) {
       $drush_rebuild->backupEnvironment();
     }
 
@@ -184,6 +177,6 @@ function drush_rebuild($environment = NULL) {
     }
   }
   else {
-    drush_log(dt('Aborted rebuilding !name', array('!name' => $alias_name)), 'warning');
+    drush_log(dt('Aborted rebuilding !name', array('!name' => $environment)), 'warning');
   }
 }
