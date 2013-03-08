@@ -6,6 +6,7 @@
  */
 
 require_once 'includes/rebuild.class.php';
+require_once 'includes/rebuilder.class.php';
 require_once 'includes/sql_sync.inc';
 require_once 'includes/drush_script.inc';
 require_once 'includes/module.inc';
