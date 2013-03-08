@@ -91,9 +91,9 @@ function rebuild_drush_command() {
 /**
  * Display rebuild info for an alias.
  */
-function drush_rebuild_info($environment = NULL) {
-  $drush_rebuild = new DrushRebuild($environment);
-  return $drush_rebuild->getInfo($environment);
+function drush_rebuild_info($target = NULL) {
+  $drush_rebuild = new DrushRebuild($target);
+  return $drush_rebuild->getInfo($target);
 }
 
 /**
@@ -102,9 +102,9 @@ function drush_rebuild_info($environment = NULL) {
  * @param string $environment
  *   An alias for a developmented environment.
  */
-function drush_rebuild($environment = NULL) {
+function drush_rebuild($target = NULL) {
 
-  $drush_rebuild = new DrushRebuild($environment);
+  $drush_rebuild = new DrushRebuild($target);
 
   // Output version information and return.
   if (drush_get_option('version')) {
@@ -119,7 +119,7 @@ function drush_rebuild($environment = NULL) {
   // Load the rebuild manifest.
   $rebuild_manifest = $drush_rebuild->loadManifest();
   if (!$rebuild_manifest) {
-    return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $environment)));
+    return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $target)));
   }
 
   // Check requirements.
@@ -137,14 +137,14 @@ function drush_rebuild($environment = NULL) {
 
   // Execute local tasks. The `tasks.php` file is responsible for calling
   // any additional scripts in the local tasks directory.
-  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $environment, '!dir' => $drush_rebuild->environment['root'])), 'warning');
+  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $target, '!dir' => $drush_rebuild->environment['root'])), 'warning');
 
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
   if ($rebuild_manifest['type'] == 'remote') {
     $source = drush_get_option('source');
     if ($source) {
-      if ($source == $environment) {
+      if ($source == $target) {
         return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
       }
       $drush_rebuild->source = $source;
@@ -158,7 +158,7 @@ function drush_rebuild($environment = NULL) {
   // Show rebuild meta-data for the alias.
   $drush_rebuild->showMetadata();
 
-  if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias_name)))) {
+  if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $target)))) {
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check.
     if (drush_get_option('backup') && file_exists($drush_rebuild->environment['root'] . '/sites/default/settings.php')) {
@@ -185,6 +185,6 @@ function drush_rebuild($environment = NULL) {
     }
   }
   else {
-    drush_log(dt('Aborted rebuilding !name', array('!name' => $environment)), 'warning');
+    drush_log(dt('Aborted rebuild for !name', array('!name' => $target)), 'warning');
   }
 }
