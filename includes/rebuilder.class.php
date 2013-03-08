@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Rebuilder class code.
+ */
 
 /**
  * Handles the work of rebuilding.
@@ -8,9 +12,13 @@ class Rebuilder extends DrushRebuild {
 
   /**
    * Constructor.
+   *
+   * @param DrushRebuild $drush_rebuild
+   *   The Drush Rebuild class object.
    */
   public function __construct(DrushRebuild $drush_rebuild) {
     $this->environment = $drush_rebuild->environment;
+    $this->manifest = $drush_rebuild->manifest;
     $this->target = $drush_rebuild->target;
     $this->source = $drush_rebuild->source;
     $this->description = $drush_rebuild->manifest['description'];
@@ -58,6 +66,7 @@ class Rebuilder extends DrushRebuild {
    * Start the rebuild.
    */
   public function start() {
+
     $pre_process = new DrushScript($this, 'pre_process');
     if (!$pre_process->start()) {
       return FALSE;

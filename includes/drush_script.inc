@@ -12,6 +12,12 @@ class DrushScript extends Rebuilder {
 
   /**
    * Constructor.
+   *
+   * @param Rebuilder $rebuilder
+   *   The Rebuilder class object.
+   * @param string $state
+   *   Where we are in the rebuild process. Valid options are 'pre_process' and
+   *   'post_process'.
    */
   public function __construct(Rebuilder $rebuilder, $state) {
     $this->rebuilder = $rebuilder;
@@ -26,7 +32,7 @@ class DrushScript extends Rebuilder {
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
 
       foreach ($this->rebuilder->$this->state as $filename) {
-        $rebuild_filepath = $env['path-aliases']['%rebuild'];
+        $rebuild_filepath = $this->rebuilder->environment['path-aliases']['%rebuild'];
         $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
         if (file_exists($file)) {
           $ret = drush_invoke_process($this->rebuilder->environment, 'php-script', array($file), array('quiet' => TRUE));

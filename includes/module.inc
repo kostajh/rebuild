@@ -12,6 +12,9 @@ class Module extends Rebuilder {
 
   /**
    * Constructor.
+   *
+   * @param Rebuilder $rebuilder
+   *   The Rebuilder class object.
    */
   public function __construct(Rebuilder $rebuilder) {
     $this->rebuilder = $rebuilder;
@@ -21,7 +24,7 @@ class Module extends Rebuilder {
    * Start the process of enabling / disabling modules.
    *
    * @param string $op
-   *   'enable' or 'disable'
+   *   Valid options are 'enable' or 'disable'.
    */
   public function start($op) {
     if ($this->op == 'enable') {

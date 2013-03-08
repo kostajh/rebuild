@@ -12,6 +12,9 @@ class UserLogin extends Rebuilder {
 
   /**
    * Constructor.
+   *
+   * @param Rebuilder $rebuilder
+   *   The Rebuilder class object.
    */
   public function __construct(Rebuilder $rebuilder) {
     $this->rebuilder = $rebuilder;
