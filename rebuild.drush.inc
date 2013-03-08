@@ -106,16 +106,12 @@ function drush_rebuild_info($environment = NULL) {
 function drush_rebuild($environment = NULL) {
 
   $drush_rebuild = new DrushRebuild($environment);
+  $env = $drush_rebuild->environment;
 
   // Output version information and return.
   if (drush_get_option('version')) {
     return $drush_rebuild->getVersion();
   }
-
-  $args = func_get_args();
-  $alias_name = $args[0];
-
-  $env = $drush_rebuild->loadEnvironment($environment);
 
   // Check if we are only viewing the script.
   if (drush_get_option('view-manifest')) {

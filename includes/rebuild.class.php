@@ -7,6 +7,10 @@
 
 class DrushRebuild {
 
+  public $environment;
+  public $target;
+  public $source;
+
   /**
    * Constructor.
    *
@@ -15,6 +19,7 @@ class DrushRebuild {
    */
   public function __construct($target) {
     $this->target = $target;
+    $this->environment = $this->loadEnvironment($target);
   }
 
   /**
