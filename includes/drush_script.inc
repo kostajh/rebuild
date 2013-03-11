@@ -16,12 +16,31 @@ class DrushScript extends Rebuilder {
    * @param Rebuilder $rebuilder
    *   The Rebuilder class object.
    * @param string $state
-   *   Where we are in the rebuild process. Valid options are 'pre_process' and
-   *   'post_process'.
+   *   Where we are in the rebuild process. Valid options are 'pre_process',
+   *   'post_process' and 'legacy'.
+   * @param string $script
+   *   Optional; provide the path to the script to execute.
    */
-  public function __construct(Rebuilder $rebuilder, $state) {
+  public function __construct(Rebuilder $rebuilder, $state, $script = NULL) {
     $this->rebuilder = $rebuilder;
     $this->state = $state;
+    if ($state == 'legacy' && $script) {
+      $this->script = $script;
+      $this->legacyMode();
+    }
+  }
+
+  /**
+   * Operate in legacy mode. Execute a drush-script to rebuild a site.
+   */
+  public function legacyMode() {
+    if ($ret['error_status'] == 0) {
+      $ret = drush_invoke_process($this->rebuilder->environment, 'php-script', array($this->script));
+      drush_log(dt('Executed !file script.', array('!file' => $this->script)), 'ok');
+    }
+    else {
+      return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+    }
   }
 
   /**

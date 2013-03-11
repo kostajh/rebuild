@@ -200,9 +200,28 @@ class DrushRebuild {
 
   /**
    * Check requirements before rebuilding.
+   *
+   * If a legacy rebuild file is discovered, allow user to proceed but ask them
+   * to upgrade to the latest INI format.
+   *
+   * @todo Re-organize this functionality.
    */
   public function checkRequirements() {
-
+    $diagnostics = new Diagnostics($this);
+    if ($diagnostics->isLegacy()) {
+      // Skip other diagnostics checks, execute a rebuild using drush script.
+      drush_log(dt("#########################################################\n# WARNING: You are using a legacy Drush Rebuild script. #\n#########################################################\n\nPlease rewrite !file to use the new Drush Rebuild INI format and !alias to reference the new Rebuild file.\nSee `drush rebuild-readme` for more information.",
+        array(
+          '!file' => $this->environment['path-aliases']['%local-tasks'],
+          '!alias' => $this->environment['#file'])), 'ok');
+      if (drush_confirm('Are you sure you want to continue?')) {
+        $ret = new DrushScript($this, 'legacy', $this->environment['path-aliases']['%local-tasks'] . '/tasks.php');
+        return TRUE;
+      }
+      else {
+        drush_die();
+      }
+    }
   }
 
   /**

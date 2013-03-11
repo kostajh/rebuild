@@ -5,12 +5,12 @@
  * Functions for rebuilding a local development environment.
  */
 
-// Main classes
+// Main classes.
 require_once 'includes/rebuild.class.php';
 require_once 'includes/rebuilder.class.php';
 require_once 'includes/diagnostics.class.php';
 
-// Helpers
+// Helpers.
 require_once 'includes/sql_sync.inc';
 require_once 'includes/drush_script.inc';
 require_once 'includes/module.inc';
@@ -99,8 +99,8 @@ function drush_rebuild_info($target = NULL) {
 /**
  * Rebuild a local development environment.
  *
- * @param string $environment
- *   An alias for a developmented environment.
+ * @param string $target
+ *   The alias name for the environment to be rebuilt.
  */
 function drush_rebuild($target = NULL) {
 
@@ -116,13 +116,16 @@ function drush_rebuild($target = NULL) {
     return $drush_rebuild->viewManifest();
   }
 
+  // Check requirements.
+  if (!$drush_rebuild->checkRequirements()) {
+    return drush_set_error(dt('Requirements check failed for !target', array('!target' => $target)));
+  }
+
   // Load the rebuild manifest.
   $rebuild_manifest = $drush_rebuild->loadManifest();
   if (!$rebuild_manifest) {
     return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $target)));
   }
-
-  // Check requirements.
 
   // Check backup options.
   if (!drush_get_option('backup')) {
@@ -134,9 +137,6 @@ function drush_rebuild($target = NULL) {
     $status = 'ok';
   }
   drush_log($backup_info, $status);
-
-  // Execute local tasks. The `tasks.php` file is responsible for calling
-  // any additional scripts in the local tasks directory.
   drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $target, '!dir' => $drush_rebuild->environment['root'])), 'warning');
 
   // Load metadata.
@@ -170,7 +170,7 @@ function drush_rebuild($target = NULL) {
     if ($ret) {
       $rebuild_completed_time = time();
       $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
-      // Update meta-data
+      // Update meta-data.
       $drush_rebuild->updateMetadata($total_rebuild_time);
       drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
         array(

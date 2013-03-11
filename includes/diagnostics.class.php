@@ -21,19 +21,30 @@ class Diagnostics extends DrushRebuild {
   }
 
   /**
+   * Run through diagnostics checks.
+   *
+   * @return bool
+   *   TRUE if successful, array of errors if not.
+   */
+  public function execute() {
+  }
+
+
+  /**
+   * Checks if the rebuild file is a drush script (pre-7.x-1.1).
+   */
+  public function isLegacy() {
+    if (isset($this->environment['path-aliases']['%local-tasks']) && file_exists($this->environment['path-aliases']['%local-tasks'] . '/tasks.php')) {
+      return TRUE;
+    }
+  }
+  /**
    * Ensure that the options provided in the loaded manifest are valid.
    *
    * @return array
    *   TRUE if valid, array of invalid keys otherwise.
    */
   public function validateManifest() {
-
-  }
-
-  /**
-   * Make sure the target site is accessible over the web.
-   */
-  public function pingHost() {
 
   }
 
