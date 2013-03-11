@@ -34,8 +34,12 @@ class Diagnostics extends DrushRebuild {
    * Checks if the rebuild file is a drush script (pre-7.x-1.1).
    */
   public function isLegacy() {
-    if (isset($this->environment['path-aliases']['%local-tasks']) && file_exists($this->environment['path-aliases']['%local-tasks'] . '/tasks.php')) {
+    if (isset($this->environment['path-aliases']['%local-tasks']) &&
+      file_exists($this->environment['path-aliases']['%local-tasks'] . '/tasks.php') &&
+      !isset($this->environment['path-aliases']['%rebuild']) && !file_exists($this->environment['path-aliases']['%rebuild'])) {
       return TRUE;
+    } else {
+      return FALSE;
     }
   }
   /**
@@ -60,6 +64,14 @@ class Diagnostics extends DrushRebuild {
    */
   public function checkDatabaseExists() {
 
+  }
+
+  /**
+   * Verifies a completed rebuild.
+   */
+  public function verifyCompletedRebuild() {
+    // Check to see if we can bootstrap to the site.
+    return TRUE;
   }
 
 }
