@@ -63,16 +63,16 @@ class Rebuilder extends DrushRebuild {
   }
 
   /**
-   * Start the rebuild.
+   * Rebuild the local environment.
    */
-  public function start() {
+  public function execute() {
 
     $pre_process = new DrushScript($this, 'pre_process');
-    if (!$pre_process->start()) {
+    if (!$pre_process->execute()) {
       return FALSE;
     }
     $sql_sync = new SqlSync($this);
-    if (!$sql_sync->start()) {
+    if (!$sql_sync->execute()) {
       return FALSE;
     }
     $variable = new Variable($this);
@@ -80,18 +80,18 @@ class Rebuilder extends DrushRebuild {
       return FALSE;
     }
     $module = new Module($this);
-    if (!$module->start('enable')) {
+    if (!$module->execute('enable')) {
       return FALSE;
     }
-    if (!$module->start('disable')) {
+    if (!$module->execute('disable')) {
       return FALSE;
     }
     $post_process = new DrushScript($this, 'pre_process');
-    if (!$post_process->start($this, 'post_process')) {
+    if (!$post_process->execute($this, 'post_process')) {
       return FALSE;
     }
     $uli = new UserLogin($this);
-    if (!$uli->start()) {
+    if (!$uli->execute()) {
       return FALSE;
     }
     return TRUE;

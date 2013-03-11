@@ -46,7 +46,7 @@ class DrushScript extends Rebuilder {
   /**
    * Start executing drush scripts.
    */
-  public function start() {
+  public function execute() {
     if (isset($this->rebuilder->$this->state)) {
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
 

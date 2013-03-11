@@ -26,7 +26,7 @@ class Module extends Rebuilder {
    * @param string $op
    *   Valid options are 'enable' or 'disable'.
    */
-  public function start($op) {
+  public function execute($op) {
     if ($this->op == 'enable') {
       // Enable modules.
       if (is_array($this->rebuilder->modules_enable)) {

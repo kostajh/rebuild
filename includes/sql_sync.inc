@@ -23,7 +23,7 @@ class SqlSync extends Rebuilder {
   /**
    * Start the sql-sync.
    */
-  public function start() {
+  public function execute() {
     // Execute sql-sync.
     if (!empty($this->rebuilder->remotes)) {
       drush_log('Beginning sql-sync', 'ok');

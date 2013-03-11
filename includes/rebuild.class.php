@@ -37,7 +37,7 @@ class DrushRebuild {
    */
   public function rebuild() {
     $rebuilder = new Rebuilder($this);
-    if (!$rebuilder->start()) {
+    if (!$rebuilder->execute()) {
       return FALSE;
     }
     return $this->verifyCompletedRebuild();

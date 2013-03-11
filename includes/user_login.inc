@@ -23,7 +23,7 @@ class UserLogin extends Rebuilder {
   /**
    * Start the process of logging a user in.
    */
-  public function start() {
+  public function execute() {
     if ($this->rebuilder->uli) {
       drush_log('Logging you in to the site.', 'ok');
       $ret = drush_invoke_process($this->rebuilder->environment, 'uli', array('quiet' => TRUE));
