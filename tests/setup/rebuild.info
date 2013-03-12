@@ -1,0 +1,35 @@
+description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
+; Define what type of rebuild this is.
+; Options are: install_profile, remote
+type = remote
+; Optional - specify a version of your rebuild script
+version = 1.0
+; Define valid remotes for a rebuild. By default, any alias in the group will be
+; available.
+remotes[] = prod
+; Define options for database sync
+sql_sync[] = 'create-db'
+sql_sync[sanitize] = 'sanitize-email'
+sql_sync[structure-tables-key] = 'common'
+; Define options for file sync
+; rsync[type] = files
+; rsync[exclude] = .htaccess
+; Define variables to be set
+variables[preprocess_js] = 0
+variables[preprocess_css] = 0
+; Note that %email will load the variable specified in your drush alias
+; under array('rebuild' => 'email')
+variables[reroute_email_address] = %email
+; Specify if user should be logged in after running rebuild
+; uli = 1
+; Modules to enable
+modules_enable[] = syslog
+; Modules to disable
+modules_disable[] = overlay
+; Specify any PHP scripts that should be executed during the rebuild process.
+; The scripts will be executed using drush php-eval. pre_process files will be
+; evaluated before drush rebuild does anything; post_process will be evaluated
+; at the end of the rebuild process. The files must be in the same directory
+; as your rebuild.info file.
+; pre_process = example.php
+; post_process = after_rebuild.php
