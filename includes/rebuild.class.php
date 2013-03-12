@@ -40,7 +40,8 @@ class DrushRebuild {
     if (!$rebuilder->execute()) {
       return FALSE;
     }
-    return $this->verifyCompletedRebuild();
+    $diagnostics = new Diagnostics($this);
+    return $diagnostics->verifyCompletedRebuild();
   }
 
   /**
@@ -222,13 +223,6 @@ class DrushRebuild {
         drush_die();
       }
     }
-  }
-
-  /**
-   * Verifies a completed rebuild.
-   */
-  public function verifyCompletedRebuild() {
-    // Check to see if we can bootstrap to the site.
     return TRUE;
   }
 
