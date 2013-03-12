@@ -190,4 +190,17 @@ modules_disable[] = overlay';
     $this->assertEquals('"Prod"', $this->getOutput());
   }
 
+  /**
+   * Tests the view manifest option.
+   */
+  public function testViewManifest() {
+    $this->drush('rebuild', array('@drebuild.dev'), array(
+      'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
+      'alias-path' => '/tmp/drush_rebuild',
+      'view-manifest' => TRUE,
+      )
+    );
+    $this->assertContains('Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination', $this->getOutput());
+  }
+
 }
