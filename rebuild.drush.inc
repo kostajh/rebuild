@@ -142,7 +142,12 @@ function drush_rebuild($target = NULL) {
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
   if ($rebuild_manifest['type'] == 'remote') {
+    $source = NULL;
     $source = drush_get_option('source');
+    if (!$source) {
+      // Check if there is a default source specified in the manifest.
+      $source = isset($rebuild_manifest['default_source']) ? $rebuild_manifest['default_source'] : NULL;
+    }
     if ($source) {
       if ($source == $target) {
         return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
