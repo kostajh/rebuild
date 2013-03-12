@@ -16,9 +16,8 @@
  */
 class rebuildTestCase extends Drush_CommandTestCase {
 
-  public function testRebuild() {
-    // Make an alias for the dev/prod sites
-    $aliases = array(
+  function getAliases() {
+    return array(
       'dev' => array(
         'root' => '/tmp/drush_rebuild/dev',
         'uri' => 'http://dev.drush.rebuild',
@@ -39,14 +38,22 @@ class rebuildTestCase extends Drush_CommandTestCase {
         ),
       ),
     );
+  }
+
+  function prepareWorkingDir() {
     if (file_exists('/tmp/drush_rebuild')) {
       unish_file_delete_recursive('/tmp/drush_rebuild');
     }
     mkdir('/tmp/drush_rebuild');
+  }
+
+  function copyAliases() {
     touch('/tmp/drush_rebuild/drebuild.aliases.drushrc.php');
-    file_put_contents('/tmp/drush_rebuild/drebuild.aliases.drushrc.php', $this->file_aliases($aliases));
-    // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info
-    $rebuild_info = '
+    file_put_contents('/tmp/drush_rebuild/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
+  }
+
+  function loadManifest() {
+    return '
 description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
 ; Define what type of rebuild this is.
 ; Options are: install_profile, remote
@@ -75,10 +82,14 @@ variables[reroute_email_address] = %email
 modules_enable[] = syslog
 ; Modules to disable
 modules_disable[] = overlay';
+  }
+
+  function copyManifest() {
     touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $rebuild_info);
-    // Copy test scripts to /tmp/drush_rebuild/
-    // Install Drupal on Prod with site name "Drush Rebuild Prod"
+    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->loadManifest());
+  }
+
+  function installTestSites() {
     $options = array(
       'site-name' => 'Prod',
       'alias-path' => '/tmp/drush_rebuild',
@@ -108,8 +119,22 @@ modules_disable[] = overlay';
     $this->assertEquals('"Dev"', $this->getOutput());
     $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.prod');
     $this->assertEquals('"Prod"', $this->getOutput());
+
+  }
+
+  public function testRebuild() {
+    // Make an alias for the dev/prod sites
+    $this->prepareWorkingDir();
+    $this->copyAliases();
+    // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info
+    $this->copyManifest();
+
+    // @todo Copy test scripts to /tmp/drush_rebuild/
+    // Install Drupal on Prod with site name "Drush Rebuild Prod"
+    $this->installTestSites();
+
     // Run the rebuild. If the site name for Dev is now Prod, the rebuild succeeded.
-    $this->drush('rebuild', array('@drebuild.dev'), array('include' => '/Users/kosta/src/drupal/rebuild', 'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE, 'source' => '@drebuild.prod', 'yes' => TRUE), '@drebuild.dev');
+    $this->drush('rebuild', array('@drebuild.dev'), array('include' => "/Users/" . get_current_user() . '/.drush/rebuild', 'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE, 'source' => '@drebuild.prod', 'yes' => TRUE));
     $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
     $this->assertEquals('"Prod"', $this->getOutput());
   }
