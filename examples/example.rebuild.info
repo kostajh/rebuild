@@ -14,8 +14,10 @@ default_source = @example.prod
 sql_sync[] = 'create-db'
 sql_sync[sanitize] = 'sanitize-email'
 sql_sync[structure-tables-key] = 'common'
-; Define options for file sync
-; rsync[type] = files
+; Define options for rsync
+; Either specify rsync[files_only] = 1, or define a list of rsync options
+; to pass to drush.
+rsync[files_only] = 1
 ; rsync[exclude] = .htaccess
 ; Define variables to be set
 variables[preprocess_js] = 0

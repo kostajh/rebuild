@@ -27,7 +27,7 @@ class Rebuilder extends DrushRebuild {
     $this->remotes = isset($drush_rebuild->manifest['remotes']) ? $drush_rebuild->manifest['remotes'] : NULL;
     $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
     $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
-    if ($this->remotes) {
+    if ($this->manifest['remotes']) {
       $sql_sync_options = array();
       if (isset($manifest['sql_sync'])) {
         $sql_sync_options_raw = $manifest['sql_sync'];
@@ -42,10 +42,8 @@ class Rebuilder extends DrushRebuild {
         }
       }
       $this->sql_sync_options = $sql_sync_options;
-
-      if (isset($manifest['rsync']['type'])) {
-        // Two types supported: files only, or entire directory.
-        $this->rsync_type = $drush_rebuild->manifest['rsync']['type'];
+      if (isset($this->manifest['rsync']['files_only'])) {
+        $this->rsync['files_only'] = $drush_rebuild->manifest['rsync']['files_only'];
       }
     }
     if (isset($drush_rebuild->manifest['variables'])) {
@@ -65,7 +63,7 @@ class Rebuilder extends DrushRebuild {
   /**
    * Rebuild the local environment.
    */
-  public function execute() {
+  public function start() {
 
     $pre_process = new DrushScript($this, 'pre_process');
     if (!$pre_process->execute()) {
@@ -73,6 +71,10 @@ class Rebuilder extends DrushRebuild {
     }
     $sql_sync = new SqlSync($this);
     if (!$sql_sync->execute()) {
+      return FALSE;
+    }
+    $rsync = new Rsync($this);
+    if (!$rsync->execute()) {
       return FALSE;
     }
     $variable = new Variable($this);
