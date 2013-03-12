@@ -200,6 +200,23 @@ class DrushRebuild {
   }
 
   /**
+   * Check if the source specified is a valid Drush alias.
+   */
+  public function isValidSource($source) {
+    // Check if target is the same as the source
+    if ($source == $this->target) {
+        return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
+    }
+    drush_log('Checking if source alias is valid', 'ok');
+    $alias_name = drush_invoke_process($this->environment, 'site-alias', array($source), array('short' => TRUE));
+    if (empty($alias_name['output'])) {
+      return drush_set_error(dt('Could not load an alias for !source.', array('!source' => $source)));
+    } else {
+      return TRUE;
+    }
+  }
+
+  /**
    * Check requirements before rebuilding.
    *
    * If a legacy rebuild file is discovered, allow user to proceed but ask them

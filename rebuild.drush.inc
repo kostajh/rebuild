@@ -148,10 +148,7 @@ function drush_rebuild($target = NULL) {
       // Check if there is a default source specified in the manifest.
       $source = isset($rebuild_manifest['default_source']) ? $rebuild_manifest['default_source'] : NULL;
     }
-    if ($source) {
-      if ($source == $target) {
-        return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
-      }
+    if ($source && $drush_rebuild->isValidSource($source)) {
       $drush_rebuild->source = $source;
       $data->source = $source;
     }

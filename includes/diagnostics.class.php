@@ -42,6 +42,7 @@ class Diagnostics extends DrushRebuild {
       return FALSE;
     }
   }
+
   /**
    * Ensure that the options provided in the loaded manifest are valid.
    *
