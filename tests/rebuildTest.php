@@ -39,9 +39,10 @@ class rebuildTestCase extends Drush_CommandTestCase {
         ),
       ),
     );
-    if (!file_exists('/tmp/drush_rebuild')) {
-      mkdir('/tmp/drush_rebuild');
+    if (file_exists('/tmp/drush_rebuild')) {
+      unish_file_delete_recursive('/tmp/drush_rebuild');
     }
+    mkdir('/tmp/drush_rebuild');
     touch('/tmp/drush_rebuild/drebuild.aliases.drushrc.php');
     file_put_contents('/tmp/drush_rebuild/drebuild.aliases.drushrc.php', $this->file_aliases($aliases));
     // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info
@@ -94,11 +95,11 @@ modules_disable[] = overlay';
       unish_file_delete_recursive('/tmp/drush_rebuild/dev');
     }
     // Install prod site
-    $this->drush('dl', array('drupal'), array('drupal-project-rename' => 'prod', 'destination' => '/tmp/drush_rebuild', 'cache' => TRUE));
+    $this->drush('dl', array('drupal'), array('drupal-project-rename' => 'prod', 'destination' => '/tmp/drush_rebuild', 'cache' => TRUE, 'yes' => TRUE));
     $this->drush('site-install', array('minimal'), $options, '@drebuild.prod');
     $this->log('Installed prod site');
     // Install dev site
-    $this->drush('dl', array('drupal'), array('drupal-project-rename' => 'dev', 'destination' => '/tmp/drush_rebuild', 'cache' => TRUE));
+    $this->drush('dl', array('drupal'), array('drupal-project-rename' => 'dev', 'destination' => '/tmp/drush_rebuild', 'cache' => TRUE, 'yes' => TRUE));
     $options['site-name'] = 'Dev';
     $this->drush('site-install', array('minimal'), $options, '@drebuild.dev');
     $this->log('Installed dev site');
@@ -108,45 +109,9 @@ modules_disable[] = overlay';
     $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.prod');
     $this->assertEquals('"Prod"', $this->getOutput());
     // Run the rebuild. If the site name for Dev is now Prod, the rebuild succeeded.
-    $this->drush('rebuild', array('@drebuild.dev'), array('alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE, 'source' => '@drebuild.prod', 'yes' => TRUE));
-    $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json', '@drebuild.dev'));
+    $this->drush('rebuild', array('@drebuild.dev'), array('include' => '/Users/kosta/src/drupal/rebuild', 'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE, 'source' => '@drebuild.prod', 'yes' => TRUE), '@drebuild.dev');
+    $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
     $this->assertEquals('"Prod"', $this->getOutput());
   }
-  // public function testIssueQueue() {
-  //   $this->doIssueQueueTests(array(), array('package-handler' => 'git_drupalorg'));
-  //   $this->assertFileExists(UNISH_SANDBOX . '/devel/.git');
-  // }
 
-  // public function testIssueQueueNoGitMode() {
-  //   $this->setUpFreshSandBox();
-  //   $this->doIssueQueueTests(array('no-git' => NULL), array('package-handler' => 'git_drupalorg'));
-  //   $this->assertFileExists(UNISH_SANDBOX . '/devel/.git');
-  // }
-
-  // public function testIssueQueuePlainDownload() {
-  //   $this->setUpFreshSandBox();
-  //   $this->doIssueQueueTests(array(), array());
-  // }
-
-  // public function doIssueQueueTests($iq_apply_patch_options, $iq_dl_options = array()) {
-  //   $iq_include = array('include' => dirname(__FILE__));
-  //   $iq_dl_options += array(
-  //     'cache' => NULL,
-  //     'yes' => NULL,
-  //   );
-  //   // Download an old version of devel to insulate ourselves from changes
-  //   $this->drush('pm-download', array('devel-7.x-1.2'), $iq_dl_options);
-  //   $this->assertFileExists(UNISH_SANDBOX . '/devel/README.txt');
-
-  //   chdir(UNISH_SANDBOX . '/devel');
-  //   $this->drush('iq-apply-patch', array('1262694'), $iq_apply_patch_options + $iq_include + array('base' => 'devel-test'));
-  //   $this->drush('iq-diff', array(), $iq_include);
-  //   $output = $this->getOutput();
-  //   $this->assertContains("white-space: pre;", $output, 'Line added by patch');
-  //   $this->drush('iq-reset', array(), array('hard' => NULL, 'yes' => NULL) + $iq_include);
-  //   $this->drush('iq-diff', array(), $iq_include);
-  //   $output = $this->getOutput();
-  //   //$this->assertEmpty($output, 'Reset removed changes');
-  //   $this->assertEquals('', $output);
-  // }
 }
