@@ -68,12 +68,20 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
-   * Load the test manifest.
+   * Returns an array of the manifest contents.
+   */
+  function loadManifest() {
+    $manifest = $this->getManifest();
+    return parse_ini_string($manifest);
+  }
+
+  /**
+   * Get the test manifest.
    *
    * @return string
    *   Return a rebuild info file manifest.
    */
-  function loadManifest() {
+  function getManifest() {
     return '
 description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
 ; Define what type of rebuild this is.
@@ -110,7 +118,7 @@ modules_disable[] = overlay';
    */
   function copyManifest() {
     touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->loadManifest());
+    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getManifest());
   }
 
   /**
@@ -176,18 +184,33 @@ modules_disable[] = overlay';
     $this->installTestSites();
 
     // Run the rebuild. If site name for Dev is now Prod, the rebuild succeeded.
-    $this->drush('rebuild', array('@drebuild.dev'), array(
-      'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
-      'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE,
-      'source' => '@drebuild.prod',
-      'yes' => TRUE)
+    $this->drush('rebuild', array('@drebuild.dev'),
+      array(
+        'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
+        'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE,
+        'source' => '@drebuild.prod',
+        'yes' => TRUE,
+      )
     );
-    $this->drush('variable-get', array('site_name'), array(
-      'alias-path' => '/tmp/drush_rebuild',
-      'format' => 'json'),
+    $this->drush('variable-get', array('site_name'),
+      array(
+        'alias-path' => '/tmp/drush_rebuild',
+        'format' => 'json',
+      ),
       '@drebuild.dev'
     );
     $this->assertEquals('"Prod"', $this->getOutput());
+    // Test that the reroute email address was set based on the alias value.
+    $this->drush('variable-get', array('reroute_email_address'),
+      array(
+        'alias-path' => '/tmp/drush_rebuild',
+        'format' => 'json',
+      ),
+      '@drebuild.dev'
+    );
+    $aliases = $this->getAliases();
+    $rebuild_email = $aliases['dev']['rebuild']['email'];
+    $this->assertEquals('"' . $rebuild_email . '"', $this->getOutput());
   }
 
   /**
