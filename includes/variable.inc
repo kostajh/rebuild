@@ -23,7 +23,7 @@ class Variable extends Rebuilder {
   /**
    * Set the variables.
    */
-  public function Set() {
+  public function set() {
     // Execute sql-sync.
     $variables = $this->rebuilder->variables;
     if (is_array($variables)) {

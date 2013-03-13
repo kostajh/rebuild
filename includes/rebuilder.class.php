@@ -78,14 +78,14 @@ class Rebuilder extends DrushRebuild {
       return FALSE;
     }
     $variable = new Variable($this);
-    if (!$variable->Set()) {
+    if (!$variable->set()) {
       return FALSE;
     }
-    $module = new Module($this);
-    if (!$module->execute('enable')) {
+    $modules = new Modules($this);
+    if (!$modules->execute('enable')) {
       return FALSE;
     }
-    if (!$module->execute('disable')) {
+    if (!$modules->execute('disable')) {
       return FALSE;
     }
     $post_process = new DrushScript($this, 'pre_process');

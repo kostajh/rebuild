@@ -14,7 +14,7 @@ require_once 'includes/diagnostics.class.php';
 require_once 'includes/sql_sync.inc';
 require_once 'includes/rsync.inc';
 require_once 'includes/drush_script.inc';
-require_once 'includes/module.inc';
+require_once 'includes/modules.inc';
 require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 
