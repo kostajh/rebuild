@@ -8,9 +8,9 @@ version = 1.0
 ; available.
 remotes[] = prod
 ; Define options for database sync
-sql_sync[] = 'create-db'
-sql_sync[sanitize] = 'sanitize-email'
-sql_sync[structure-tables-key] = 'common'
+sql_sync[create-db] = create-db
+sql_sync[sanitize] = sanitize-email
+sql_sync[structure-tables-key] = common
 ; Define options for file sync
 ; rsync[type] = files
 ; rsync[exclude] = .htaccess

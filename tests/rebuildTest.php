@@ -211,6 +211,14 @@ modules_disable[] = overlay';
     $aliases = $this->getAliases();
     $rebuild_email = $aliases['dev']['rebuild']['email'];
     $this->assertEquals('"' . $rebuild_email . '"', $this->getOutput());
+
+    // Test that emails were sanitized during sql-sync.
+    $this->drush('uinf', array('1'), array(
+      'alias-path' => '/tmp/drush_rebuild',
+      ),
+      '@drebuild.dev'
+    );
+    $this->assertContains('user+1@localhost', $this->getOutput());
   }
 
   /**
