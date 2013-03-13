@@ -8,7 +8,7 @@
 /**
  * Handles module enable/disable functions.
  */
-class Module extends Rebuilder {
+class Modules extends Rebuilder {
 
   /**
    * Constructor.
@@ -27,7 +27,7 @@ class Module extends Rebuilder {
    *   Valid options are 'enable' or 'disable'.
    */
   public function execute($op) {
-    if ($this->op == 'enable') {
+    if ($op == 'enable') {
       // Enable modules.
       if (is_array($this->rebuilder->modules_enable)) {
         drush_log('Enabling modules', 'ok');
@@ -41,7 +41,7 @@ class Module extends Rebuilder {
       }
     }
 
-    if ($this->op == 'disable') {
+    if ($op == 'disable') {
       // Disable modules.
       if (is_array($this->rebuilder->modules_disable)) {
         drush_log('Disabling modules', 'ok');

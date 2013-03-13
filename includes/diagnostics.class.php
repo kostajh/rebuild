@@ -16,8 +16,12 @@ class Diagnostics extends DrushRebuild {
   public function __construct(DrushRebuild $drush_rebuild) {
     $this->environment = $drush_rebuild->environment;
     $this->target = $drush_rebuild->target;
-    $this->source = $drush_rebuild->source;
-    $this->manifest = $drush_rebuild->manifest;
+    if (isset($drush_rebuild->source)) {
+      $this->source = $drush_rebuild->source;
+    }
+    if (isset($drush_rebuild->manifest)) {
+      $this->manifest = $drush_rebuild->manifest;
+    }
   }
 
   /**

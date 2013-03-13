@@ -24,7 +24,7 @@ class Rsync extends Rebuilder {
    * Start the process of logging a user in.
    */
   public function execute() {
-    if ($this->rebuilder->rsync['files_only']) {
+    if (isset($this->rebuilder->rsync) && $this->rebuilder->rsync['files_only']) {
       drush_log('Beginning rsync', 'ok');
       $ret = drush_invoke_process($this->rebuilder->environment, 'rsync',
         array(
