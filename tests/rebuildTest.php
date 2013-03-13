@@ -25,7 +25,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * @return array
    *   An array of aliases.
    */
-  function getAliases() {
+  protected function getAliases() {
     return array(
       'dev' => array(
         'root' => '/tmp/drush_rebuild/dev',
@@ -52,7 +52,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
   /**
    * Prepare the working directory for our tests.
    */
-  function prepareWorkingDir() {
+  protected function prepareWorkingDir() {
     if (file_exists('/tmp/drush_rebuild')) {
       unish_file_delete_recursive('/tmp/drush_rebuild');
     }
@@ -62,7 +62,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
   /**
    * Copy the predefined aliases into the working directory.
    */
-  function copyAliases() {
+  protected function copyAliases() {
     touch('/tmp/drush_rebuild/drebuild.aliases.drushrc.php');
     file_put_contents('/tmp/drush_rebuild/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
   }
@@ -70,7 +70,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
   /**
    * Returns an array of the manifest contents.
    */
-  function loadManifest() {
+  protected function loadManifest() {
     $manifest = $this->getManifest();
     return parse_ini_string($manifest);
   }
@@ -81,7 +81,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * @return string
    *   Return a rebuild info file manifest.
    */
-  function getManifest() {
+  protected function getManifest() {
     return '
 description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
 ; Define what type of rebuild this is.
@@ -116,7 +116,7 @@ modules_disable[] = overlay';
   /**
    * Copy the manifest to the working dir.
    */
-  function copyManifest() {
+  protected function copyManifest() {
     touch('/tmp/drush_rebuild/rebuild.info');
     file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getManifest());
   }
@@ -124,7 +124,7 @@ modules_disable[] = overlay';
   /**
    * Install test sites.
    */
-  function installTestSites() {
+  protected function installTestSites() {
     $options = array(
       'site-name' => 'Prod',
       'alias-path' => '/tmp/drush_rebuild',
