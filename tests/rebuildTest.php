@@ -97,7 +97,7 @@ sql_sync[] = "create-db"
 sql_sync[sanitize] = "sanitize-email"
 sql_sync[structure-tables-key] = "common"
 ; Define options for file sync
-; rsync[type] = files
+rsync[files_only] = TRUE
 ; rsync[exclude] = .htaccess
 ; Define variables to be set
 variables[preprocess_js] = 0
@@ -166,7 +166,8 @@ modules_disable[] = overlay';
     $this->assertEquals('"Dev"', $this->getOutput());
     $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.prod');
     $this->assertEquals('"Prod"', $this->getOutput());
-
+    // Add a file to sites/default/files in @prod
+    touch('/tmp/drush_rebuild/prod/sites/default/files/hello.world');
   }
 
   /**
@@ -219,6 +220,8 @@ modules_disable[] = overlay';
       '@drebuild.dev'
     );
     $this->assertContains('user+1@localhost', $this->getOutput());
+    // Check that hello.world file was rsynced from @prod
+    $this->assertFileExists('/tmp/drush_rebuild/dev/sites/default/files/hello.world');
   }
 
   /**

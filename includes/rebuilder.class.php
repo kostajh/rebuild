@@ -29,6 +29,7 @@ class Rebuilder extends DrushRebuild {
     $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
     if ($this->manifest['remotes']) {
       if (isset($drush_rebuild->manifest['sql_sync'])) {
+        // @TODO - Add validation of options.
         $this->sql_sync_options = $drush_rebuild->manifest['sql_sync'];
       }
       if (isset($this->manifest['rsync']['files_only'])) {
