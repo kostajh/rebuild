@@ -11,9 +11,9 @@ remotes[] = prod
 ; Define the default source for a sql-sync. Not valid for site-install rebuild.
 default_source = @example.prod
 ; Define options for database sync
-sql_sync[] = 'create-db'
-sql_sync[sanitize] = 'sanitize-email'
-sql_sync[structure-tables-key] = 'common'
+sql_sync[create-db] = TRUE
+sql_sync[sanitize] = sanitize-email
+sql_sync[structure-tables-key] = common
 ; Define options for rsync
 ; Either specify rsync[files_only] = 1, or define a list of rsync options
 ; to pass to drush.

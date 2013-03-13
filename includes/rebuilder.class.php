@@ -28,20 +28,9 @@ class Rebuilder extends DrushRebuild {
     $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
     $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
     if ($this->manifest['remotes']) {
-      $sql_sync_options = array();
-      if (isset($manifest['sql_sync'])) {
-        $sql_sync_options_raw = $manifest['sql_sync'];
-        $sql_sync_options = array();
-        foreach ($sql_sync_options_raw as $key => $value) {
-          if (is_int($key)) {
-            $sql_sync_options[] = '--' . $value;
-          }
-          else {
-            $sql_sync_options[] = '--' . $key . '=' . $value;
-          }
-        }
+      if (isset($drush_rebuild->manifest['sql_sync'])) {
+        $this->sql_sync_options = $drush_rebuild->manifest['sql_sync'];
       }
-      $this->sql_sync_options = $sql_sync_options;
       if (isset($this->manifest['rsync']['files_only'])) {
         $this->rsync['files_only'] = $drush_rebuild->manifest['rsync']['files_only'];
       }
