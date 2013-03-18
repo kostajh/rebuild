@@ -99,6 +99,73 @@ class DrushRebuild {
   }
 
   /**
+   * Returns the path the manifest overrides file.
+   *
+   * @return string
+   *   Return a string containing the path to the manifest overrides file, or
+   *   FALSE if the file could not be found.
+   */
+  protected function getManifestOverridesPath() {
+    $rebuild_manifest = $this->manifest;
+    // Check if the overrides file is defined as a full path.
+    if (file_exists($rebuild_manifest['overrides'])) {
+      return $rebuild_manifest['overrides'];
+    }
+    // If not a full path, check if it is in the same directory with the main
+    // rebuild mainfest.
+    $rebuild_manifest_path = $this->environment['path-aliases']['%rebuild'];
+    // Get directory of rebuild.info
+    $rebuild_manifest_directory = str_replace('rebuild.info', '', $rebuild_manifest_path);
+    if (file_exists($rebuild_manifest_directory . $rebuild_manifest['overrides'])) {
+      return $rebuild_manifest_directory . $rebuild_manifest['overrides'];
+    }
+    // Return false if other checks have failed.
+    return drush_set_error(dt('Could not load the overrides file at path !path', array('!path' => $rebuild_manifest['overrides'])));
+  }
+
+  /**
+   * Sets overrides for the rebuild manifest.
+   *
+   * @param array $rebuild_manifest
+   *   The rebuild manifest, loaded as an array.
+   */
+  protected function setManifestOverrides(&$rebuild_manifest) {
+    if ($rebuild_manifest_overrides = parse_ini_file($this->getManifestOverridesPath())) {
+      drush_log(dt('Loading manifest overrides from !file', array('!file' => $rebuild_manifest['overrides'])), 'success');
+      foreach ($rebuild_manifest_overrides as $key => $override) {
+        if (is_array($override)) {
+          foreach ($override as $k => $v) {
+            $rebuild_manifest[$key][$k] = $v;
+            $this->manifest[$key][$k] = $v;
+            drush_log(dt('Overriding !parent[!key] with value !override', array(
+              '!parent' => $key,
+              '!key' => $k,
+              '!override' => $v,
+                )
+              ), 'success'
+            );
+          }
+        }
+        else {
+          $this->manifest[$key] = $override;
+          $rebuild_manifest[$key] = $override;
+          drush_log(dt('Overriding "!key" with value !override', array(
+              '!key' => $key,
+              '!override' => $override,
+              )
+            ), 'success'
+          );
+        }
+
+      }
+      drush_print();
+    }
+    else {
+      return drush_set_error(dt('Failed to load overrides file.'));
+    }
+  }
+
+  /**
    * Load the rebuild info manifest.
    *
    * @return array
@@ -115,6 +182,11 @@ class DrushRebuild {
       return drush_set_error(dt('Could not load rebuild.info file at !path', array('!path' => $rebuild_manifest_path)));
     }
     if ($rebuild_manifest = parse_ini_file($rebuild_manifest_path)) {
+      $this->manifest = $rebuild_manifest;
+      // Set overrides.
+      if (isset($rebuild_manifest['overrides'])) {
+        $this->setManifestOverrides($rebuild_manifest);
+      }
       $this->manifest = $rebuild_manifest;
       return $rebuild_manifest;
     }
@@ -150,7 +222,7 @@ class DrushRebuild {
    */
   public function showMetadata() {
     $data = $this->metadata;
-    if (!$data->data['last_rebuild']) {
+    if (!isset($data->data['last_rebuild'])) {
       return;
     }
     // Display time of last rebuild and average time for rebuilding site.

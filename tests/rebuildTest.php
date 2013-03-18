@@ -76,6 +76,17 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
+   * Get the overrides.
+   *
+   * @return string
+   *   Return a rebuild overrides manifest.
+   */
+  protected function getOverrides() {
+    return 'variables[site_slogan] = RebuildMe
+    ';
+  }
+
+  /**
    * Get the test manifest.
    *
    * @return string
@@ -102,15 +113,19 @@ rsync[files_only] = TRUE
 ; Define variables to be set
 variables[preprocess_js] = 0
 variables[preprocess_css] = 0
+variables[site_slogan] = HelloWorld
 ; Note that %email will load the variable specified in your drush alias
 ; under array("rebuild" => "email")
 variables[reroute_email_address] = %email
 ; Specify if user should be logged in after running rebuild
-; uli = 1
+uli = 0
 ; Modules to enable
 modules_enable[] = syslog
 ; Modules to disable
-modules_disable[] = overlay';
+modules_disable[] = overlay
+; Overrides
+overrides = /tmp/drush_rebuild/local.rebuild.info
+';
   }
 
   /**
@@ -119,6 +134,14 @@ modules_disable[] = overlay';
   protected function copyManifest() {
     touch('/tmp/drush_rebuild/rebuild.info');
     file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getManifest());
+  }
+
+  /**
+   * Copy the overrides to the working dir.
+   */
+  protected function copyOverrides() {
+    touch('/tmp/drush_rebuild/local.rebuild.info');
+    file_put_contents('/tmp/drush_rebuild/local.rebuild.info', $this->getOverrides());
   }
 
   /**
@@ -179,12 +202,14 @@ modules_disable[] = overlay';
     $this->copyAliases();
     // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info.
     $this->copyManifest();
+    // Copy overrides file to /tmp/drush_rebuild/local.rebuild.info
+    $this->copyOverrides();
 
     // @todo Copy test scripts to /tmp/drush_rebuild/.
     // Install Drupal on Prod with site name "Drush Rebuild Prod".
     $this->installTestSites();
 
-    // Run the rebuild. If site name for Dev is now Prod, the rebuild succeeded.
+    // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(
         'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
@@ -193,6 +218,8 @@ modules_disable[] = overlay';
         'yes' => TRUE,
       )
     );
+
+    // If site name for Dev is now Prod, the rebuild succeeded.
     $this->drush('variable-get', array('site_name'),
       array(
         'alias-path' => '/tmp/drush_rebuild',
@@ -201,6 +228,7 @@ modules_disable[] = overlay';
       '@drebuild.dev'
     );
     $this->assertEquals('"Prod"', $this->getOutput());
+
     // Test that the reroute email address was set based on the alias value.
     $this->drush('variable-get', array('reroute_email_address'),
       array(
@@ -212,6 +240,10 @@ modules_disable[] = overlay';
     $aliases = $this->getAliases();
     $rebuild_email = $aliases['dev']['rebuild']['email'];
     $this->assertEquals('"' . $rebuild_email . '"', $this->getOutput());
+
+    // Check if our overrides were set.
+    $this->drush('variable-get', array('site_slogan'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
+    $this->assertEquals('"RebuildMe"', $this->getOutput());
 
     // Test that emails were sanitized during sql-sync.
     $this->drush('uinf', array('1'), array(

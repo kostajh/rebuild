@@ -1,37 +1,73 @@
+;
+; # REBUILD MANIFEST #
+;
+; DESCRIPTION
+;
+; Enter a description of what your rebuild file does.
 description = "Rebuilds local development environment from remote destination"
+;
+; TYPE
+;
 ; Define what type of rebuild this is.
 ; Options are: install_profile, remote
 type = remote
+;
+; VERSION
+;
 ; Optional - specify a version of your rebuild script
 version = 1.0
+;
+; VALID REMOTES
+;
 ; Define valid remotes for a rebuild. By default, any alias in the group will be
 ; available.
 remotes[] = stage
 remotes[] = prod
+;
+; DEFAULT SOURCE
+;
 ; Define the default source for a sql-sync. Not valid for site-install rebuild.
 default_source = @example.prod
+;
+; SQL SYNC
+;
 ; Define options for database sync
 sql_sync[create-db] = TRUE
 sql_sync[sanitize] = sanitize-email
 sql_sync[structure-tables-key] = common
+;
+; RSYNC
+;
 ; Define options for rsync
 ; Either specify rsync[files_only] = 1, or define a list of rsync options
 ; to pass to drush.
 rsync[files_only] = 1
 ; rsync[exclude] = .htaccess
+;
+; VARIABLES
+;
 ; Define variables to be set
 variables[preprocess_js] = 0
 variables[preprocess_css] = 0
 ; Note that %email will load the variable specified in your drush alias
 ; under array('rebuild' => 'email')
 variables[reroute_email_address] = %email
+;
+; USER LOGIN
+;
 ; Specify if user should be logged in after running rebuild
 uli = 1
+;
+; MODULES
+;
 ; Modules to enable
 modules_enable[] = devel
 modules_enable[] = devel_node_access
 ; Modules to disable
 modules_disable[] = overlay
+;
+; DRUSH SCRIPTS
+;
 ; Specify any PHP scripts that should be executed during the rebuild process.
 ; The scripts will be executed using drush php-eval. pre_process files will be
 ; evaluated before drush rebuild does anything; post_process will be evaluated
@@ -39,3 +75,10 @@ modules_disable[] = overlay
 ; as your rebuild.info file.
 pre_process = example.php
 post_process = after_rebuild.php
+;
+; OVERRIDES
+;
+; Specify the name of the file that contains any rebuild overrides.
+; Provide the name of the file if it is in the same directory as rebuild.info,
+; or the full path to the file otherwise.
+overrides = local.rebuild.info

@@ -42,7 +42,8 @@ class Diagnostics extends DrushRebuild {
       file_exists($this->environment['path-aliases']['%local-tasks'] . '/tasks.php') &&
       !isset($this->environment['path-aliases']['%rebuild']) && !file_exists($this->environment['path-aliases']['%rebuild'])) {
       return TRUE;
-    } else {
+    }
+    else {
       return FALSE;
     }
   }

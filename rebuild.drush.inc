@@ -128,18 +128,6 @@ function drush_rebuild($target = NULL) {
     return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $target)));
   }
 
-  // Check backup options.
-  if (!drush_get_option('backup')) {
-    $backup_info = 'A backup of your current dev environment will not be created!';
-    $status = 'warning';
-  }
-  else {
-    $backup_info = 'A backup of your current dev environment will be created.';
-    $status = 'ok';
-  }
-  drush_log($backup_info, $status);
-  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $target, '!dir' => $drush_rebuild->environment['root'])), 'warning');
-
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
   if ($rebuild_manifest['type'] == 'remote') {
@@ -158,8 +146,22 @@ function drush_rebuild($target = NULL) {
     }
   }
 
+  // Check backup options.
+  if (!drush_get_option('backup')) {
+    $backup_info = 'A backup of your current dev environment will not be created!';
+    $status = 'warning';
+  }
+  else {
+    $backup_info = 'A backup of your current dev environment will be created.';
+    $status = 'ok';
+  }
+  drush_print();
+  drush_log($backup_info, $status);
+  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $target, '!dir' => $drush_rebuild->environment['root'])), 'warning');
+  drush_print();
   // Show rebuild meta-data for the alias.
   $drush_rebuild->showMetadata();
+  drush_print();
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $target)))) {
     // Ensure that settings.php is in place before trying to generate a backup.

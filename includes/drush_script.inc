@@ -47,9 +47,9 @@ class DrushScript extends Rebuilder {
    * Start executing drush scripts.
    */
   public function execute() {
-    if (isset($this->rebuilder->$this->state)) {
+    $state = $this->state;
+    if (isset($this->rebuilder->$state)) {
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
-
       foreach ($this->rebuilder->$this->state as $filename) {
         $rebuild_filepath = $this->rebuilder->environment['path-aliases']['%rebuild'];
         $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
