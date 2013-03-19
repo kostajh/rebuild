@@ -189,7 +189,7 @@ class DrushRebuild {
     }
     if ($rebuild_manifest = parse_ini_file($rebuild_manifest_path)) {
       $this->manifest = $rebuild_manifest;
-      drush_log(dt('Loaded the rebuild manifest for !site', array('!site' => $this->target)), 'success');
+      drush_log(dt('Loading the rebuild manifest for !site', array('!site' => $this->target)), 'success');
       drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
       if (isset($rebuild_manifest['description'])) {
         drush_log(dt('- Description: !desc', array('!desc' => $rebuild_manifest['description'])), 'ok');
