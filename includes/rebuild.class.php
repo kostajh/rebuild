@@ -137,7 +137,7 @@ class DrushRebuild {
           foreach ($override as $k => $v) {
             $rebuild_manifest[$key][$k] = $v;
             $this->manifest[$key][$k] = $v;
-            drush_log(dt('Overriding !parent[!key] with value !override', array(
+            drush_log(dt('- Overriding !parent[!key] with value !override', array(
               '!parent' => $key,
               '!key' => $k,
               '!override' => $v,
@@ -149,7 +149,7 @@ class DrushRebuild {
         else {
           $this->manifest[$key] = $override;
           $rebuild_manifest[$key] = $override;
-          drush_log(dt('Overriding "!key" with value !override', array(
+          drush_log(dt('- Overriding "!key" with value !override', array(
               '!key' => $key,
               '!override' => $override,
               )
@@ -183,6 +183,15 @@ class DrushRebuild {
     }
     if ($rebuild_manifest = parse_ini_file($rebuild_manifest_path)) {
       $this->manifest = $rebuild_manifest;
+      drush_log(dt('Loaded the rebuild manifest for !site', array('!site' => $this->target)), 'success');
+      drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
+      if (isset($rebuild_manifest['description'])) {
+        drush_log(dt('- Description: !desc', array('!desc' => $rebuild_manifest['description'])), 'ok');
+      }
+      if (isset($rebuild_manifest['version'])) {
+        drush_log(dt('- Version: !version', array('!version' => $rebuild_manifest['version'])), 'ok');
+      }
+      drush_print();
       // Set overrides.
       if (isset($rebuild_manifest['overrides'])) {
         $this->setManifestOverrides($rebuild_manifest);
@@ -227,6 +236,7 @@ class DrushRebuild {
     }
     // Display time of last rebuild and average time for rebuilding site.
     $average_time = array_sum($data->data['rebuild_times']) / count($data->data['rebuild_times']);
+    drush_print();
     drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).\n!source",
         array(
           '!name' => $data->cid, '!date' => date(DATE_RFC822, $data->data['last_rebuild']),

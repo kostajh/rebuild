@@ -146,6 +146,8 @@ function drush_rebuild($target = NULL) {
     }
   }
 
+  // Show rebuild meta-data for the alias.
+  $drush_rebuild->showMetadata();
   // Check backup options.
   if (!drush_get_option('backup')) {
     $backup_info = 'A backup of your current dev environment will not be created!';
@@ -157,10 +159,6 @@ function drush_rebuild($target = NULL) {
   }
   drush_print();
   drush_log($backup_info, $status);
-  drush_log(dt('The environment for !name at !dir will be rebuilt.', array('!name' => $target, '!dir' => $drush_rebuild->environment['root'])), 'warning');
-  drush_print();
-  // Show rebuild meta-data for the alias.
-  $drush_rebuild->showMetadata();
   drush_print();
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $target)))) {
@@ -172,6 +170,7 @@ function drush_rebuild($target = NULL) {
 
     $begin_rebuild_time = time();
     $ret = $drush_rebuild->rebuild();
+    drush_print();
     if ($ret) {
       $rebuild_completed_time = time();
       $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
