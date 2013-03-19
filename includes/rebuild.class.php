@@ -174,7 +174,13 @@ class DrushRebuild {
   public function loadManifest() {
     // Check if we can load the local tasks file.
     if (!isset($this->environment['path-aliases']['%rebuild'])) {
-      return drush_set_error(dt('Please add a %rebuild entry to the path-aliases section of the Drush alias for !name', array('!name' => $this->target)));
+      drush_set_error(dt('Your Drush alias is not properly configured for Drush Rebuild!'));
+      drush_set_error(dt('Please add a %rebuild entry to the path-aliases section of the Drush alias for !name', array('!name' => $this->target)));
+      if (drush_confirm('Would you like to view the example Drush rebuild alias for tips on how to configure your alias?')) {
+        drush_set_error(dt('Please review the example alias and documentation on how to configure your alias for Drush Rebuild: !example',
+        array('!example' => drush_print_file(drush_server_home() . '/.drush/rebuild/examples/example.drebuild.aliases.drushrc.php'))));
+      }
+      return FALSE;
     }
     // Check if the file exists.
     $rebuild_manifest_path = $this->environment['path-aliases']['%rebuild'];
