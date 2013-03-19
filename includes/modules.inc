@@ -29,7 +29,7 @@ class Modules extends Rebuilder {
   public function execute($op) {
     if ($op == 'enable') {
       // Enable modules.
-      if (is_array($this->rebuilder->modules_enable)) {
+      if (isset($this->rebuilder->modules_enable) && is_array($this->rebuilder->modules_enable)) {
         drush_log('Enabling modules', 'ok');
         $ret = drush_invoke_process($this->rebuilder->environment, 'pm-enable', $this->rebuilder->modules_enable, array('quiet' => TRUE));
         if ($ret['error_status'] == 0) {
@@ -43,7 +43,7 @@ class Modules extends Rebuilder {
 
     if ($op == 'disable') {
       // Disable modules.
-      if (is_array($this->rebuilder->modules_disable)) {
+      if (isset($this->rebuilder->modules_disable) && is_array($this->rebuilder->modules_disable)) {
         drush_log('Disabling modules', 'ok');
         $ret = drush_invoke_process($this->rebuilder->environment, 'pm-disable', $this->rebuilder->modules_disable, array('quiet' => TRUE));
         if ($ret['error_status'] == 0) {

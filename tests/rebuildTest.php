@@ -87,6 +87,26 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
+   * Get the site install manifest.
+   *
+   * @return string
+   *   Return a rebuild manifest for a site install.
+   */
+  protected function getSiteInstallManifest() {
+    return '
+description = "Rebuilds the "minimal" install profile and installs some modules"
+version = 1.0
+site_install[profile] = minimal
+site_install[account-mail] = %email
+site_install[account-name] = SuperAdmin
+site_install[site-name] = Local Install
+variables[preprocess_js] = 0
+variables[preprocess_css] = 0
+variables[reroute_email_address] = %email
+';
+  }
+
+  /**
    * Get the test manifest.
    *
    * @return string
@@ -265,6 +285,26 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
       )
     );
     $this->assertContains('Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination', $this->getOutput());
+  }
+
+  /**
+   * Tests the site install rebuild.
+   */
+  public function testSiteInstall() {
+    touch('/tmp/drush_rebuild/rebuild.info');
+    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getSiteInstallManifest());
+    // Run the rebuild.
+    $this->drush('rebuild', array('@drebuild.dev'),
+      array(
+        'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
+        'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE,
+        'source' => '@drebuild.prod',
+        'yes' => TRUE,
+      )
+    );
+    // Check if the install succeeded
+    $this->drush('variable-get', array('install_profile'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
+    $this->assertEquals('"minimal"', $this->getOutput());
   }
 
 }

@@ -26,6 +26,28 @@ class Rebuilder extends DrushRebuild {
     $this->remotes = isset($drush_rebuild->manifest['remotes']) ? $drush_rebuild->manifest['remotes'] : NULL;
     $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
     $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
+    if ($this->manifest['site_install']) {
+      $this->profile = $this->manifest['site_install']['profile'];
+      $this->site_install_options = $this->manifest['site_install'];
+      // Unset the profile from the options group.
+      unset($this->site_install_options[$this->profile]);
+      // Swap placeholder values.
+      foreach ($this->site_install_options as $key => &$value) {
+        // If the value starts with "%" then we are referencing a variable
+        // defined in the Drush alias.
+        if (strpos($value, '%') === 0) {
+          if (isset($this->environment['rebuild'][substr($value, 1)])) {
+            $value = $this->environment['rebuild'][substr($value, 1)];
+          }
+          else {
+            drush_print($value);
+            drush_print($key);
+            drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
+            continue;
+          }
+        }
+      }
+    }
     if ($this->manifest['remotes']) {
       if (isset($drush_rebuild->manifest['sql_sync'])) {
         // @TODO - Add validation of options.
@@ -58,13 +80,24 @@ class Rebuilder extends DrushRebuild {
     if (!$pre_process->execute()) {
       return FALSE;
     }
-    $sql_sync = new SqlSync($this);
-    if (!$sql_sync->execute()) {
-      return FALSE;
+    // Run the site-install if defined.
+    if (isset($this->profile)) {
+      drush_print('site install');
+      $site_install = new SiteInstall($this);
+      if (!$site_install->execute()) {
+        return FALSE;
+      }
     }
-    $rsync = new Rsync($this);
-    if (!$rsync->execute()) {
-      return FALSE;
+    else {
+      // Otherwise use sql sync and rsync commands.
+      $sql_sync = new SqlSync($this);
+      if (!$sql_sync->execute()) {
+        return FALSE;
+      }
+      $rsync = new Rsync($this);
+      if (!$rsync->execute()) {
+        return FALSE;
+      }
     }
     $variable = new Variable($this);
     if (!$variable->set()) {

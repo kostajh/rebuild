@@ -11,6 +11,7 @@ require_once 'includes/rebuilder.class.php';
 require_once 'includes/diagnostics.class.php';
 
 // Helpers.
+require_once 'includes/site_install.inc';
 require_once 'includes/sql_sync.inc';
 require_once 'includes/rsync.inc';
 require_once 'includes/drush_script.inc';
