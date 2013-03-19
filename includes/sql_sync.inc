@@ -25,7 +25,7 @@ class SqlSync extends Rebuilder {
    */
   public function execute() {
     // Execute sql-sync.
-    if (!empty($this->rebuilder->remotes)) {
+    if (isset($this->rebuilder->target) && isset($this->rebuilder->source)) {
       drush_log('Beginning sql-sync', 'ok');
       $ret = drush_invoke_process($this->rebuilder->environment, 'sql-sync', array($this->rebuilder->source, $this->rebuilder->target), array_merge($this->rebuilder->sql_sync_options, array('quiet' => TRUE)));
       if ($ret['error_status'] == 0) {

@@ -13,13 +13,6 @@ description = "Rebuilds local development environment from remote destination"
 ; Optional - specify a version of your rebuild script
 version = 1.0
 ;
-; VALID REMOTES
-;
-; Define valid remotes for a rebuild. By default, any alias in the group will be
-; available.
-remotes[] = stage
-remotes[] = prod
-;
 ; DEFAULT SOURCE
 ;
 ; Define the default source for a sql-sync. Not valid for site-install rebuild.

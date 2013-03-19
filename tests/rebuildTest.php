@@ -118,9 +118,6 @@ description = "Rebuilds test Drush Rebuild local development environment from te
 ; Define what type of rebuild this is.
 ; Optional - specify a version of your rebuild script
 version = 1.0
-; Define valid remotes for a rebuild. By default, any alias in the group will be
-; available.
-remotes[] = prod
 ; Define options for database sync
 sql_sync[] = "create-db"
 sql_sync[sanitize] = "sanitize-email"

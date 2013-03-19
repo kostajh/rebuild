@@ -23,7 +23,6 @@ class Rebuilder extends DrushRebuild {
     $this->source = $drush_rebuild->source;
     $this->description = $drush_rebuild->manifest['description'];
     $this->version = $drush_rebuild->manifest['version'];
-    $this->remotes = isset($drush_rebuild->manifest['remotes']) ? $drush_rebuild->manifest['remotes'] : NULL;
     $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
     $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
     if ($this->manifest['site_install']) {
@@ -48,14 +47,13 @@ class Rebuilder extends DrushRebuild {
         }
       }
     }
-    if ($this->manifest['remotes']) {
-      if (isset($drush_rebuild->manifest['sql_sync'])) {
-        // @TODO - Add validation of options.
-        $this->sql_sync_options = $drush_rebuild->manifest['sql_sync'];
-      }
-      if (isset($this->manifest['rsync']['files_only'])) {
-        $this->rsync['files_only'] = $drush_rebuild->manifest['rsync']['files_only'];
-      }
+
+    if (isset($drush_rebuild->manifest['sql_sync'])) {
+      // @TODO - Add validation of options.
+      $this->sql_sync_options = $drush_rebuild->manifest['sql_sync'];
+    }
+    if (isset($this->manifest['rsync']['files_only'])) {
+      $this->rsync['files_only'] = $drush_rebuild->manifest['rsync']['files_only'];
     }
     if (isset($drush_rebuild->manifest['variables'])) {
       $this->variables = $drush_rebuild->manifest['variables'];
