@@ -8,3 +8,6 @@ php:
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq drush
+before_script:
+  - echo "sendmail_path='true'" >> `php --ini | grep "Loaded Configuration" | awk '{print $4}'`; export UNISH_DRUSH="${PWD}/drush" && cd tests
+script: phpunit $PHPUNIT_ARGS
