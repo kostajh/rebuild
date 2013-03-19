@@ -6,12 +6,6 @@
 ; Enter a description of what your rebuild file does.
 description = "Rebuilds local development environment from remote destination"
 ;
-; TYPE
-;
-; Define what type of rebuild this is.
-; Options are: install_profile, remote
-type = remote
-;
 ; VERSION
 ;
 ; Optional - specify a version of your rebuild script

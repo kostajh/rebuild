@@ -96,8 +96,6 @@ class RebuildTestCase extends Drush_CommandTestCase {
     return '
 description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
 ; Define what type of rebuild this is.
-; Options are: install_profile, remote
-type = remote
 ; Optional - specify a version of your rebuild script
 version = 1.0
 ; Define valid remotes for a rebuild. By default, any alias in the group will be

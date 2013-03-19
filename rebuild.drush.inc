@@ -130,7 +130,7 @@ function drush_rebuild($target = NULL) {
 
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
-  if ($rebuild_manifest['type'] == 'remote') {
+  if (!isset($rebuild_manifest['site_install'])) {
     $source = NULL;
     $source = drush_get_option('source');
     if (!$source) {

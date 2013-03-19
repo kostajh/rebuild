@@ -22,7 +22,6 @@ class Rebuilder extends DrushRebuild {
     $this->target = $drush_rebuild->target;
     $this->source = $drush_rebuild->source;
     $this->description = $drush_rebuild->manifest['description'];
-    $this->type = $drush_rebuild->manifest['type'];
     $this->version = $drush_rebuild->manifest['version'];
     $this->remotes = isset($drush_rebuild->manifest['remotes']) ? $drush_rebuild->manifest['remotes'] : NULL;
     $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
