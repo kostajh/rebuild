@@ -1,62 +1,36 @@
 ## Drush Rebuild
 
-`Drush Rebuild` is a Drush extension that facilitates rebuilding local development
-environments.
+Drush Rebuild is a utility for rebuilding your local development environments,
+using your existing Drush aliases and an easy-to-read `rebuild.info` file that
+defines the tasks for rebuilding your local environment.
 
 ## Installation
 
-Type `drush dl rebuild`, and Drush Rebuild should download to `~/.drush/rebuild`.
+Drush Rebuild is simple to install and configure:
 
-Type `drush help rebuild` for an overview of available options.
+  - Type `drush dl rebuild`, and Drush Rebuild will be installed in `~/.drush/rebuild`
+  - Edit the Drush alias for the site you want to work on and specify a path to a rebuild manifest
+  - Copy the example manifest file from `~/.drush/rebuild/examples` to the location you specified in #2.
+  - Rebuild your local development environment! `drush rebuild @example.local --source=@example.prod`
 
-Type `drush topic rebuild-readme` for usage and `drush topic rebuild-example` for an example.
+## Need help?
 
-## Usage
+Check out the [handbook page](https://drupal.org/node/1946954) for more
+information.
 
-Drush Rebuild relies on Drush aliases. Your Drush alias must have an entry under
-`path-aliases` for the path to your `rebuild.info` file.
+## Commands
 
-Any additional values can be defined in a `rebuild` array in your alias.
+  - `drush rebuild @example.local --source=@example.prod` - Rebuild the environment at `@example.local` using the source `@example.prod`
+  - `drush rebuild @example.local --view-manifest` - View the manifest for rebuilding `@example.local`. Does not execute any tasks.
+  - `drush rebuild-info @example.local` - Displays statistics on rebuilds for `@example.local`
 
-For example:
+### Help
 
-	<?php
+  - `drush help rebuild` - Get an overview of available commands and options.
+  - `drush topic rebuild-readme` - Displays the README
+  - `drush topic rebuild-example` - Displays an example rebuild script.
 
-	$aliases['local'] = array(
-	  'root' => '/path/to/site',
-	  'path-aliases' => array(
-  	  '%rebuild' => '/path/to/rebuild.info',
-	  ),
-	  'rebuild' => array(
-    	'email' => 'you@youremail.com', // Useful for setting an email with Reroute Email module
-	  ),
-	);
+## Credits
 
-	?>
-
-As an extension, Drush Rebuild doesn't make many assumptions about your development workflow
-(i.e. Drush Make, entire codebase is in the Git repo, symlinks setup from a repo
-to another directory, etc), nor does it care about extra steps you need to take
-when configuring a development environment, like disabling caching, adjusting
-connections with 3rd party services, and so on. All of that should be defined in
-`rebuild.info`, and any pre-process or post-process scripts executed by your
-custom `rebuild.info` file.
-
-This means that you can create rebuild task scripts for your different sites, yet
-have a single mechanism to trigger a rebuild. So your themer or site builder
-doesn't have to know about `drush rsync` or `drush sql-sync`, they can just run
-the rebuild command and have a working local development environment.
-
-## Creating your own rebuild.info file
-
-`examples/example.rebuild.info` is a helpful example of how to set up a file.
-
-## Example usage
-
-`drush rebuild @mysite.local --source=@mysite.prod`
-
-## Meta-data
-
-Drush Rebuild stores information about each site in a drush cache file in the
-`rebuild` bin. Each alias gets its own cache ID in the bin. This is used to
-display some statistics during a rebuild process.
+- Kosta Harlan ([@kostajh](https://drupal.org/user/209141))
+- Development sponsored by [DesignHammer Media Group](http://designhammer.com)
