@@ -9,8 +9,8 @@ defines the tasks for rebuilding your local environment.
 Drush Rebuild is simple to install and configure:
 
   - Type `drush dl rebuild`, and Drush Rebuild will be installed in `~/.drush/rebuild`
-  - Edit the Drush alias for the site you want to work on and specify a path to a rebuild manifest
-  - Copy the example manifest file from `~/.drush/rebuild/examples` to the location you specified in #2.
+  - Edit the Drush alias for the site you want to work on and specify a path to a rebuild config
+  - Copy the example config file from `~/.drush/rebuild/examples` to the location you specified in #2.
   - Rebuild your local development environment! `drush rebuild @example.local --source=@example.prod`
 
 ## Need help?
@@ -21,7 +21,7 @@ information.
 ## Commands
 
   - `drush rebuild @example.local --source=@example.prod` - Rebuild the environment at `@example.local` using the source `@example.prod`
-  - `drush rebuild @example.local --view-manifest` - View the manifest for rebuilding `@example.local`. Does not execute any tasks.
+  - `drush rebuild @example.local --view-config` - View the config for rebuilding `@example.local`. Does not execute any tasks.
   - `drush rebuild-info @example.local` - Displays statistics on rebuilds for `@example.local`
 
 ### Help

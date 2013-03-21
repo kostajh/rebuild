@@ -68,18 +68,18 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
-   * Returns an array of the manifest contents.
+   * Returns an array of the config contents.
    */
-  protected function loadManifest() {
-    $manifest = $this->getManifest();
-    return parse_ini_string($manifest);
+  protected function loadConfig() {
+    $config = $this->getConfig();
+    return parse_ini_string($config);
   }
 
   /**
    * Get the overrides.
    *
    * @return string
-   *   Return a rebuild overrides manifest.
+   *   Return a rebuild overrides config.
    */
   protected function getOverrides() {
     return 'variables[site_slogan] = RebuildMe
@@ -87,12 +87,12 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
-   * Get the site install manifest.
+   * Get the site install config.
    *
    * @return string
-   *   Return a rebuild manifest for a site install.
+   *   Return a rebuild config for a site install.
    */
-  protected function getSiteInstallManifest() {
+  protected function getSiteInstallConfig() {
     return '
 description = "Rebuilds the "minimal" install profile and installs some modules"
 version = 1.0
@@ -107,12 +107,12 @@ variables[reroute_email_address] = %email
   }
 
   /**
-   * Get the test manifest.
+   * Get the test config.
    *
    * @return string
-   *   Return a rebuild info file manifest.
+   *   Return a rebuild info file config.
    */
-  protected function getManifest() {
+  protected function getConfig() {
     return '
 description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
 ; Define what type of rebuild this is.
@@ -144,11 +144,11 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
   }
 
   /**
-   * Copy the manifest to the working dir.
+   * Copy the config to the working dir.
    */
-  protected function copyManifest() {
+  protected function copyConfig() {
     touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getManifest());
+    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getConfig());
   }
 
   /**
@@ -216,7 +216,7 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     $this->prepareWorkingDir();
     $this->copyAliases();
     // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info.
-    $this->copyManifest();
+    $this->copyConfig();
     // Copy overrides file to /tmp/drush_rebuild/local.rebuild.info
     $this->copyOverrides();
 
@@ -272,13 +272,13 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
   }
 
   /**
-   * Tests the view manifest option.
+   * Tests the view config option.
    */
-  public function testViewManifest() {
+  public function testViewConfig() {
     $this->drush('rebuild', array('@drebuild.dev'), array(
       'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
       'alias-path' => '/tmp/drush_rebuild',
-      'view-manifest' => TRUE,
+      'view-config' => TRUE,
       )
     );
     $this->assertContains('Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination', $this->getOutput());
@@ -289,7 +289,7 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
    */
   public function testSiteInstall() {
     touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getSiteInstallManifest());
+    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getSiteInstallConfig());
     // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(

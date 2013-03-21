@@ -44,13 +44,13 @@ function rebuild_drush_command() {
         'description' => 'The drush alias to use as the source for the rebuild.',
         'example_value' => '@mysite.local',
       ),
-      'view-manifest' => 'View the rebuild manifest.',
+      'view-config' => 'View the rebuild config.',
       'backup' => 'Backup the local dev environment before rebuilding.',
     ),
     'aliases' => array('rb'),
     'examples' => array(
       'drush rebuild @mysite.dev --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
-      'drush rebuild @mysite.dev --view-manifest' => 'View the manifest for rebuilding @mysite.dev. Does not execute any tasks.',
+      'drush rebuild @mysite.dev --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
       'drush rebuild @mysite.dev --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -114,8 +114,8 @@ function drush_rebuild($target = NULL) {
   }
 
   // Check if we are only viewing the script.
-  if (drush_get_option('view-manifest')) {
-    return $drush_rebuild->viewManifest();
+  if (drush_get_option('view-config')) {
+    return $drush_rebuild->viewConfig();
   }
 
   // Check requirements.
@@ -123,20 +123,20 @@ function drush_rebuild($target = NULL) {
     return drush_set_error(dt('Requirements check failed for !target', array('!target' => $target)));
   }
 
-  // Load the rebuild manifest.
-  $rebuild_manifest = $drush_rebuild->loadManifest();
-  if (!$rebuild_manifest) {
+  // Load the rebuild config.
+  $rebuild_config = $drush_rebuild->loadConfig();
+  if (!$rebuild_config) {
     return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $target)));
   }
 
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
-  if (!isset($rebuild_manifest['site_install'])) {
+  if (!isset($rebuild_config['site_install'])) {
     $source = NULL;
     $source = drush_get_option('source');
     if (!$source) {
-      // Check if there is a default source specified in the manifest.
-      $source = isset($rebuild_manifest['default_source']) ? $rebuild_manifest['default_source'] : NULL;
+      // Check if there is a default source specified in the config.
+      $source = isset($rebuild_config['default_source']) ? $rebuild_config['default_source'] : NULL;
     }
     if ($source && $drush_rebuild->isValidSource($source)) {
       $drush_rebuild->source = $source;

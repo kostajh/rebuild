@@ -18,16 +18,16 @@ class Rebuilder extends DrushRebuild {
    */
   public function __construct(DrushRebuild $drush_rebuild) {
     $this->environment = $drush_rebuild->environment;
-    $this->manifest = $drush_rebuild->manifest;
+    $this->config = $drush_rebuild->config;
     $this->target = $drush_rebuild->target;
     $this->source = $drush_rebuild->source;
-    $this->description = $drush_rebuild->manifest['description'];
-    $this->version = $drush_rebuild->manifest['version'];
-    $this->pre_process = isset($drush_rebuild->manifest['pre_process']) ? $drush_rebuild->manifest['pre_process'] : NULL;
-    $this->post_process = isset($drush_rebuild->manifest['post_process']) ? $drush_rebuild->manifest['post_process'] : NULL;
-    if ($this->manifest['site_install']) {
-      $this->profile = $this->manifest['site_install']['profile'];
-      $this->site_install_options = $this->manifest['site_install'];
+    $this->description = $drush_rebuild->config['description'];
+    $this->version = $drush_rebuild->config['version'];
+    $this->pre_process = isset($drush_rebuild->config['pre_process']) ? $drush_rebuild->config['pre_process'] : NULL;
+    $this->post_process = isset($drush_rebuild->config['post_process']) ? $drush_rebuild->config['post_process'] : NULL;
+    if ($this->config['site_install']) {
+      $this->profile = $this->config['site_install']['profile'];
+      $this->site_install_options = $this->config['site_install'];
       // Unset the profile from the options group.
       unset($this->site_install_options[$this->profile]);
       // Swap placeholder values.
@@ -48,24 +48,24 @@ class Rebuilder extends DrushRebuild {
       }
     }
 
-    if (isset($drush_rebuild->manifest['sql_sync'])) {
+    if (isset($drush_rebuild->config['sql_sync'])) {
       // @TODO - Add validation of options.
-      $this->sql_sync_options = $drush_rebuild->manifest['sql_sync'];
+      $this->sql_sync_options = $drush_rebuild->config['sql_sync'];
     }
-    if (isset($this->manifest['rsync']['files_only'])) {
-      $this->rsync['files_only'] = $drush_rebuild->manifest['rsync']['files_only'];
+    if (isset($this->config['rsync']['files_only'])) {
+      $this->rsync['files_only'] = $drush_rebuild->config['rsync']['files_only'];
     }
-    if (isset($drush_rebuild->manifest['variables'])) {
-      $this->variables = $drush_rebuild->manifest['variables'];
+    if (isset($drush_rebuild->config['variables'])) {
+      $this->variables = $drush_rebuild->config['variables'];
     }
-    if (isset($drush_rebuild->manifest['uli'])) {
-      $this->uli = $drush_rebuild->manifest['uli'];
+    if (isset($drush_rebuild->config['uli'])) {
+      $this->uli = $drush_rebuild->config['uli'];
     }
-    if (isset($drush_rebuild->manifest['modules_enable'])) {
-      $this->modules_enable = $drush_rebuild->manifest['modules_enable'];
+    if (isset($drush_rebuild->config['modules_enable'])) {
+      $this->modules_enable = $drush_rebuild->config['modules_enable'];
     }
-    if (isset($drush_rebuild->manifest['modules_disable'])) {
-      $this->modules_disable = $drush_rebuild->manifest['modules_disable'];
+    if (isset($drush_rebuild->config['modules_disable'])) {
+      $this->modules_disable = $drush_rebuild->config['modules_disable'];
     }
   }
 

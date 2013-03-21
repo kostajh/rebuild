@@ -19,8 +19,8 @@ class Diagnostics extends DrushRebuild {
     if (isset($drush_rebuild->source)) {
       $this->source = $drush_rebuild->source;
     }
-    if (isset($drush_rebuild->manifest)) {
-      $this->manifest = $drush_rebuild->manifest;
+    if (isset($drush_rebuild->config)) {
+      $this->config = $drush_rebuild->config;
     }
   }
 
@@ -49,12 +49,12 @@ class Diagnostics extends DrushRebuild {
   }
 
   /**
-   * Ensure that the options provided in the loaded manifest are valid.
+   * Ensure that the options provided in the loaded config are valid.
    *
    * @return array
    *   TRUE if valid, array of invalid keys otherwise.
    */
-  public function validateManifest() {
+  public function validateConfig() {
 
   }
 
