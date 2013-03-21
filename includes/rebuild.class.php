@@ -77,6 +77,10 @@ class DrushRebuild {
    *   The Drush environment array for the provided alias name.
    */
   public function loadEnvironment($target) {
+    // If we are just loading the version, return.
+    if (drush_get_option('version')) {
+      return;
+    }
     if (!$target) {
       // Enforce the syntax. `drush rebuild @target --source=@source`.
       return drush_set_error(dt('You must specify a drush alias with the rebuild command.'));
