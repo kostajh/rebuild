@@ -4,6 +4,8 @@ php:
 before_install:
 - pear channel-discover pear.drush.org
 - pear install drush/drush-5.0.0
+- which drush
+- ls -la /usr/share/php/drush
 env:
   - DRUSH_DIRNAME=dirname -- `which drush`
-script: phpunit --bootstrap="$DRUSH_DIRNAME/tests/drush_testcase.inc"
+script: phpunit --bootstrap=/usr/share/php/drush/tests/drush_testcase.inc"
