@@ -3,9 +3,14 @@ php:
   - 5.3
 before_install:
 - pear channel-discover pear.drush.org
-- pear install drush/drush-5.0.0
-- which drush
-- ls -la /usr/share/php/drush
-env:
-  - DRUSH_DIRNAME=dirname -- `which drush`
-script: phpunit --bootstrap=/usr/share/php/drush/tests/drush_testcase.inc"
+- pear install drush/drush-5.8.0
+- phpenv rehash
+- mkdir /home/travis/.drush
+- cd ..
+- mv rebuild /home/travis/.drush/
+- wget http://ftp.drupal.org/files/projects/drush-7.x-5.8.tar.gz
+- tar -zxvf drush-7.x-5.8.tar.gz
+- mv drush /home/travis/
+before_script:
+- cd /home/travis/.drush/rebuild/tests
+script: phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php

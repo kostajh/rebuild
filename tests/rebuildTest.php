@@ -20,6 +20,21 @@
 class RebuildTestCase extends Drush_CommandTestCase {
 
   /**
+   * Gets the current users home directory.
+   */
+  protected function getHomeDir() {
+    $info = posix_getpwuid(getmyuid());
+    return $info['dir'];
+  }
+
+  /**
+   * Get the test directory.
+   */
+  protected function getTestsDir() {
+    return $this->getHomeDir() . '/.drush/drush_rebuild_tests';
+  }
+
+  /**
    * Get a predefined set of aliases for our tests.
    *
    * @return array
@@ -28,18 +43,18 @@ class RebuildTestCase extends Drush_CommandTestCase {
   protected function getAliases() {
     return array(
       'dev' => array(
-        'root' => '/tmp/drush_rebuild/dev',
+        'root' => $this->getTestsDir() . '/dev',
         'uri' => 'http://dev.drush.rebuild',
         'db-url' => 'mysql://root@localhost/drebuild_dev',
         'path-aliases' => array(
-          '%rebuild' => '/tmp/drush_rebuild/rebuild.info',
+          '%rebuild' => $this->getTestsDir() . '/rebuild.info',
         ),
         'rebuild' => array(
           'email' => 'me@example.com',
         ),
       ),
       'prod' => array(
-        'root' => '/tmp/drush_rebuild/prod',
+        'root' => $this->getTestsDir() . '/prod',
         'uri' => 'http://prod.drush.rebuild',
         'db-url' => 'mysql://root@localhost/drebuild_prod',
         'rebuild' => array(
@@ -53,18 +68,18 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Prepare the working directory for our tests.
    */
   protected function prepareWorkingDir() {
-    if (file_exists('/tmp/drush_rebuild')) {
-      unish_file_delete_recursive('/tmp/drush_rebuild');
+    if (file_exists($this->getHomeDir() . '/.drush/drush_rebuild_tests')) {
+      unish_file_delete_recursive($this->getHomeDir() . '/.drush/drush_rebuild_tests');
     }
-    mkdir('/tmp/drush_rebuild');
+    mkdir($this->getHomeDir() . '/.drush/drush_rebuild_tests');
   }
 
   /**
    * Copy the predefined aliases into the working directory.
    */
   protected function copyAliases() {
-    touch('/tmp/drush_rebuild/drebuild.aliases.drushrc.php');
-    file_put_contents('/tmp/drush_rebuild/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
+    touch($this->getTestsDir() . '/drebuild.aliases.drushrc.php');
+    file_put_contents($this->getTestsDir() . '/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
   }
 
   /**
@@ -139,7 +154,7 @@ modules_enable[] = syslog
 ; Modules to disable
 modules_disable[] = overlay
 ; Overrides
-overrides = /tmp/drush_rebuild/local.rebuild.info
+overrides = ' . $this->getTestsDir() . '/local.rebuild.info
 ';
   }
 
@@ -147,16 +162,16 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
    * Copy the config to the working dir.
    */
   protected function copyConfig() {
-    touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getConfig());
+    touch($this->getTestsDir() . '/rebuild.info');
+    file_put_contents($this->getTestsDir() . '/rebuild.info', $this->getConfig());
   }
 
   /**
    * Copy the overrides to the working dir.
    */
   protected function copyOverrides() {
-    touch('/tmp/drush_rebuild/local.rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/local.rebuild.info', $this->getOverrides());
+    touch($this->getTestsDir() . '/local.rebuild.info');
+    file_put_contents($this->getTestsDir() . '/local.rebuild.info', $this->getOverrides());
   }
 
   /**
@@ -165,25 +180,25 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
   protected function installTestSites() {
     $options = array(
       'site-name' => 'Prod',
-      'alias-path' => '/tmp/drush_rebuild',
+      'alias-path' => $this->getTestsDir(),
       'yes' => TRUE,
     );
-    if (!file_exists('/tmp/drush_rebuild/prod')) {
-      mkdir('/tmp/drush_rebuild/prod');
+    if (!file_exists($this->getTestsDir() . '/prod')) {
+      mkdir($this->getTestsDir() . '/prod');
     }
     else {
-      unish_file_delete_recursive('/tmp/drush_rebuild/prod');
+      unish_file_delete_recursive($this->getTestsDir() . '/prod');
     }
-    if (!file_exists('/tmp/drush_rebuild/dev')) {
-      mkdir('/tmp/drush_rebuild/dev');
+    if (!file_exists($this->getTestsDir() . '/dev')) {
+      mkdir($this->getTestsDir() . '/dev');
     }
     else {
-      unish_file_delete_recursive('/tmp/drush_rebuild/dev');
+      unish_file_delete_recursive($this->getTestsDir() . '/dev');
     }
     // Install prod site.
     $this->drush('dl', array('drupal'), array(
       'drupal-project-rename' => 'prod',
-      'destination' => '/tmp/drush_rebuild',
+      'destination' => $this->getTestsDir(),
       'cache' => TRUE,
       'yes' => TRUE)
     );
@@ -192,7 +207,7 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     // Install dev site.
     $this->drush('dl', array('drupal'), array(
       'drupal-project-rename' => 'dev',
-      'destination' => '/tmp/drush_rebuild',
+      'destination' => $this->getTestsDir(),
       'cache' => TRUE,
       'yes' => TRUE)
     );
@@ -200,12 +215,12 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     $this->drush('site-install', array('minimal'), $options, '@drebuild.dev');
     $this->log('Installed dev site');
     // Check that the name was set.
-    $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
+    $this->drush('variable-get', array('site_name'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
     $this->assertEquals('"Dev"', $this->getOutput());
-    $this->drush('variable-get', array('site_name'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.prod');
+    $this->drush('variable-get', array('site_name'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.prod');
     $this->assertEquals('"Prod"', $this->getOutput());
     // Add a file to sites/default/files in @prod
-    touch('/tmp/drush_rebuild/prod/sites/default/files/hello.world');
+    touch($this->getTestsDir() . '/prod/sites/default/files/hello.world');
   }
 
   /**
@@ -215,20 +230,20 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     // Make an alias for the dev/prod sites.
     $this->prepareWorkingDir();
     $this->copyAliases();
-    // Copy test rebuild file to /tmp/drush_rebuild/rebuild.info.
+    // Copy test rebuild file.
     $this->copyConfig();
-    // Copy overrides file to /tmp/drush_rebuild/local.rebuild.info
+    // Copy overrides file.
     $this->copyOverrides();
 
-    // @todo Copy test scripts to /tmp/drush_rebuild/.
+    // @todo Copy test scripts.
     // Install Drupal on Prod with site name "Drush Rebuild Prod".
     $this->installTestSites();
 
     // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(
-        'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
-        'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE,
+        'include' => $this->getHomeDir() . '/.drush/rebuild',
+        'alias-path' => $this->getTestsDir(), 'debug' => TRUE,
         'source' => '@drebuild.prod',
         'yes' => TRUE,
       )
@@ -237,7 +252,7 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     // If site name for Dev is now Prod, the rebuild succeeded.
     $this->drush('variable-get', array('site_name'),
       array(
-        'alias-path' => '/tmp/drush_rebuild',
+        'alias-path' => $this->getTestsDir(),
         'format' => 'json',
       ),
       '@drebuild.dev'
@@ -247,7 +262,7 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     // Test that the reroute email address was set based on the alias value.
     $this->drush('variable-get', array('reroute_email_address'),
       array(
-        'alias-path' => '/tmp/drush_rebuild',
+        'alias-path' => $this->getTestsDir(),
         'format' => 'json',
       ),
       '@drebuild.dev'
@@ -257,18 +272,18 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
     $this->assertEquals('"' . $rebuild_email . '"', $this->getOutput());
 
     // Check if our overrides were set.
-    $this->drush('variable-get', array('site_slogan'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
+    $this->drush('variable-get', array('site_slogan'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
     $this->assertEquals('"RebuildMe"', $this->getOutput());
 
     // Test that emails were sanitized during sql-sync.
     $this->drush('uinf', array('1'), array(
-      'alias-path' => '/tmp/drush_rebuild',
+      'alias-path' => $this->getTestsDir(),
       ),
       '@drebuild.dev'
     );
     $this->assertContains('user+1@localhost', $this->getOutput());
     // Check that hello.world file was rsynced from @prod
-    $this->assertFileExists('/tmp/drush_rebuild/dev/sites/default/files/hello.world');
+    $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
   }
 
   /**
@@ -276,8 +291,8 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
    */
   public function testViewConfig() {
     $this->drush('rebuild', array('@drebuild.dev'), array(
-      'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
-      'alias-path' => '/tmp/drush_rebuild',
+      'include' => $this->getHomeDir() . '/.drush/rebuild',
+      'alias-path' => $this->getTestsDir(),
       'view-config' => TRUE,
       )
     );
@@ -288,19 +303,19 @@ overrides = /tmp/drush_rebuild/local.rebuild.info
    * Tests the site install rebuild.
    */
   public function testSiteInstall() {
-    touch('/tmp/drush_rebuild/rebuild.info');
-    file_put_contents('/tmp/drush_rebuild/rebuild.info', $this->getSiteInstallConfig());
+    touch($this->getTestsDir() . '/rebuild.info');
+    file_put_contents($this->getTestsDir() . '/rebuild.info', $this->getSiteInstallConfig());
     // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(
-        'include' => "/Users/" . get_current_user() . '/.drush/rebuild',
-        'alias-path' => '/tmp/drush_rebuild', 'debug' => TRUE,
+        'include' => $this->getHomeDir() . '/.drush/rebuild',
+        'alias-path' => $this->getTestsDir(), 'debug' => TRUE,
         'source' => '@drebuild.prod',
         'yes' => TRUE,
       )
     );
-    // Check if the install succeeded
-    $this->drush('variable-get', array('install_profile'), array('alias-path' => '/tmp/drush_rebuild', 'format' => 'json'), '@drebuild.dev');
+    // Check if the install succeeded.
+    $this->drush('variable-get', array('install_profile'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
     $this->assertEquals('"minimal"', $this->getOutput());
   }
 
