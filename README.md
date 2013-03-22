@@ -34,5 +34,6 @@ information.
 
 ## Credits
 
-- Kosta Harlan ([@kostajh](https://drupal.org/user/209141))
+- Kosta Harlan ([@kostajh](https://drupal.org/user/209141)) [development]
+- Jay Roberts ([@GloryFish](https://drupal.org/user/281675)) [qa testing]
 - Development sponsored by [DesignHammer Media Group](http://designhammer.com)
