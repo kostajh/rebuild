@@ -4,13 +4,17 @@ php:
 before_install:
 - pear channel-discover pear.drush.org
 - pear install drush/drush-5.8.0
+- pear install pear/PHP_CodeSniffer
 - phpenv rehash
-- mkdir /home/travis/.drush
+- drush dl coder --destination=/home/travis/.drush
+- drush cache-clear drush
 - cd ..
 - mv rebuild /home/travis/.drush/
 - wget http://ftp.drupal.org/files/projects/drush-7.x-5.8.tar.gz
 - tar -zxvf drush-7.x-5.8.tar.gz
 - mv drush /home/travis/
 before_script:
-- cd /home/travis/.drush/rebuild/tests
-script: phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php
+- cd /home/travis/.drush/rebuild
+script:
+- drush drupalcs .
+- phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php
