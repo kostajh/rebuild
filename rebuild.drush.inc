@@ -179,8 +179,8 @@ function drush_rebuild($target = NULL) {
       $drush_rebuild->updateMetadata($total_rebuild_time);
       drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
         array(
-          '!min' => date("i", $total_rebuild_time),
-          '!sec' => date("s", $total_rebuild_time))
+          '!min' => gmdate("i", $total_rebuild_time),
+          '!sec' => gmdate("s", $total_rebuild_time))
           ),
         'ok'
       );

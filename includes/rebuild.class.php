@@ -250,8 +250,8 @@ class DrushRebuild {
     drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).\n!source",
         array(
           '!name' => $data->cid, '!date' => date(DATE_RFC822, $data->data['last_rebuild']),
-          '!min' => date('i', $average_time),
-          '!sec' => date('s', $average_time),
+          '!min' => gmdate('i', $average_time),
+          '!sec' => gmdate('s', $average_time),
           '!count' => count($data->data['rebuild_times']),
           '!source' => isset($data->source) ? '- Source for current rebuild: ' . $data->source : NULL,
         )),
