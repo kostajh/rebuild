@@ -123,8 +123,8 @@ class DrushRebuild {
     if (file_exists($rebuild_config_directory . $rebuild_config['overrides'])) {
       return $rebuild_config_directory . $rebuild_config['overrides'];
     }
-    // Return false if other checks have failed.
-    return drush_set_error(dt('Could not load the overrides file at path !path', array('!path' => $rebuild_config['overrides'])));
+    // Could not find the file, return FALSE.
+    return FALSE;
   }
 
   /**
@@ -134,38 +134,40 @@ class DrushRebuild {
    *   The rebuild config, loaded as an array.
    */
   protected function setConfigOverrides(&$rebuild_config) {
-    if ($rebuild_config_overrides = parse_ini_file($this->getConfigOverridesPath())) {
-      drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
-      foreach ($rebuild_config_overrides as $key => $override) {
-        if (is_array($override)) {
-          foreach ($override as $k => $v) {
-            $rebuild_config[$key][$k] = $v;
-            $this->config[$key][$k] = $v;
-            drush_log(dt('- Overriding !parent[!key] with value !override', array(
-              '!parent' => $key,
-              '!key' => $k,
-              '!override' => $v,
+    if ($overrides_path = $this->getConfigOverridesPath()) {
+      if ($rebuild_config_overrides = parse_ini_file($overrides_path)) {
+        drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
+        foreach ($rebuild_config_overrides as $key => $override) {
+          if (is_array($override)) {
+            foreach ($override as $k => $v) {
+              $rebuild_config[$key][$k] = $v;
+              $this->config[$key][$k] = $v;
+              drush_log(dt('- Overriding !parent[!key] with value !override', array(
+                '!parent' => $key,
+                '!key' => $k,
+                '!override' => $v,
+                  )
+                ), 'success'
+              );
+            }
+          }
+          else {
+            $this->config[$key] = $override;
+            $rebuild_config[$key] = $override;
+            drush_log(dt('- Overriding "!key" with value !override', array(
+                '!key' => $key,
+                '!override' => $override,
                 )
               ), 'success'
             );
           }
-        }
-        else {
-          $this->config[$key] = $override;
-          $rebuild_config[$key] = $override;
-          drush_log(dt('- Overriding "!key" with value !override', array(
-              '!key' => $key,
-              '!override' => $override,
-              )
-            ), 'success'
-          );
-        }
 
+        }
+        drush_print();
       }
-      drush_print();
-    }
-    else {
-      return drush_set_error(dt('Failed to load overrides file.'));
+      else {
+        return drush_set_error(dt('Failed to load overrides file. Check that it is valid INI format.'));
+      }
     }
   }
 
