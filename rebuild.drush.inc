@@ -127,6 +127,7 @@ function drush_rebuild_create($template = NULL) {
     case 'remote':
       $filename = 'example.rebuild.info';
       break;
+
     case 'site-install':
       $filename = 'example.site_install.rebuild.info';
       break;
@@ -136,7 +137,8 @@ function drush_rebuild_create($template = NULL) {
   if ($ret) {
     drush_log(dt('Successfully created a rebuild.info file for you in !path', array('!path' => $current_dir . '/rebuild.info')), 'success');
     return TRUE;
-  } else {
+  }
+  else {
     return drush_set_error(dt('Failed to create the rebuild.info file for you.'));
   }
 }
