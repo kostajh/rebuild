@@ -62,6 +62,7 @@ function rebuild_drush_command() {
     'arguments' => array(
       'template' => 'The template to use for creating a rebuild file. Options are "remote" or "site-install".',
     ),
+    'callback' => 'drush_rebuild_create',
   );
 
   $items['rebuild-readme'] = array(
@@ -115,7 +116,7 @@ function drush_rebuild_info($target = NULL) {
  * @return bool
  *   TRUE if successful, FALSE otherwise.
  */
-function drush_rebuild_init($template = NULL) {
+function drush_rebuild_create($template = NULL) {
   $template_options = array('remote', 'site-install');
   if (!$template || !in_array($template, $template_options)) {
     return drush_set_error('You must use the "remote" or "site-install" template with this command.');
