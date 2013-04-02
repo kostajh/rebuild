@@ -56,6 +56,14 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['rebuild-init'] = array(
+    'description' => 'Create a rebuild file from a template',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'arguments' => array(
+      'template' => 'The template to use for creating a rebuild file. Options are "remote" or "site-install".',
+    ),
+  );
+
   $items['rebuild-readme'] = array(
     'description' => 'Drush Rebuild README',
     'hidden' => TRUE,
@@ -96,6 +104,40 @@ function rebuild_drush_command() {
 function drush_rebuild_info($target = NULL) {
   $drush_rebuild = new DrushRebuild($target);
   return $drush_rebuild->getInfo($target);
+}
+
+/**
+ * Create a rebuild file from a template.
+ *
+ * @param string $template
+ *   The template to use.
+ *
+ * @return bool
+ *   TRUE if successful, FALSE otherwise.
+ */
+function drush_rebuild_init($template = NULL) {
+  $template_options = array('remote', 'site-install');
+  if (!$template || !in_array($template, $template_options)) {
+    return drush_set_error('You must use the "remote" or "site-install" template with this command.');
+  }
+  $rebuild_dir = drush_server_home() . '/.drush/rebuild';
+  $filename = '';
+  switch ($template) {
+    case 'remote':
+      $filename = 'example.rebuild.info';
+      break;
+    case 'site-install':
+      $filename = 'example.site_install.rebuild.info';
+      break;
+  }
+  $current_dir = drush_cwd();
+  $ret = copy($rebuild_dir . '/examples/' . $filename, $current_dir . '/rebuild.info');
+  if ($ret) {
+    drush_log(dt('Successfully created a rebuild.info file for you in !path', array('!path' => $current_dir . '/rebuild.info')), 'success');
+    return TRUE;
+  } else {
+    return drush_set_error(dt('Failed to create the rebuild.info file for you.'));
+  }
 }
 
 /**
