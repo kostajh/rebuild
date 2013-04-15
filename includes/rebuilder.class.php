@@ -86,7 +86,6 @@ class Rebuilder extends DrushRebuild {
     }
     // Run the site-install if defined.
     if (isset($this->profile)) {
-      drush_print('site install');
       $site_install = new SiteInstall($this);
       if (!$site_install->execute()) {
         return FALSE;

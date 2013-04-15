@@ -24,7 +24,6 @@ class Variable extends Rebuilder {
    * Set the variables.
    */
   public function set() {
-    // Execute sql-sync.
     $variables = $this->rebuilder->variables;
     if (is_array($variables)) {
       drush_log('Setting variables', 'ok');
@@ -41,9 +40,9 @@ class Variable extends Rebuilder {
           }
         }
 
-        $ret = drush_invoke_process($this->rebuilder->environment, 'variable-set', array($key, $value), array('quiet' => TRUE));
+        $ret = drush_invoke_process($this->rebuilder->environment, 'variable-set', array($key, $value), array(), array('quiet' => TRUE, 'integrate' => FALSE));
         if ($ret['error_status'] == 0) {
-          drush_log(dt('Setting variable !var to !value', array('!var' => $key, '!value' => $value)));
+          drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
         }
         else {
           return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));

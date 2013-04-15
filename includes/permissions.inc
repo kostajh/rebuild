@@ -60,7 +60,7 @@ class Permissions extends Rebuilder {
         array('quiet' => TRUE)
       );
       if ($ret['error_status'] == 0) {
-        drush_log(dt('Granted permission "!permission" (!module) to role "!role"',
+        drush_log(dt('- Granted permission "!permission" (!module) to role "!role"',
           array(
             '!permission' => $permission,
             '!module' => $module,
@@ -122,7 +122,7 @@ class Permissions extends Rebuilder {
         array('quiet' => TRUE)
       );
       if ($ret['error_status'] == 0) {
-        drush_log(dt('Revoked permission "!permission" (!module) from role "!role"',
+        drush_log(dt('- Revoked permission "!permission" (!module) from role "!role"',
           array(
             '!permission' => $permission,
             '!module' => $module,
