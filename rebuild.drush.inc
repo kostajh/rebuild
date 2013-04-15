@@ -156,7 +156,7 @@ function drush_rebuild($target = NULL) {
 
   // Output version information and return.
   if (drush_get_option('version')) {
-    return $drush_rebuild->getVersion();
+    return drush_print(dt("Drush Rebuild version: !version", array('!version' => $drush_rebuild->getVersion())));
   }
 
   // Check if we are only viewing the script.

@@ -64,7 +64,7 @@ class DrushRebuild {
     $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
     $drush_rebuild_info = parse_ini_file($drush_info_file);
     define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['drush_rebuild_version']);
-    drush_print(dt("Drush Rebuild version: !version", array('!version' => DRUSH_REBUILD_VERSION)));
+    return DRUSH_REBUILD_VERSION;
   }
 
   /**
@@ -201,7 +201,7 @@ class DrushRebuild {
         drush_log(dt('- Description: !desc', array('!desc' => $rebuild_config['description'])), 'ok');
       }
       if (isset($rebuild_config['version'])) {
-        drush_log(dt('- Version: !version', array('!version' => $rebuild_config['version'])), 'ok');
+        drush_log(dt('- Config Version: !version', array('!version' => $rebuild_config['version'])), 'ok');
       }
       drush_print();
       // Set overrides.
