@@ -18,6 +18,7 @@ require_once 'includes/drush_script.inc';
 require_once 'includes/modules.inc';
 require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
+require_once 'includes/permissions.inc';
 
 /**
  * Implements hook_drush_help().

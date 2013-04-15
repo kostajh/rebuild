@@ -67,6 +67,12 @@ class Rebuilder extends DrushRebuild {
     if (isset($drush_rebuild->config['modules_disable'])) {
       $this->modules_disable = $drush_rebuild->config['modules_disable'];
     }
+    if (isset($drush_rebuild->config['permissions_grant'])) {
+      $this->permissions_grant = $drush_rebuild->config['permissions_grant'];
+    }
+    if (isset($drush_rebuild->config['permissions_revoke'])) {
+      $this->permissions_revoke = $drush_rebuild->config['permissions_revoke'];
+    }
   }
 
   /**
@@ -106,6 +112,13 @@ class Rebuilder extends DrushRebuild {
       return FALSE;
     }
     if (!$modules->execute('disable')) {
+      return FALSE;
+    }
+    $permissions = new Permissions($this);
+    if (!$permissions->execute('grant')) {
+      return FALSE;
+    }
+    if (!$permissions->execute('revoke')) {
       return FALSE;
     }
     $post_process = new DrushScript($this, 'pre_process');

@@ -142,7 +142,7 @@ class DrushRebuild {
             foreach ($override as $k => $v) {
               $rebuild_config[$key][$k] = $v;
               $this->config[$key][$k] = $v;
-              drush_log(dt('- Overriding !parent[!key] with value !override', array(
+              drush_log(dt('- Overriding "!parent[!key]" with value "!override"', array(
                 '!parent' => $key,
                 '!key' => $k,
                 '!override' => $v,
@@ -154,7 +154,7 @@ class DrushRebuild {
           else {
             $this->config[$key] = $override;
             $rebuild_config[$key] = $override;
-            drush_log(dt('- Overriding "!key" with value !override', array(
+            drush_log(dt('- Overriding "!key" with value "!override"', array(
                 '!key' => $key,
                 '!override' => $override,
                 )
@@ -248,7 +248,6 @@ class DrushRebuild {
     }
     // Display time of last rebuild and average time for rebuilding site.
     $average_time = array_sum($data->data['rebuild_times']) / count($data->data['rebuild_times']);
-    drush_print();
     drush_log(dt("Rebuild info for !name:\n- Environment was last rebuilt on !date.\n- Average time for a rebuild is !min minutes and !sec seconds.\n- Environment has been rebuilt !count time(s).\n!source",
         array(
           '!name' => $data->cid, '!date' => date(DATE_RFC822, $data->data['last_rebuild']),
@@ -301,8 +300,7 @@ class DrushRebuild {
     if ($source == $this->target) {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
-    drush_log('Checking if source alias is valid', 'ok');
-    $alias_name = drush_invoke_process($this->environment, 'site-alias', array($source), array('short' => TRUE));
+    $alias_name = drush_invoke_process($this->environment, 'site-alias', array($source), array('short' => TRUE), array('integrate' => FALSE));
     if (empty($alias_name['output'])) {
       return drush_set_error(dt('Could not load an alias for !source.', array('!source' => $source)));
     }

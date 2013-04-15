@@ -55,6 +55,16 @@ modules_enable[] = devel_node_access
 ; Modules to disable
 modules_disable[] = overlay
 ;
+; PERMISSIONS
+;
+; Specify permissions that should be granted in the rebuilt environment.
+; Permissions should be defined with the role as the key and the permissions to
+; grant/revoke as the value, with multiple values separated by a comma.
+;
+permissions_grant['anonymous user'] = "access devel information, switch users"
+; You can also revoke permissions
+permissions_revoke['anonymous user'] = "access content"
+;
 ; DRUSH SCRIPTS
 ;
 ; Specify any PHP scripts that should be executed during the rebuild process.
