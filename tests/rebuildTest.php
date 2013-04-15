@@ -153,6 +153,10 @@ uli = 0
 modules_enable[] = syslog
 ; Modules to disable
 modules_disable[] = overlay
+; Permissions to grant
+permissions_grant["anonymous user"] = "access site in maintenance mode, access administration pages"
+; Permissions to revoke
+permissions_revoke["administrator"] = "administer comments"
 ; Overrides
 overrides = ' . $this->getTestsDir() . '/local.rebuild.info
 ';
@@ -284,6 +288,27 @@ overrides = ' . $this->getTestsDir() . '/local.rebuild.info
     $this->assertContains('user+1@localhost', $this->getOutput());
     // Check that hello.world file was rsynced from @prod
     $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
+
+    // Test permissions grant.
+    $this->drush('sql-query', array(
+      'SELECT rid FROM role_permission WHERE rid = 1 AND permission = "access site in maintenance mode"',
+      ),
+      array(
+        'alias-path' => $this->getTestsDir(),
+      ),
+      '@drebuild.dev'
+    );
+    $this->assertContains('1', $this->getOutput());
+    // Test permissions revoke.
+    $this->drush('sql-query', array(
+      'SELECT rid FROM role_permission WHERE rid = 3 AND permission = "administer comments"',
+      ),
+      array(
+        'alias-path' => $this->getTestsDir(),
+      ),
+      '@drebuild.dev'
+    );
+    $this->assertEmpty($this->getOutput());
   }
 
   /**
