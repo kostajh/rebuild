@@ -164,10 +164,14 @@ class DrushRebuild {
 
         }
         drush_print();
+        return TRUE;
       }
       else {
         return drush_set_error(dt('Failed to load overrides file! Check that it is valid INI format.'));
       }
+    }
+    else {
+      return drush_set_error(dt('Could not load the overrides file.'));
     }
   }
 
@@ -216,6 +220,7 @@ class DrushRebuild {
     else {
       return drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
     }
+    return TRUE;
   }
 
   /**

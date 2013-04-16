@@ -171,7 +171,7 @@ function drush_rebuild($target = NULL) {
 
   // Load the rebuild config.
   $rebuild_config = $drush_rebuild->loadConfig();
-  if (!$rebuild_config) {
+  if ($rebuild_config === FALSE) {
     return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $target)));
   }
 
