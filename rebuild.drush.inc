@@ -172,7 +172,7 @@ function drush_rebuild($target = NULL) {
   // Load the rebuild config.
   $rebuild_config = $drush_rebuild->loadConfig();
   if (!$rebuild_config) {
-    return drush_set_error(dt('There was an error loading the info file for !site', array('!site' => $target)));
+    return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $target)));
   }
 
   // Load metadata.

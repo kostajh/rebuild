@@ -166,7 +166,7 @@ class DrushRebuild {
         drush_print();
       }
       else {
-        return drush_set_error(dt('Failed to load overrides file. Check that it is valid INI format.'));
+        return drush_set_error(dt('Failed to load overrides file! Check that it is valid INI format.'));
       }
     }
   }
@@ -206,7 +206,9 @@ class DrushRebuild {
       drush_print();
       // Set overrides.
       if (isset($rebuild_config['overrides'])) {
-        $this->setConfigOverrides($rebuild_config);
+        if (!$this->setConfigOverrides($rebuild_config)) {
+          return FALSE;
+        }
       }
       $this->config = $rebuild_config;
       return $rebuild_config;
