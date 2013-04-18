@@ -52,8 +52,11 @@ drupal:
 
   # Modules
   modules:
-    'enable': [devel, devel_node_access]
-    'disable': [overlay]
+    'enable':
+      - devel
+      - devel_node_access
+      - syslog
+    'disable': [overlay, comment]
     'uninstall': [comment]
 
   # Specify permissions that should be granted in the rebuilt environment.
