@@ -228,7 +228,8 @@ class DrushRebuild {
       $yaml = new Parser();
       try {
         $config = $yaml->parse(file_get_contents($rebuild_config_path));
-        // We need to make a few adjustments to the config.
+        // We need to make a few adjustments to the config to match the expected
+        // structure from parsing an INI file above.
         // @TODO this is quite ugly and should be refactored.
         $config['description'] = $config['general']['description'];
         $config['version'] = $config['general']['version'];
