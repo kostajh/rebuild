@@ -36,6 +36,7 @@ class Permissions extends Rebuilder {
    *   Return TRUE if successful, FALSE otherwise.
    */
   protected function grantPermission($role_name, $rid, $permission) {
+
     // Check if permission exists. If not, insert.
     $permission_exists = drush_invoke_process($this->rebuilder->environment,
       'sql-query',

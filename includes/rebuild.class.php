@@ -5,6 +5,9 @@
  * Contains methods for Drush Rebuild.
  */
 
+use Symfony\Component\Yaml\Parser;
+use Symfony\Component\Yaml\Exception\ParseException;
+
 /**
  * The main Drush Rebuild class.
  *
@@ -218,6 +221,49 @@ class DrushRebuild {
       return $rebuild_config;
     }
     else {
+      // Check if file is YAML format.
+      $yaml = new Parser();
+      try {
+        $config = $yaml->parse(file_get_contents($rebuild_config_path));
+        // We need to make a few adjustments to the config.
+        // @TODO this is quite ugly and should be refactored.
+        $config['description'] = $config['general']['description'];
+        $config['version'] = $config['general']['version'];
+        $config['uli'] = $config['general']['uli'];
+        $config['overrides'] = $config['general']['overrides'];
+        $config['pre_process'] = $config['drush_scripts']['pre_process'];
+        $config['post_process'] = $config['drush_scripts']['post_process'];
+        $config['variables'] = $config['drupal']['variables']['set'];
+        $config['modules_enable'] = $config['drupal']['modules']['enable'];
+        $config['modules_disable'] = $config['drupal']['modules']['disable'];
+        $config['permissions_grant'] = array();
+        $config['permissions_revoke'] = array();
+        if (isset($config['drupal']['permissions'])) {
+          foreach ($config['drupal']['permissions'] as $role => $permissions) {
+            if (isset($permissions['grant'])) {
+              $config['permissions_grant'][$role] = implode(", ", $permissions['grant']);
+            }
+            if (isset($permissions['revoke'])) {
+              $config['permissions_revoke'][$role] = implode(", ", $permissions['revoke']);
+            }
+          }
+        }
+        if (isset($config['sync'])) {
+          if (isset($config['sync']['default_source'])) {
+            $config['default_source'] = $config['sync']['default_source'];
+          }
+          if (isset($config['sync']['sql_sync'])) {
+            $config['sql_sync'] = $config['sync']['sql_sync'];
+          }
+          if (isset($config['sync']['rsync'])) {
+            $config['rsync'] = $config['sync']['rsync'];
+          }
+        }
+        $this->config = $config;
+        return $config;
+      } catch (ParseException $e) {
+        drush_set_error(dt("Unable to parse the YAML string: %s", array('%s' => $e->getMessage())));
+      }
       return drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
     }
     return TRUE;

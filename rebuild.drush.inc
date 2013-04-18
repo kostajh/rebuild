@@ -19,6 +19,11 @@ require_once 'includes/modules.inc';
 require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 require_once 'includes/permissions.inc';
+// Load composer's autoload.php if it exists.
+if (file_exists('vendor/autoload.php')) {
+  require_once 'vendor/autoload.php';
+}
+
 
 /**
  * Implements hook_drush_help().
