@@ -7,12 +7,15 @@ before_install:
 - pear install pear/PHP_CodeSniffer
 - phpenv rehash
 - drush dl coder --destination=/home/travis/.drush
+- drush dl composer-8.x-1.0-alpha5 --destination=/home/travis/.drush
 - drush cache-clear drush
 - cd ..
 - mv rebuild /home/travis/.drush/
 - wget http://ftp.drupal.org/files/projects/drush-7.x-5.8.tar.gz
 - tar -zxvf drush-7.x-5.8.tar.gz
 - mv drush /home/travis/
+- cd /home/travis/.drush/rebuild
+- drush composer install
 before_script:
 - cd /home/travis/.drush/rebuild
 script:
