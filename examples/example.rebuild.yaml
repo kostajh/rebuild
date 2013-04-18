@@ -7,7 +7,7 @@ general:
   # Optional - specify a version of your rebuild script
   version: 1.0
   # Specify if user should be logged in after running rebuild
-  uli: "TRUE"
+  uli: true
   # Overrides
   # Specify the name of the file that contains any rebuild overrides.
   # Provide the name of the file if it is in the same directory as rebuild.info,
