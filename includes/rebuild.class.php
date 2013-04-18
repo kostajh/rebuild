@@ -222,7 +222,7 @@ class DrushRebuild {
     }
     else {
       // Check if file is YAML format.
-      if (!file_exists('vendor/autoload.php')) {
+      if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/autoload.php')) {
         return drush_set_error(dt('Could not load the config file.'));
       }
       $yaml = new Parser();

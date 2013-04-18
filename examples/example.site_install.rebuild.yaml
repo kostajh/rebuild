@@ -1,4 +1,4 @@
-# Rebuild config - sql-sync and rsync example.
+# Rebuild config - Install profile example.
 
 # General options
 general:
@@ -45,12 +45,12 @@ drupal:
 
   # Modules
   modules:
-    'enable':
+    enable:
       - devel
       - devel_node_access
       - syslog
-    'disable': [overlay, comment]
-    'uninstall': [comment]
+    disable: [overlay, comment]
+    uninstall: [comment]
 
   # Specify permissions that should be granted in the rebuilt environment.
   permissions:

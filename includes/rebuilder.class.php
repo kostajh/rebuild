@@ -29,7 +29,7 @@ class Rebuilder extends DrushRebuild {
       $this->profile = $this->config['site_install']['profile'];
       $this->site_install_options = $this->config['site_install'];
       // Unset the profile from the options group.
-      unset($this->site_install_options[$this->profile]);
+      unset($this->site_install_options['profile']);
       // Swap placeholder values.
       foreach ($this->site_install_options as $key => &$value) {
         // If the value starts with "%" then we are referencing a variable
@@ -39,8 +39,6 @@ class Rebuilder extends DrushRebuild {
             $value = $this->environment['rebuild'][substr($value, 1)];
           }
           else {
-            drush_print($value);
-            drush_print($key);
             drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
             continue;
           }

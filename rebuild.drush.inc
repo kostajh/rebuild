@@ -68,6 +68,9 @@ function rebuild_drush_command() {
     'arguments' => array(
       'template' => 'The template to use for creating a rebuild file. Options are "remote" or "site-install".',
     ),
+    'options' => array(
+      'format' => 'The format to use for the template. Valid options are "ini" and "yaml".',
+    ),
     'callback' => 'drush_rebuild_create',
   );
 
@@ -106,6 +109,54 @@ function rebuild_drush_command() {
 }
 
 /**
+ * Install Drush Composer (https://drupal.org/project/composer).
+ */
+function _drush_rebuild_install_composer() {
+  drush_invoke_process('@self', 'dl', array('composer'), array('default-major' => '8', 'destination' => drush_server_home() . '/.drush/'), array('backend' => TRUE, 'integrate' => FALSE));
+}
+
+/**
+ * Install the Symfony YAML component using Drush Composer.
+ */
+function _drush_rebuild_install_yaml_component() {
+  drush_log('Installing the Symfony YAML component. Installing using Drush Composer...', 'ok');
+  drush_shell_cd_and_exec(drush_server_home() . '/.drush/rebuild', 'drush composer install');
+}
+
+/**
+ * Download Drush Composer and YAML component.
+ *
+ * @return bool
+ *   Return TRUE if successfull, FALSE otherwise.
+ */
+function drush_rebuild_composer_check() {
+  // Check if Drush Composer is installed
+  $info = drush_invoke_process('@self', 'composer', array(), array('backend' => TRUE, 'integrate' => FALSE, 'quiet' => TRUE));
+  if (isset($info['error_log'][DRUSH_COMMAND_NOT_FOUND])) {
+    if (drush_confirm('You must install Drush Composer and the Symfony YAML component. Would you like to have them installed for you?')) {
+      _drush_rebuild_install_composer();
+      if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
+        _drush_rebuild_install_yaml_component();
+      }
+    }
+    else {
+      return drush_set_error('Please install Drush Composer.');
+    }
+  }
+  else {
+    // Check if the YAML component has been installed.
+    if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
+      _drush_rebuild_install_yaml_component();
+    }
+    // Check again.
+    if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
+      return drush_set_error('Failed to install the Symfony YAML component.');
+    }
+  }
+  return TRUE;
+}
+
+/**
  * Display rebuild info for an alias.
  */
 function drush_rebuild_info($target = NULL) {
@@ -127,21 +178,31 @@ function drush_rebuild_create($template = NULL) {
   if (!$template || !in_array($template, $template_options)) {
     return drush_set_error('You must use the "remote" or "site-install" template with this command.');
   }
+  $format = drush_get_option('format');
+  if (!$format) {
+    $format = 'yaml';
+  }
+  $valid_formats = array('ini', 'yaml');
+  if (!in_array($format, $valid_formats)) {
+    return drush_set_error(dt('The format "%format" is not valid!.', array('%format' => $format)));
+  }
+  $config_filename = ($format == 'ini') ? 'rebuild.info' : 'rebuild.yaml';
+
   $rebuild_dir = drush_server_home() . '/.drush/rebuild';
   $filename = '';
   switch ($template) {
     case 'remote':
-      $filename = 'example.rebuild.info';
+      $filename = ($format == 'ini') ? 'example.rebuild.info' : 'example.rebuild.yaml';
       break;
 
     case 'site-install':
-      $filename = 'example.site_install.rebuild.info';
+      $filename = ($format == 'ini') ? 'example.site_install.rebuild.info' : 'example.site_install.rebuild.yaml';
       break;
   }
   $current_dir = drush_cwd();
-  $ret = copy($rebuild_dir . '/examples/' . $filename, $current_dir . '/rebuild.info');
+  $ret = copy($rebuild_dir . '/examples/' . $filename, $current_dir . '/' . $config_filename);
   if ($ret) {
-    drush_log(dt('Successfully created a rebuild.info file for you in !path', array('!path' => $current_dir . '/rebuild.info')), 'success');
+    drush_log(dt('Successfully created a rebuild.info file for you in !path', array('!path' => $current_dir . '/' . $config_filename)), 'success');
     return TRUE;
   }
   else {
@@ -156,6 +217,11 @@ function drush_rebuild_create($template = NULL) {
  *   The alias name for the environment to be rebuilt.
  */
 function drush_rebuild($target = NULL) {
+
+  // Check for Composer and YAML component.
+  if (drush_rebuild_composer_check()) {
+    require_once 'vendor/autoload.php';
+  }
 
   $drush_rebuild = new DrushRebuild($target);
 
