@@ -282,7 +282,6 @@ function drush_rebuild($target = NULL) {
     $backup_info = 'A backup of your current dev environment will be created.';
     $status = 'ok';
   }
-  drush_print();
   drush_log($backup_info, $status);
   drush_print();
 
