@@ -19,5 +19,7 @@ before_install:
 before_script:
 - cd /home/travis/.drush/rebuild
 script:
-- drush drupalcs . --ignore=vendor
+- drush drupalcs rebuild.drush.inc
+- drush drupalcs includes
+- drush drupalcs tests
 - phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php
