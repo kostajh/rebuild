@@ -242,7 +242,9 @@ overrides = ' . $this->getTestsDir() . '/local.rebuild.info
     // @todo Copy test scripts.
     // Install Drupal on Prod with site name "Drush Rebuild Prod".
     $this->installTestSites();
-
+    // Clear drush cache before running tests.
+    $this->drush('cc', array('drush'));
+    // @FIXME. The build fails because `drush composer` can't be found.
     // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(
