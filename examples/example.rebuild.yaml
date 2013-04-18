@@ -58,9 +58,9 @@ drupal:
 
   # Specify permissions that should be granted in the rebuilt environment.
   permissions:
-    'anonymous user':
-      grant: ['access devel information', 'switch users']
-      revoke: ['access content']
-    'authenticated user':
-      grant: ['access devel information']
-      revoke: ['search content']
+    anonymous user:
+      grant: ["access devel information", "switch users"]
+      revoke: ["access content"]
+    authenticated user:
+      grant: ["access devel information"]
+      revoke: ["search content"]
