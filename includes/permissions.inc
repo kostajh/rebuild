@@ -151,7 +151,7 @@ class Permissions extends Rebuilder {
   public function execute($op) {
     if ($op == 'grant') {
       // Grant permissions.
-      if (isset($this->rebuilder->permissions_grant) && is_array($this->rebuilder->permissions_grant)) {
+      if (isset($this->rebuilder->permissions_grant) && !empty($this->rebuilder->permissions_grant)) {
         drush_log('Granting permissions', 'ok');
 
         // Get the role ID for each role name.
@@ -191,7 +191,7 @@ class Permissions extends Rebuilder {
 
     if ($op == 'revoke') {
       // Revoke permissions.
-      if (isset($this->rebuilder->permissions_revoke) && is_array($this->rebuilder->permissions_revoke)) {
+      if (isset($this->rebuilder->permissions_revoke) && !empty($this->rebuilder->permissions_revoke)) {
         drush_log('Revoking permissions', 'ok');
         // Get the role ID for each role name.
         $role_names = array_keys($this->rebuilder->permissions_revoke);

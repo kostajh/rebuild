@@ -262,6 +262,18 @@ class DrushRebuild {
             $config['rsync'] = $config['sync']['rsync'];
           }
         }
+        drush_log(dt('Loading the rebuild config for !site', array('!site' => $this->target)), 'success');
+        drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
+        if (isset($config['description'])) {
+          drush_log(dt('- Description: !desc', array('!desc' => $config['description'])), 'ok');
+        }
+        if (isset($config['version'])) {
+          drush_log(dt('- Config Version: !version', array('!version' => $config['version'])), 'ok');
+        }
+        if (isset($config['general']['authors'])) {
+          drush_log(dt('- Author(s): !authors', array('!authors' => implode(",", $config['general']['authors']))), 'ok');
+        }
+        drush_print();
         $this->config = $config;
         return $config;
       }
