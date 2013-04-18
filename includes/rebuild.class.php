@@ -222,6 +222,9 @@ class DrushRebuild {
     }
     else {
       // Check if file is YAML format.
+      if (!class_exists('Parser')) {
+        return drush_set_error(dt('Could not load the config file.'));
+      }
       $yaml = new Parser();
       try {
         $config = $yaml->parse(file_get_contents($rebuild_config_path));
