@@ -130,8 +130,15 @@ function _drush_rebuild_install_yaml_component() {
  *   Return TRUE if successfull, FALSE otherwise.
  */
 function drush_rebuild_composer_check() {
-  // Check if Drush Composer is installed
-  $info = drush_invoke_process('@self', 'composer', array(), array('backend' => TRUE, 'integrate' => FALSE, 'quiet' => TRUE));
+  // Check if Drush Composer is installed.
+  $info = drush_invoke_process('@self', 'composer', array(),
+    array(
+      'backend' => TRUE,
+      'integrate' => FALSE,
+      'quiet' => TRUE,
+    )
+  );
+
   if (isset($info['error_log'][DRUSH_COMMAND_NOT_FOUND])) {
     if (drush_confirm('You must install Drush Composer and the Symfony YAML component. Would you like to have them installed for you?')) {
       _drush_rebuild_install_composer();

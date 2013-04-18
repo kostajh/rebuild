@@ -264,7 +264,8 @@ class DrushRebuild {
         }
         $this->config = $config;
         return $config;
-      } catch (ParseException $e) {
+      }
+      catch (ParseException $e) {
         drush_set_error(dt("Unable to parse the YAML string: %s", array('%s' => $e->getMessage())));
       }
       return drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
