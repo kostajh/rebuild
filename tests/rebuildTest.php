@@ -244,7 +244,7 @@ overrides = ' . $this->getTestsDir() . '/local.rebuild.info
     $this->drush('dl composer-8.x-1.0-alpha5', array(),
       array('destination' => UNISH_SANDBOX, 'yes' => TRUE));
     $this->drush('cc', array('drush'));
-    // Install Symfony YAML component
+    // Install Symfony YAML component.
     $this->drush('composer', array('install'),
       array(
         'yes' => TRUE,

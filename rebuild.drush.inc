@@ -136,7 +136,7 @@ function _drush_rebuild_install_yaml_component() {
 function _drush_rebuild_composer_check() {
   // Check if the yaml dir is found and return TRUE if so.
   if (file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
-      return TRUE;
+    return TRUE;
   }
   // Check if Drush Composer is installed.
   $info = drush_invoke_process('@self', 'composer', array(),
