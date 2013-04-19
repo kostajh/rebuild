@@ -222,6 +222,10 @@ class DrushRebuild {
     }
     else {
       // Check if file is YAML format.
+      // Check for Composer and YAML component.
+      if (_drush_rebuild_composer_check()) {
+        require_once drush_server_home() . '/.drush/rebuild/vendor/autoload.php';
+      }
       if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/autoload.php')) {
         return drush_set_error(dt('Could not load the config file.'));
       }

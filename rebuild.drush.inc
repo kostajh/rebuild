@@ -233,11 +233,6 @@ function drush_rebuild_create($template = NULL) {
  */
 function drush_rebuild($target = NULL) {
 
-  // Check for Composer and YAML component.
-  if (_drush_rebuild_composer_check()) {
-    require_once 'vendor/autoload.php';
-  }
-
   $drush_rebuild = new DrushRebuild($target);
 
   // Output version information and return.
