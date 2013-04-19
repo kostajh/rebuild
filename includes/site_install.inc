@@ -32,7 +32,7 @@ class SiteInstall extends Rebuilder {
         return TRUE;
       }
       else {
-        return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
+        return drush_set_error(dt('An error occurred. %error %log', array('%error' => print_r($ret['error_log'], TRUE), '%log' => print_r($ret['output'], TRUE))));
       }
     }
     return TRUE;
