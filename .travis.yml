@@ -20,5 +20,5 @@ script:
 - drush drupalcs rebuild.drush.inc
 - drush drupalcs includes
 - drush drupalcs tests
-- drush composer install
+- drush composer install --prefer-source
 - phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php
