@@ -113,6 +113,7 @@ function rebuild_drush_command() {
  */
 function _drush_rebuild_install_composer() {
   drush_invoke_process('@self', 'dl', array('composer'), array('default-major' => '8', 'destination' => drush_server_home() . '/.drush/'), array('backend' => TRUE, 'integrate' => FALSE));
+  drush_invoke_process('@self', 'cc', array('drush'), array(), array('backend' => TRUE, 'integrate' => FALSE));
 }
 
 /**
@@ -120,7 +121,10 @@ function _drush_rebuild_install_composer() {
  */
 function _drush_rebuild_install_yaml_component() {
   drush_log('Installing the Symfony YAML component. Installing using Drush Composer...', 'ok');
-  drush_shell_cd_and_exec(drush_server_home() . '/.drush/rebuild', 'drush composer install');
+  $cwd = getcwd();
+  drush_shell_exec('cd ' . drush_server_home() . '/.drush/rebuild');
+  $ret = drush_invoke_process('@self', 'composer', array('install'), array(), array('backend' => TRUE, 'integrate' => FALSE));
+  drush_shell_exec("cd " . $cwd);
 }
 
 /**
@@ -143,7 +147,7 @@ function _drush_rebuild_composer_check() {
     )
   );
 
-  if (isset($info['error_log'][DRUSH_COMMAND_NOT_FOUND])) {
+  if (isset($info['error_log'])) {
     if (drush_confirm('You must install Drush Composer and the Symfony YAML component. Would you like to have them installed for you?')) {
       _drush_rebuild_install_composer();
       if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
