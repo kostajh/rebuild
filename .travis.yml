@@ -14,12 +14,11 @@ before_install:
 - wget http://ftp.drupal.org/files/projects/drush-7.x-5.8.tar.gz
 - tar -zxvf drush-7.x-5.8.tar.gz
 - mv drush /home/travis/
-- cd /home/travis/.drush/rebuild
-- drush composer install
 before_script:
 - cd /home/travis/.drush/rebuild
 script:
 - drush drupalcs rebuild.drush.inc
 - drush drupalcs includes
 - drush drupalcs tests
+- drush composer install
 - phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php

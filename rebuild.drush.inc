@@ -129,7 +129,11 @@ function _drush_rebuild_install_yaml_component() {
  * @return bool
  *   Return TRUE if successfull, FALSE otherwise.
  */
-function drush_rebuild_composer_check() {
+function _drush_rebuild_composer_check() {
+  // Check if the yaml dir is found and return TRUE if so.
+  if (file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
+      return TRUE;
+  }
   // Check if Drush Composer is installed.
   $info = drush_invoke_process('@self', 'composer', array(),
     array(
@@ -226,7 +230,7 @@ function drush_rebuild_create($template = NULL) {
 function drush_rebuild($target = NULL) {
 
   // Check for Composer and YAML component.
-  if (drush_rebuild_composer_check()) {
+  if (_drush_rebuild_composer_check()) {
     require_once 'vendor/autoload.php';
   }
 
