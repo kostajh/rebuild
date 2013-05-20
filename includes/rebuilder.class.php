@@ -118,7 +118,7 @@ class Rebuilder extends DrushRebuild {
     if (!$permissions->execute('revoke')) {
       return FALSE;
     }
-    $post_process = new DrushScript($this, 'pre_process');
+    $post_process = new DrushScript($this, 'post_process');
     if (!$post_process->execute($this, 'post_process')) {
       return FALSE;
     }
