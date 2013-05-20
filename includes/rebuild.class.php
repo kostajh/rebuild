@@ -199,87 +199,65 @@ class DrushRebuild {
     // Check if the file exists.
     $rebuild_config_path = $this->environment['path-aliases']['%rebuild'];
     if (!file_exists($rebuild_config_path)) {
-      return drush_set_error(dt('Could not load rebuild.info file at !path', array('!path' => $rebuild_config_path)));
+      return drush_set_error(dt('Could not load the config file at !path', array('!path' => $rebuild_config_path)));
     }
-    if ($rebuild_config = parse_ini_file($rebuild_config_path)) {
-      $this->config = $rebuild_config;
+
+    // Check if file is YAML format.
+    $yaml = new Parser();
+    try {
+      $config = $yaml->parse(file_get_contents($rebuild_config_path));
+      // We need to make a few adjustments to the config to match the expected
+      // structure from parsing an INI file above.
+      // @TODO this is quite ugly and should be refactored.
+      $config['description'] = $config['general']['description'];
+      $config['version'] = $config['general']['version'];
+      $config['uli'] = $config['general']['uli'];
+      $config['overrides'] = $config['general']['overrides'];
+      $config['pre_process'] = $config['drush_scripts']['pre_process'];
+      $config['post_process'] = $config['drush_scripts']['post_process'];
+      $config['variables'] = $config['drupal']['variables']['set'];
+      $config['modules_enable'] = $config['drupal']['modules']['enable'];
+      $config['modules_disable'] = $config['drupal']['modules']['disable'];
+      $config['permissions_grant'] = array();
+      $config['permissions_revoke'] = array();
+      if (isset($config['drupal']['permissions'])) {
+        foreach ($config['drupal']['permissions'] as $role => $permissions) {
+          if (isset($permissions['grant'])) {
+            $config['permissions_grant'][$role] = implode(", ", $permissions['grant']);
+          }
+          if (isset($permissions['revoke'])) {
+            $config['permissions_revoke'][$role] = implode(", ", $permissions['revoke']);
+          }
+        }
+      }
+      if (isset($config['sync'])) {
+        if (isset($config['sync']['default_source'])) {
+          $config['default_source'] = $config['sync']['default_source'];
+        }
+        if (isset($config['sync']['sql_sync'])) {
+          $config['sql_sync'] = $config['sync']['sql_sync'];
+        }
+        if (isset($config['sync']['rsync'])) {
+          $config['rsync'] = $config['sync']['rsync'];
+        }
+      }
       drush_log(dt('Loading the rebuild config for !site', array('!site' => $this->target)), 'success');
       drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
-      if (isset($rebuild_config['description'])) {
-        drush_log(dt('- Description: !desc', array('!desc' => $rebuild_config['description'])), 'ok');
+      if (isset($config['description'])) {
+        drush_log(dt('- Description: !desc', array('!desc' => $config['description'])), 'ok');
       }
-      if (isset($rebuild_config['version'])) {
-        drush_log(dt('- Config Version: !version', array('!version' => $rebuild_config['version'])), 'ok');
+      if (isset($config['version'])) {
+        drush_log(dt('- Config Version: !version', array('!version' => $config['version'])), 'ok');
+      }
+      if (isset($config['general']['authors'])) {
+        drush_log(dt('- Author(s): !authors', array('!authors' => implode(",", $config['general']['authors']))), 'ok');
       }
       drush_print();
-      // Set overrides.
-      if (isset($rebuild_config['overrides'])) {
-        if (!$this->setConfigOverrides($rebuild_config)) {
-          return FALSE;
-        }
-      }
-      $this->config = $rebuild_config;
-      return $rebuild_config;
+      $this->config = $config;
+      return $config;
     }
-    else {
-      // Check if file is YAML format.
-      $yaml = new Parser();
-      try {
-        $config = $yaml->parse(file_get_contents($rebuild_config_path));
-        // We need to make a few adjustments to the config to match the expected
-        // structure from parsing an INI file above.
-        // @TODO this is quite ugly and should be refactored.
-        $config['description'] = $config['general']['description'];
-        $config['version'] = $config['general']['version'];
-        $config['uli'] = $config['general']['uli'];
-        $config['overrides'] = $config['general']['overrides'];
-        $config['pre_process'] = $config['drush_scripts']['pre_process'];
-        $config['post_process'] = $config['drush_scripts']['post_process'];
-        $config['variables'] = $config['drupal']['variables']['set'];
-        $config['modules_enable'] = $config['drupal']['modules']['enable'];
-        $config['modules_disable'] = $config['drupal']['modules']['disable'];
-        $config['permissions_grant'] = array();
-        $config['permissions_revoke'] = array();
-        if (isset($config['drupal']['permissions'])) {
-          foreach ($config['drupal']['permissions'] as $role => $permissions) {
-            if (isset($permissions['grant'])) {
-              $config['permissions_grant'][$role] = implode(", ", $permissions['grant']);
-            }
-            if (isset($permissions['revoke'])) {
-              $config['permissions_revoke'][$role] = implode(", ", $permissions['revoke']);
-            }
-          }
-        }
-        if (isset($config['sync'])) {
-          if (isset($config['sync']['default_source'])) {
-            $config['default_source'] = $config['sync']['default_source'];
-          }
-          if (isset($config['sync']['sql_sync'])) {
-            $config['sql_sync'] = $config['sync']['sql_sync'];
-          }
-          if (isset($config['sync']['rsync'])) {
-            $config['rsync'] = $config['sync']['rsync'];
-          }
-        }
-        drush_log(dt('Loading the rebuild config for !site', array('!site' => $this->target)), 'success');
-        drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
-        if (isset($config['description'])) {
-          drush_log(dt('- Description: !desc', array('!desc' => $config['description'])), 'ok');
-        }
-        if (isset($config['version'])) {
-          drush_log(dt('- Config Version: !version', array('!version' => $config['version'])), 'ok');
-        }
-        if (isset($config['general']['authors'])) {
-          drush_log(dt('- Author(s): !authors', array('!authors' => implode(",", $config['general']['authors']))), 'ok');
-        }
-        drush_print();
-        $this->config = $config;
-        return $config;
-      }
-      catch (ParseException $e) {
-        drush_set_error(dt("Unable to parse the YAML string: %s", array('%s' => $e->getMessage())));
-      }
-      return drush_set_error(dt('Could not load the info file. Make sure your rebuild.info file is valid INI format.'));
+    catch (ParseException $e) {
+      drush_set_error(dt("Unable to parse the YAML string: %s", array('%s' => $e->getMessage())));
     }
     return TRUE;
   }
