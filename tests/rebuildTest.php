@@ -47,7 +47,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
         'uri' => 'http://dev.drush.rebuild',
         'db-url' => 'mysql://root@localhost/drebuild_dev',
         'path-aliases' => array(
-          '%rebuild' => $this->getTestsDir() . '/rebuild.info',
+          '%rebuild' => $this->getTestsDir() . '/rebuild.yaml',
         ),
         'rebuild' => array(
           'email' => 'me@example.com',
@@ -110,15 +110,20 @@ class RebuildTestCase extends Drush_CommandTestCase {
    */
   protected function getSiteInstallConfig() {
     return '
-description = "Rebuilds the "minimal" install profile and installs some modules"
-version = 1.0
-site_install[profile] = minimal
-site_install[account-mail] = %email
-site_install[account-name] = SuperAdmin
-site_install[site-name] = Local Install
-variables[preprocess_js] = 0
-variables[preprocess_css] = 0
-variables[reroute_email_address] = %email
+general:
+  description: "Rebuilds the minimal install profile and installs some modules"
+  version = 1.0
+site_install:
+  profile: "minimal"
+  account-mail: %email
+  account-name: SuperAdmin
+  site-name: Local Install
+drupal:
+  variables:
+    set:
+      preprocess_js: 0
+      preprocess_css: 0
+      reroute_email_address: %email
 ';
   }
 
@@ -130,36 +135,36 @@ variables[reroute_email_address] = %email
    */
   protected function getConfig() {
     return '
-description = "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
-; Define what type of rebuild this is.
-; Optional - specify a version of your rebuild script
-version = 1.0
-; Define options for database sync
-sql_sync[] = "create-db"
-sql_sync[sanitize] = "sanitize-email"
-sql_sync[structure-tables-key] = "common"
-; Define options for file sync
-rsync[files_only] = TRUE
-; rsync[exclude] = .htaccess
-; Define variables to be set
-variables[preprocess_js] = 0
-variables[preprocess_css] = 0
-variables[site_slogan] = HelloWorld
-; Note that %email will load the variable specified in your drush alias
-; under array("rebuild" => "email")
-variables[reroute_email_address] = %email
-; Specify if user should be logged in after running rebuild
-uli = 0
-; Modules to enable
-modules_enable[] = syslog
-; Modules to disable
-modules_disable[] = overlay
-; Permissions to grant
-permissions_grant["anonymous user"] = "access site in maintenance mode, access administration pages"
-; Permissions to revoke
-permissions_revoke["administrator"] = "administer comments"
-; Overrides
-overrides = ' . $this->getTestsDir() . '/local.rebuild.info
+    general:
+      description:  "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
+      version: 1.0
+      overrides = ' . $this->getTestsDir() . '/local.rebuild.yaml
+    sync:
+      sql_sync:
+        create-db: "TRUE"
+        sanitize: "sanitize-email"
+        structure-tables-key: "common"
+      rsync:
+        files_only: "TRUE"
+    drupal:
+      variables:
+        set:
+          preprocess_css: 0
+          preprocess_js: 0
+          site_slogan: HelloWorld
+          reroute_email_address: %email
+      uli: 0
+      modules:
+        enable:
+          - syslog
+        disable:
+          - overlay
+
+      permissions:
+        anonymous user:
+          grant: ["access site in maintenance mode, access administration pages"]
+        administrator:
+          revoke: ["administer comments"]
 ';
   }
 
@@ -167,16 +172,16 @@ overrides = ' . $this->getTestsDir() . '/local.rebuild.info
    * Copy the config to the working dir.
    */
   protected function copyConfig() {
-    touch($this->getTestsDir() . '/rebuild.info');
-    file_put_contents($this->getTestsDir() . '/rebuild.info', $this->getConfig());
+    touch($this->getTestsDir() . '/rebuild.yaml');
+    file_put_contents($this->getTestsDir() . '/rebuild.yaml', $this->getConfig());
   }
 
   /**
    * Copy the overrides to the working dir.
    */
   protected function copyOverrides() {
-    touch($this->getTestsDir() . '/local.rebuild.info');
-    file_put_contents($this->getTestsDir() . '/local.rebuild.info', $this->getOverrides());
+    touch($this->getTestsDir() . '/local.rebuild.yaml');
+    file_put_contents($this->getTestsDir() . '/local.rebuild.yaml', $this->getOverrides());
   }
 
   /**
@@ -342,8 +347,8 @@ overrides = ' . $this->getTestsDir() . '/local.rebuild.info
    * Tests the site install rebuild.
    */
   public function testSiteInstall() {
-    touch($this->getTestsDir() . '/rebuild.info');
-    file_put_contents($this->getTestsDir() . '/rebuild.info', $this->getSiteInstallConfig());
+    touch($this->getTestsDir() . '/rebuild.yaml');
+    file_put_contents($this->getTestsDir() . '/rebuild.yaml', $this->getSiteInstallConfig());
     // Run the rebuild.
     $this->drush('rebuild', array('@drebuild.dev'),
       array(
