@@ -6,6 +6,7 @@
  */
 
 use Symfony\Component\Yaml\Parser;
+use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
@@ -400,6 +401,93 @@ class DrushRebuild {
         drush_die();
       }
     }
+    // Prompt to convert INI file to YAML.
+    if ($config = $diagnostics->isIni()) {
+      if (drush_confirm('Your rebuild config file is written in the PHP INI format. Drush Rebuild now uses YAML for its configuration. Do you want me to convert your config file to YAML?')) {
+        // Convert file.
+        if ($this->convertIniToYaml($config)) {
+          return TRUE;
+        }
+        else {
+          return drush_set_error("An automated attempt to convert your config file to YAML failed.");
+        }
+      }
+      else {
+        return drush_set_error('You must convert your config file to YAML format to continue.');
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * Convert an INI config file to YAML.
+   *
+   * @return bool
+   *   Returns TRUE if successful, FALSE otherwise.
+   */
+  public function convertIniToYaml($config) {
+    $dumper = new Dumper();
+    // General section.
+    $yaml = array();
+    if (isset($config['description'])) {
+      $yaml['general']['description'] = $config['description'];
+    }
+    if (isset($config['version'])) {
+      $yaml['general']['version'] = $config['version'];
+    }
+    if (isset($config['uli'])) {
+      $yaml['general']['uli'] = $config['uli'];
+    }
+    if (isset($config['overrides'])) {
+      $yaml['general']['overrides'] = $config['overrides'];
+    }
+    if (isset($config['pre_process'])) {
+      $yaml['general']['drush_scripts']['pre_process'] = $config['pre_process'];
+    }
+    if (isset($config['post_process'])) {
+      $yaml['general']['drush_scripts']['post_process'] = $config['post_process'];
+    }
+    // Sync options.
+    if (isset($config['sql_sync'])) {
+      $yaml['sync']['sql_sync'] = $config['sql_sync'];
+    }
+    if (isset($config['rsync'])) {
+      $yaml['sync']['rsync'] = $config['rsync'];
+    }
+    if (isset($config['default_source'])) {
+      $yaml['sync']['default_source'] = $config['default_source'];
+    }
+    // Site Install options.
+    if (isset($config['site_install'])) {
+      $yaml['site_insttall'] = $config['site_install'];
+    }
+    // Drupal settings.
+    $yaml['drupal'] = array();
+    if (isset($config['variables'])) {
+      $yaml['drupal']['variables']['set'] = $config['variables'];
+    }
+    if (isset($config['modules_enable'])) {
+      $yaml['drupal']['modules']['enable'] = $config['modules_enable'];
+    }
+    if (isset($config['modules_disable'])) {
+      $yaml['drupal']['modules']['disable'] = $config['modules_disable'];
+    }
+    // Permissions.
+    if (isset($config['permissions_grant'])) {
+      foreach ($config['permissions_grant'] as $role => $permission_string) {
+        $yaml['drupal']['permissions'][$role]['grant'] = $permission_string;
+      }
+    }
+    if (isset($config['permissions_revoke'])) {
+      foreach ($config['permissions_revoke'] as $role => $permission_string) {
+        $yaml['drupal']['permissions'][$role]['revoke'] = $permission_string;
+      }
+    }
+    // Write to YAML.
+    $yaml_config = $dumper->dump($yaml, 5);
+    // Overwrite old file.
+    file_put_contents($this->environment['path-aliases']['%rebuild'], $yaml_config);
+    // FIXME: Add error handling.
     return TRUE;
   }
 
