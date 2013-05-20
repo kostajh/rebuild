@@ -116,13 +116,14 @@ function drush_rebuild_init() {
   if (!class_exists('Symfony\Component\Yaml\Parser')) {
     // Attempt to install the YAML component.
     drush_log('Could not find the Symfony YAML component. Attempting to install it for you...', 'warning');
-    drush_shell_exec("curl -sS https://getcomposer.org/installer | php");
-    if (!file_exists('composer.phar')) {
+    $drush_rebuild = drush_server_home() . '/.drush/rebuild';
+    drush_shell_cd_and_exec($drush_rebuild, "curl -sS https://getcomposer.org/installer | php");
+    if (!file_exists($drush_rebuild . '/composer.phar')) {
       return drush_set_error('Failed to download Composer. Please consult the README.');
     }
-    drush_shell_exec("php composer.phar install");
-    if (file_exists('vendor/autoload.php')) {
-      require_once 'vendor/autoload.php';
+    drush_shell_cd_and_exec($drush_rebuild, "php composer.phar install");
+    if (file_exists($drush_rebuild . '/vendor/autoload.php')) {
+      require_once $drush_rebuild . '/vendor/autoload.php';
     }
     if (!class_exists('Symfony\Component\Yaml\Parser')) {
       return drush_set_error('An automated attempt at downloading the Symfony YAML component failed. Please consult the README.');
