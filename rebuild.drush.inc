@@ -206,7 +206,11 @@ function drush_rebuild($target = NULL) {
   if (drush_get_option('view-config')) {
     return $drush_rebuild->viewConfig();
   }
-
+  // Return if no target was specified. Error is handled in constructor for
+  // DrushRebuild.
+  if (!$target) {
+    return;
+  }
   // Check requirements.
   if (!$drush_rebuild->checkRequirements()) {
     return drush_set_error(dt('Requirements check failed for !target', array('!target' => $target)));
