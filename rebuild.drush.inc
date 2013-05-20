@@ -109,6 +109,28 @@ function rebuild_drush_command() {
 }
 
 /**
+ * Implements hook_init().
+ */
+function drush_rebuild_init() {
+  // Check for YAML component.
+  if (!class_exists('Symfony\Component\Yaml\Parser')) {
+    // Attempt to install the YAML component.
+    drush_log('Could not find the Symfony YAML component. Attempting to install it for you...', 'warning');
+    drush_shell_exec("curl -sS https://getcomposer.org/installer | php");
+    if (!file_exists('composer.phar')) {
+      return drush_set_error('Failed to download Composer. Please consult the README.');
+    }
+    drush_shell_exec("php composer.phar install");
+    if (file_exists('vendor/autoload.php')) {
+      require_once 'vendor/autoload.php';
+    }
+    if (!class_exists('Symfony\Component\Yaml\Parser')) {
+      return drush_set_error('An automated attempt at downloading the Symfony YAML component failed. Please consult the README.');
+    }
+  }
+}
+
+/**
  * Install Drush Composer (https://drupal.org/project/composer).
  */
 function _drush_rebuild_install_composer() {
