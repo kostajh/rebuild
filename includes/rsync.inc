@@ -32,7 +32,7 @@ class Rsync extends Rebuilder {
         array(
           $this->rebuilder->source . ':%files', $this->rebuilder->target . ':%files',
         ),
-        array('quiet' => TRUE, 'verbose' => TRUE, 'yes' => TRUE)
+        array('quiet' => TRUE, 'verbose' => FALSE, 'yes' => TRUE)
       );
       if ($ret['error_status'] == 0) {
         drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->rebuilder->source, '!target' => $this->rebuilder->target)), 'ok');
