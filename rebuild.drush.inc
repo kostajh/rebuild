@@ -127,70 +127,10 @@ function drush_rebuild_init() {
     if (!class_exists('Symfony\Component\Yaml\Parser')) {
       return drush_set_error('An automated attempt at downloading the Symfony YAML component failed. Please consult the README.');
     }
-  }
-}
-
-/**
- * Install Drush Composer (https://drupal.org/project/composer).
- */
-function _drush_rebuild_install_composer() {
-  drush_invoke_process('@self', 'dl', array('composer'), array('default-major' => '8', 'destination' => drush_server_home() . '/.drush/'), array('backend' => TRUE, 'integrate' => FALSE));
-  drush_invoke_process('@self', 'cc', array('drush'), array(), array('backend' => TRUE, 'integrate' => FALSE));
-}
-
-/**
- * Install the Symfony YAML component using Drush Composer.
- */
-function _drush_rebuild_install_yaml_component() {
-  drush_log('Installing the Symfony YAML component. Installing using Drush Composer...', 'ok');
-  $cwd = getcwd();
-  drush_shell_exec('cd ' . drush_server_home() . '/.drush/rebuild');
-  $ret = drush_invoke_process('@self', 'composer', array('install'), array(), array('backend' => TRUE, 'integrate' => FALSE));
-  drush_shell_exec("cd " . $cwd);
-}
-
-/**
- * Download Drush Composer and YAML component.
- *
- * @return bool
- *   Return TRUE if successfull, FALSE otherwise.
- */
-function _drush_rebuild_composer_check() {
-  // Check if the yaml dir is found and return TRUE if so.
-  if (file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
-    return TRUE;
-  }
-  // Check if Drush Composer is installed.
-  $info = drush_invoke_process('@self', 'composer', array(),
-    array(
-      'backend' => TRUE,
-      'integrate' => FALSE,
-      'quiet' => TRUE,
-    )
-  );
-
-  if (isset($info['error_log'])) {
-    if (drush_confirm('You must install Drush Composer and the Symfony YAML component. Would you like to have them installed for you?')) {
-      _drush_rebuild_install_composer();
-      if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
-        _drush_rebuild_install_yaml_component();
-      }
-    }
     else {
-      return drush_set_error('Please install Drush Composer.');
+      drush_log('Successfully installed Symfony YAML component!', 'success');
     }
   }
-  else {
-    // Check if the YAML component has been installed.
-    if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
-      _drush_rebuild_install_yaml_component();
-    }
-    // Check again.
-    if (!file_exists(drush_server_home() . '/.drush/rebuild/vendor/symfony/yaml')) {
-      return drush_set_error('Failed to install the Symfony YAML component.');
-    }
-  }
-  return TRUE;
 }
 
 /**
