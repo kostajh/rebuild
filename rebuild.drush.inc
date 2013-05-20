@@ -20,7 +20,7 @@ require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 require_once 'includes/permissions.inc';
 // Load composer's autoload.php if it exists.
-if (file_exists('vendor/autoload.php')) {
+if (file_exists(drush_server_home() . '/.drush/rebuild/vendor/autoload.php')) {
   require_once 'vendor/autoload.php';
 }
 
