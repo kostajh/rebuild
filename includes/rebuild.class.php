@@ -139,7 +139,8 @@ class DrushRebuild {
    */
   protected function setConfigOverrides(&$rebuild_config) {
     if ($overrides_path = $this->getConfigOverridesPath()) {
-      if ($rebuild_config_overrides = parse_ini_file($overrides_path)) {
+      $yaml = new Parser();
+      if ($rebuild_config_overrides = $yaml->parse(file_get_contents($rebuild_config_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
         foreach ($rebuild_config_overrides as $key => $override) {
           if (is_array($override)) {
@@ -171,7 +172,7 @@ class DrushRebuild {
         return TRUE;
       }
       else {
-        return drush_set_error(dt('Failed to load overrides file! Check that it is valid INI format.'));
+        return drush_set_error(dt('Failed to load overrides file! Check that it is valid YAML format.'));
       }
     }
     else {
@@ -384,6 +385,7 @@ class DrushRebuild {
       if (drush_confirm('Your rebuild config file is written in the PHP INI format. Drush Rebuild now uses YAML for its configuration. Do you want me to convert your config file to YAML?')) {
         // Convert file.
         if ($this->convertIniToYaml($config)) {
+          drush_log('Successfully converted your config file to YAML. Make sure you review the changes.', 'success');
           return TRUE;
         }
         else {

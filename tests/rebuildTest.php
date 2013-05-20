@@ -87,7 +87,8 @@ class RebuildTestCase extends Drush_CommandTestCase {
    */
   protected function loadConfig() {
     $config = $this->getConfig();
-    return parse_ini_string($config);
+    $yaml = new Parser();
+    return $yaml->parse($config);
   }
 
   /**
