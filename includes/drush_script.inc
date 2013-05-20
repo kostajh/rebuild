@@ -52,7 +52,6 @@ class DrushScript extends Rebuilder {
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
       foreach ($this->rebuilder->$this->state as $filename) {
         $rebuild_filepath = $this->rebuilder->environment['path-aliases']['%rebuild'];
-        $file = str_replace('rebuild.info', $filename, $rebuild_filepath);
         $file = str_replace(basename($rebuild_filepath), $filename, $rebuild_filepath);
         if (file_exists($file)) {
           $ret = drush_invoke_process($this->rebuilder->environment, 'php-script', array($file), array('quiet' => TRUE));
