@@ -10,10 +10,25 @@ defines the tasks for rebuilding your local environment.
 
 Drush Rebuild is simple to install and configure:
 
-  - Type `drush dl rebuild`, and Drush Rebuild will be installed in `~/.drush/rebuild`
-  - Edit the Drush alias for the site you want to work on and specify a path to a rebuild config
-  - Copy the example config file from `~/.drush/rebuild/examples` to the location you specified in #2.
-  - Rebuild your local development environment! `drush rebuild @example.local --source=@example.prod`
+1. Type `drush dl rebuild`, and Drush Rebuild will be installed in `~/.drush/rebuild`
+2. Edit the Drush alias for the site you want to work on and specify a path to a rebuild config
+3. Copy the example config file from `~/.drush/rebuild/examples` to the location you specified in #2.
+4. Rebuild your local development environment! `drush rebuild @example.local --source=@example.prod`
+
+## Dependencies
+
+Drush Rebuild requires that config files use YAML format. If you previously used
+the INI format, an attempt will be made to automatically convert your INI format
+file to YAML - but you'll probably want to review and fix manually.
+
+The first time Drush Rebuild runs, it will attempt to download the Symfony YAML
+component. If this fails, you can try to do this manually:
+
+```
+$ cd ~/.drush/rebuild
+$ curl -sS https://getcomposer.org/installer | php
+$ php composer.phar install
+```
 
 ## Need help?
 
