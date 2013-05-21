@@ -112,7 +112,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
     return '
 general:
   description: "Rebuilds the minimal install profile and installs some modules"
-  version = 1.0
+  version:  1.0
 site_install:
   profile: "minimal"
   account-mail: %email
