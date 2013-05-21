@@ -3,16 +3,15 @@ php:
   - 5.3
 before_install:
 - pear channel-discover pear.drush.org
-- pear install drush/drush-5.8.0
+- pear install drush/drush-6.0.0
 - pear install pear/PHP_CodeSniffer
 - phpenv rehash
 - drush dl coder --destination=/home/travis/.drush
-- drush dl composer-8.x-1.0-alpha5 --destination=/home/travis/.drush
 - drush cache-clear drush
 - cd ..
 - mv rebuild /home/travis/.drush/
-- wget http://ftp.drupal.org/files/projects/drush-7.x-5.8.tar.gz
-- tar -zxvf drush-7.x-5.8.tar.gz
+- wget http://ftp.drupal.org/files/projects/drush-8.x-6.0-beta1.tar.gz
+- tar -zxvf drush-8.x-6.0-beta1.tar.gz
 - mv drush /home/travis/
 before_script:
 - cd /home/travis/.drush/rebuild
@@ -20,5 +19,4 @@ script:
 - drush drupalcs rebuild.drush.inc
 - drush drupalcs includes
 - drush drupalcs tests
-- drush composer install --prefer-source
 - phpunit --bootstrap=/home/travis/drush/tests/drush_testcase.inc /home/travis/.drush/rebuild/tests/rebuildTest.php

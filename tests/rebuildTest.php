@@ -246,18 +246,7 @@ drupal:
     $this->copyOverrides();
 
     // Clear drush cache before running tests.
-    // @FIXME. The build fails because `drush composer` can't be found.
-    $this->drush('dl composer-8.x-1.0-alpha5', array(),
-      array('destination' => UNISH_SANDBOX, 'yes' => TRUE));
     $this->drush('cc', array('drush'));
-    // Install Symfony YAML component.
-    $this->drush('composer', array('install'),
-      array(
-        'yes' => TRUE,
-        'include' => UNISH_SANDBOX,
-        'debug' => TRUE),
-      NULL,
-      $this->getHomeDir() . '/.drush/rebuild');
     // @todo Copy test scripts.
     // Install Drupal on Prod with site name "Drush Rebuild Prod".
     $this->installTestSites();
