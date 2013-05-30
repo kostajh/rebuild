@@ -65,6 +65,16 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
+   * Install the Symfony YAML component.
+   */
+  protected function installYamlComponent() {
+    $pwd = getcwd();
+    shell_exec(sprintf("cd %s && curl -sS https://getcomposer.org/installer | php", $this->getHomeDir()));
+    shell_exec(sprintf("cd %s && php composer.phar install", $this->getHomeDir()));
+    shell_exec(sprintf("cd %s", $this->getHomeDir()));
+  }
+
+  /**
    * Prepare the working directory for our tests.
    */
   protected function prepareWorkingDir() {
@@ -226,9 +236,9 @@ drupal:
     $this->log('Installed dev site');
     // Check that the name was set.
     $this->drush('variable-get', array('site_name'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
-    $this->assertEquals('"Dev"', $this->getOutput());
+    $this->assertEquals('{"site_name":"Dev"}', $this->getOutput());
     $this->drush('variable-get', array('site_name'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.prod');
-    $this->assertEquals('"Prod"', $this->getOutput());
+    $this->assertEquals('{"site_name":"Prod"}', $this->getOutput());
     // Add a file to sites/default/files in @prod
     touch($this->getTestsDir() . '/prod/sites/default/files/hello.world');
   }
@@ -239,6 +249,7 @@ drupal:
   public function testRebuild() {
     // Make an alias for the dev/prod sites.
     $this->prepareWorkingDir();
+    $this->installYamlComponent();
     $this->copyAliases();
     // Copy test rebuild file.
     $this->copyConfig();

@@ -123,9 +123,9 @@ class DrushRebuild {
     // rebuild mainfest.
     $rebuild_config_path = $this->environment['path-aliases']['%rebuild'];
     // Get directory of rebuild.info
-    $rebuild_config_directory = str_replace('rebuild.info', '', $rebuild_config_path);
-    if (file_exists($rebuild_config_directory . $rebuild_config['overrides'])) {
-      return $rebuild_config_directory . $rebuild_config['overrides'];
+    $rebuild_config_directory = str_replace(basename($this->environment['path-aliases']['%rebuild']), '', $rebuild_config_path);
+    if (file_exists($rebuild_config_directory . '/' . $rebuild_config['overrides'])) {
+      return $rebuild_config_directory . '/' . $rebuild_config['overrides'];
     }
     // Could not find the file, return FALSE.
     return FALSE;
@@ -140,7 +140,7 @@ class DrushRebuild {
   protected function setConfigOverrides(&$rebuild_config) {
     if ($overrides_path = $this->getConfigOverridesPath()) {
       $yaml = new Parser();
-      if ($rebuild_config_overrides = $yaml->parse(file_get_contents($rebuild_config_path))) {
+      if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
         foreach ($rebuild_config_overrides as $key => $override) {
           if (is_array($override)) {
@@ -255,6 +255,8 @@ class DrushRebuild {
       }
       drush_print();
       $this->config = $config;
+      // Load overrides.
+      $this->setConfigOverrides($this->config);
       return $config;
     }
     catch (ParseException $e) {
