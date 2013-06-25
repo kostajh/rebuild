@@ -32,6 +32,9 @@ sync:
     create-db: "TRUE"
     sanitize: "sanitize-email"
     structure-tables-key: "common"
+  # Use instead of the above for pantheon rebuilding until sql-sync is supported:
+  # pan_sql_sync:
+  #   create-db: "TRUE"
   # Define options for rsync
   # Either specify rsync[files_only] = "TRUE", or define a list of rsync options
   # to pass to drush.
