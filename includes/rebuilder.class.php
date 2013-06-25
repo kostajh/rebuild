@@ -50,6 +50,10 @@ class Rebuilder extends DrushRebuild {
       // @TODO - Add validation of options.
       $this->sql_sync_options = $drush_rebuild->config['sql_sync'];
     }
+    if (isset($drush_rebuild->config['pan_sql_sync'])) {
+      // @TODO - Add validation of options.
+      $this->pan_sql_sync_options = $drush_rebuild->config['pan_sql_sync'];
+    }
     if (isset($this->config['rsync']['files_only'])) {
       $this->rsync['files_only'] = $drush_rebuild->config['rsync']['files_only'];
     }
@@ -93,6 +97,10 @@ class Rebuilder extends DrushRebuild {
       // Otherwise use sql sync and rsync commands.
       $sql_sync = new SqlSync($this);
       if (!$sql_sync->execute()) {
+        return FALSE;
+      }
+      $pan_sql_sync = new PanSqlSync($this);
+      if (!$pan_sql_sync->execute()) {
         return FALSE;
       }
       $rsync = new Rsync($this);

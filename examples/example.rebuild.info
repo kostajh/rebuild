@@ -24,6 +24,8 @@ default_source = @example.prod
 sql_sync[create-db] = TRUE
 sql_sync[sanitize] = sanitize-email
 sql_sync[structure-tables-key] = common
+;use instead of the above for pantheon rebuilding until sql-sync is supported:
+;pan_sql_sync[create-db] = TRUE
 ;
 ; RSYNC
 ;

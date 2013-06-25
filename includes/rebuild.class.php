@@ -238,6 +238,10 @@ class DrushRebuild {
         if (isset($config['sync']['sql_sync'])) {
           $config['sql_sync'] = $config['sync']['sql_sync'];
         }
+        
+        if (isset($config['sync']['pan_sql_sync'])) {
+          $config['pan_sql_sync'] = $config['sync']['pan_sql_sync'];
+        }
         if (isset($config['sync']['rsync'])) {
           $config['rsync'] = $config['sync']['rsync'];
         }
@@ -432,6 +436,9 @@ class DrushRebuild {
     // Sync options.
     if (isset($config['sql_sync'])) {
       $yaml['sync']['sql_sync'] = $config['sql_sync'];
+    }
+    if (isset($config['pan_sql_sync'])) {
+      $yaml['sync']['pan_sql_sync'] = $config['pan_sql_sync'];
     }
     if (isset($config['rsync'])) {
       $yaml['sync']['rsync'] = $config['rsync'];
