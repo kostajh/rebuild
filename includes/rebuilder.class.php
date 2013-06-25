@@ -99,9 +99,11 @@ class Rebuilder extends DrushRebuild {
       if (!$sql_sync->execute()) {
         return FALSE;
       }
-      $pan_sql_sync = new PanSqlSync($this);
-      if (!$pan_sql_sync->execute()) {
-        return FALSE;
+      if (isset($drush_rebuild->config['pan_sql_sync'])) {
+        $pan_sql_sync = new PanSqlSync($this);
+        if (!$pan_sql_sync->execute()) {
+          return FALSE;
+        }
       }
       $rsync = new Rsync($this);
       if (!$rsync->execute()) {
