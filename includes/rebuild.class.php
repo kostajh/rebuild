@@ -238,7 +238,6 @@ class DrushRebuild {
         if (isset($config['sync']['sql_sync'])) {
           $config['sql_sync'] = $config['sync']['sql_sync'];
         }
-        
         if (isset($config['sync']['pan_sql_sync'])) {
           $config['pan_sql_sync'] = $config['sync']['pan_sql_sync'];
         }

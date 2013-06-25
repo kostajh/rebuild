@@ -2,7 +2,7 @@
 
 /**
  * @file
- * SQL Sync code.
+ * Pantheon SQL Sync code.
  */
 
 /**
