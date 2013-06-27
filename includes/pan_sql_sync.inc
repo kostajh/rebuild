@@ -27,7 +27,7 @@ class PanSqlSync extends Rebuilder {
     // Execute pan-sql-sync.
     if (isset($this->rebuilder->target) && isset($this->rebuilder->source)) {
       drush_log('Beginning pan-sql-sync', 'ok');
-      $ret = drush_invoke_process($this->rebuilder->environment, 'pan-sql-sync -y', array($this->rebuilder->source, $this->rebuilder->target), array_merge($this->rebuilder->pan_sql_sync_options));
+      $ret = drush_invoke_process($this->rebuilder->environment, 'pan-sql-sync', array($this->rebuilder->source, $this->rebuilder->target), array_merge($this->rebuilder->pan_sql_sync_options, array('quiet' => TRUE, 'yes' => TRUE)));
       if ($ret['error_status'] == 0) {
         drush_log(dt('Synced Panheon database from !source to !target', array('!source' => $this->rebuilder->source, '!target' => $this->rebuilder->target)), 'ok');
         return TRUE;
