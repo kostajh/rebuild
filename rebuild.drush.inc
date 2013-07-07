@@ -20,11 +20,8 @@ require_once 'includes/modules.inc';
 require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 require_once 'includes/permissions.inc';
-// Load composer's autoload.php if it exists.
-if (file_exists(drush_server_home() . '/.drush/rebuild/vendor/autoload.php')) {
-  require_once 'vendor/autoload.php';
-}
 
+require_once 'vendor/autoload.php';
 
 /**
  * Implements hook_drush_help().
@@ -107,32 +104,6 @@ function rebuild_drush_command() {
   );
 
   return $items;
-}
-
-/**
- * Implements hook_init().
- */
-function drush_rebuild_init() {
-  // Check for YAML component.
-  if (!class_exists('Symfony\Component\Yaml\Parser')) {
-    // Attempt to install the YAML component.
-    drush_log('Could not find the Symfony YAML component. Attempting to install it for you...', 'warning');
-    $drush_rebuild = drush_server_home() . '/.drush/rebuild';
-    drush_shell_cd_and_exec($drush_rebuild, "curl -sS https://getcomposer.org/installer | php");
-    if (!file_exists($drush_rebuild . '/composer.phar')) {
-      return drush_set_error('Failed to download Composer. Please consult the README.');
-    }
-    drush_shell_cd_and_exec($drush_rebuild, "php composer.phar install");
-    if (file_exists($drush_rebuild . '/vendor/autoload.php')) {
-      require_once $drush_rebuild . '/vendor/autoload.php';
-    }
-    if (!class_exists('Symfony\Component\Yaml\Parser')) {
-      return drush_set_error('An automated attempt at downloading the Symfony YAML component failed. Please consult the README.');
-    }
-    else {
-      drush_log('Successfully installed Symfony YAML component!', 'success');
-    }
-  }
 }
 
 /**

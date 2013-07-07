@@ -65,16 +65,6 @@ class RebuildTestCase extends Drush_CommandTestCase {
   }
 
   /**
-   * Install the Symfony YAML component.
-   */
-  protected function installYamlComponent() {
-    $pwd = getcwd();
-    shell_exec(sprintf("cd %s && curl -sS https://getcomposer.org/installer | php", $this->getHomeDir()));
-    shell_exec(sprintf("cd %s && php composer.phar install", $this->getHomeDir()));
-    shell_exec(sprintf("cd %s", $this->getHomeDir()));
-  }
-
-  /**
    * Prepare the working directory for our tests.
    */
   protected function prepareWorkingDir() {
@@ -90,15 +80,6 @@ class RebuildTestCase extends Drush_CommandTestCase {
   protected function copyAliases() {
     touch($this->getTestsDir() . '/drebuild.aliases.drushrc.php');
     file_put_contents($this->getTestsDir() . '/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
-  }
-
-  /**
-   * Returns an array of the config contents.
-   */
-  protected function loadConfig() {
-    $config = $this->getConfig();
-    $yaml = new Parser();
-    return $yaml->parse($config);
   }
 
   /**
@@ -121,10 +102,10 @@ class RebuildTestCase extends Drush_CommandTestCase {
   protected function getSiteInstallConfig() {
     return '
 general:
-  description: "Rebuilds the minimal install profile and installs some modules"
+  description: Rebuilds the minimal install profile and installs some modules
   version:  1.0
 site_install:
-  profile: "minimal"
+  profile: minimal
   account-mail: %email
   account-name: SuperAdmin
   site-name: Local Install
@@ -146,16 +127,16 @@ drupal:
   protected function getConfig() {
     return '
     general:
-      description:  "Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination"
+      description:  Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination
       version: 1.0
       overrides = ' . $this->getTestsDir() . '/local.rebuild.yaml
     sync:
       sql_sync:
-        create-db: "TRUE"
-        sanitize: "sanitize-email"
-        structure-tables-key: "common"
+        create-db: TRUE
+        sanitize: sanitize-email
+        structure-tables-key: common
       rsync:
-        files_only: "TRUE"
+        files_only: TRUE
     drupal:
       variables:
         set:
@@ -172,10 +153,9 @@ drupal:
 
       permissions:
         anonymous user:
-          grant: ["access site in maintenance mode, access administration pages"]
+          grant: [access site in maintenance mode, access administration pages]
         administrator:
-          revoke: ["administer comments"]
-';
+          revoke: [administer comments]';
   }
 
   /**
@@ -249,7 +229,6 @@ drupal:
   public function testRebuild() {
     // Make an alias for the dev/prod sites.
     $this->prepareWorkingDir();
-    $this->installYamlComponent();
     $this->copyAliases();
     // Copy test rebuild file.
     $this->copyConfig();
