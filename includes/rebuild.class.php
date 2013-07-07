@@ -142,6 +142,7 @@ class DrushRebuild {
       $yaml = new Parser();
       if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
+        // TODO: This should be done recursively.
         foreach ($rebuild_config_overrides as $key => $override) {
           if (is_array($override)) {
             foreach ($override as $k => $v) {

@@ -1,0 +1,22 @@
+general:
+  description: Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination
+  version:  1.0
+  overrides: local.rebuild.yaml
+sync:
+  default_source: "@drebuild.prod"
+  sql_sync:
+    create-db: TRUE
+    sanitize: sanitize-email
+    structure-tables-key: common
+  rsync:
+    files_only: TRUE
+drupal:
+  variables:
+    set:
+      preprocess_js: 0
+      preprocess_css: 0
+      reroute_email_address: %email
+  permissions:
+    anonymous user:
+      grant: ["access site in maintenance mode"]
+      revoke: ["administer comments"]

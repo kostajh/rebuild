@@ -1,0 +1,12 @@
+{
+    "name": "kostajh/rebuild",
+    "authors": [
+        {
+            "name": "Kosta Harlan",
+            "email": "kostajh@gmail.com"
+        }
+    ],
+    "require": {
+      "symfony/yaml": 2.2
+    }
+}

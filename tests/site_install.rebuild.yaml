@@ -1,0 +1,15 @@
+general:
+  description: Rebuilds the minimal install profile and installs some modules
+  version:  1.0
+  overrides: local.rebuild.yaml
+site_install:
+  profile: minimal
+  account-mail: %email
+  account-name: SuperAdmin
+  site-name: Local Install
+drupal:
+  variables:
+    set:
+      preprocess_js: 0
+      preprocess_css: 0
+      reroute_email_address: %email
