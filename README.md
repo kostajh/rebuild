@@ -1,7 +1,7 @@
 ## Drush Rebuild
 
 Drush Rebuild is a utility for rebuilding your local development environments,
-using your existing Drush aliases and an easy-to-read `rebuild.info` file that
+using your existing Drush aliases and an easy-to-read config file that
 defines the tasks for rebuilding your local environment.
 
 [![Build Status](https://travis-ci.org/kostajh/rebuild.png?branch=7.x-1.x)](https://travis-ci.org/kostajh/rebuild)
@@ -20,15 +20,6 @@ Drush Rebuild is simple to install and configure:
 Drush Rebuild requires that config files use YAML format. If you previously used
 the INI format, an attempt will be made to automatically convert your INI format
 file to YAML - but you'll probably want to review and fix manually.
-
-The first time Drush Rebuild runs, it will attempt to download the Symfony YAML
-component. If this fails, you can try to do this manually:
-
-```
-$ cd ~/.drush/rebuild
-$ curl -sS https://getcomposer.org/installer | php
-$ php composer.phar install
-```
 
 ## Need help?
 
