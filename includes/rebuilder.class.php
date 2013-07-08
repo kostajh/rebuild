@@ -17,14 +17,15 @@ class Rebuilder extends DrushRebuild {
    *   The Drush Rebuild class object.
    */
   public function __construct(DrushRebuild $drush_rebuild) {
+    // TODO: This needs a lot of work.
     $this->environment = $drush_rebuild->environment;
-    $this->config = $drush_rebuild->config;
+    $this->config = $drush_rebuild->getConfig();
     $this->target = $drush_rebuild->target;
     $this->source = $drush_rebuild->source;
-    $this->description = $drush_rebuild->config['description'];
-    $this->version = $drush_rebuild->config['version'];
-    $this->pre_process = isset($drush_rebuild->config['pre_process']) ? $drush_rebuild->config['pre_process'] : NULL;
-    $this->post_process = isset($drush_rebuild->config['post_process']) ? $drush_rebuild->config['post_process'] : NULL;
+    $this->description = $this->config['description'];
+    $this->version = $this->config['version'];
+    $this->pre_process = isset($this->config['pre_process']) ? $this->config['pre_process'] : NULL;
+    $this->post_process = isset($this->config['post_process']) ? $this->config['post_process'] : NULL;
     if ($this->config['site_install']) {
       $this->profile = $this->config['site_install']['profile'];
       $this->site_install_options = $this->config['site_install'];
@@ -46,34 +47,34 @@ class Rebuilder extends DrushRebuild {
       }
     }
 
-    if (isset($drush_rebuild->config['sql_sync'])) {
+    if (isset($this->config['sql_sync'])) {
       // @TODO - Add validation of options.
-      $this->sql_sync_options = $drush_rebuild->config['sql_sync'];
+      $this->sql_sync_options = $this->config['sql_sync'];
     }
-    if (isset($drush_rebuild->config['pan_sql_sync'])) {
+    if (isset($this->config['pan_sql_sync'])) {
       // @TODO - Add validation of options.
-      $this->pan_sql_sync_options = $drush_rebuild->config['pan_sql_sync'];
+      $this->pan_sql_sync_options = $this->config['pan_sql_sync'];
     }
     if (isset($this->config['rsync']['files_only'])) {
-      $this->rsync['files_only'] = $drush_rebuild->config['rsync']['files_only'];
+      $this->rsync['files_only'] = $this->config['rsync']['files_only'];
     }
-    if (isset($drush_rebuild->config['variables'])) {
-      $this->variables = $drush_rebuild->config['variables'];
+    if (isset($this->config['drupal']['variables'])) {
+      $this->variables = $this->config['drupal']['variables'];
     }
-    if (isset($drush_rebuild->config['uli'])) {
-      $this->uli = $drush_rebuild->config['uli'];
+    if (isset($this->config['uli'])) {
+      $this->uli = $this->config['uli'];
     }
-    if (isset($drush_rebuild->config['modules_enable'])) {
-      $this->modules_enable = $drush_rebuild->config['modules_enable'];
+    if (isset($this->config['modules_enable'])) {
+      $this->modules_enable = $this->config['modules_enable'];
     }
-    if (isset($drush_rebuild->config['modules_disable'])) {
-      $this->modules_disable = $drush_rebuild->config['modules_disable'];
+    if (isset($this->config['modules_disable'])) {
+      $this->modules_disable = $this->config['modules_disable'];
     }
-    if (isset($drush_rebuild->config['permissions_grant'])) {
-      $this->permissions_grant = $drush_rebuild->config['permissions_grant'];
+    if (isset($this->config['permissions_grant'])) {
+      $this->permissions_grant = $this->config['permissions_grant'];
     }
-    if (isset($drush_rebuild->config['permissions_revoke'])) {
-      $this->permissions_revoke = $drush_rebuild->config['permissions_revoke'];
+    if (isset($this->config['permissions_revoke'])) {
+      $this->permissions_revoke = $this->config['permissions_revoke'];
     }
   }
 
@@ -99,7 +100,7 @@ class Rebuilder extends DrushRebuild {
       if (!$sql_sync->execute()) {
         return FALSE;
       }
-      if (isset($drush_rebuild->config['pan_sql_sync'])) {
+      if (isset($this->config['pan_sql_sync'])) {
         $pan_sql_sync = new PanSqlSync($this);
         if (!$pan_sql_sync->execute()) {
           return FALSE;

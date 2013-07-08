@@ -25,6 +25,27 @@ use Symfony\Component\Yaml\Exception\ParseException;
  */
 class DrushRebuild {
 
+  public static $rebuildConfig = array();
+
+  /**
+   * Return the rebuild configuration.
+   * @return array
+   *   The rebuild configuration if set or FALSE otherwise.
+   */
+  public function getConfig() {
+    return (self::$rebuildConfig) ? self::$rebuildConfig : FALSE;
+  }
+
+  /**
+   * Cache the rebuild configuration in memory.
+   *
+   * @param array $config
+   *   The rebuild configuration array.
+   */
+  protected function setConfig($config) {
+    self::$rebuildConfig = $config;
+  }
+
   /**
    * Constructor.
    *
@@ -114,7 +135,9 @@ class DrushRebuild {
    *   FALSE if the file could not be found.
    */
   protected function getConfigOverridesPath() {
-    $rebuild_config = $this->config;
+    $rebuild_config = $this->getConfig();
+    drush_print('looking for overrides');
+    drush_print_r($rebuild_config);
     // Check if the overrides file is defined as a full path.
     if (file_exists($rebuild_config['overrides'])) {
       return $rebuild_config['overrides'];
@@ -140,35 +163,13 @@ class DrushRebuild {
   protected function setConfigOverrides(&$rebuild_config) {
     if ($overrides_path = $this->getConfigOverridesPath()) {
       $yaml = new Parser();
+      drush_print($overrides_path);
       if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
-        // TODO: This should be done recursively.
-        foreach ($rebuild_config_overrides as $key => $override) {
-          if (is_array($override)) {
-            foreach ($override as $k => $v) {
-              $rebuild_config[$key][$k] = $v;
-              $this->config[$key][$k] = $v;
-              drush_log(dt('- Overriding "!parent[!key]" with value "!override"', array(
-                '!parent' => $key,
-                '!key' => $k,
-                '!override' => $v,
-                  )
-                ), 'success'
-              );
-            }
-          }
-          else {
-            $this->config[$key] = $override;
-            $rebuild_config[$key] = $override;
-            drush_log(dt('- Overriding "!key" with value "!override"', array(
-                '!key' => $key,
-                '!override' => $override,
-                )
-              ), 'success'
-            );
-          }
-
-        }
+        $rebuild_config = array_merge_recursive($rebuild_config, $rebuild_config_overrides);
+        drush_log(dt('%overrides', array(
+          '%overrides' => file_get_contents($overrides_path))), 'success');
+        $this->setConfig($rebuild_config);
         drush_print();
         return TRUE;
       }
@@ -258,9 +259,9 @@ class DrushRebuild {
         drush_log(dt('- Author(s): !authors', array('!authors' => implode(",", $config['general']['authors']))), 'ok');
       }
       drush_print();
-      $this->config = $config;
       // Load overrides.
-      $this->setConfigOverrides($this->config);
+      $this->setConfig($config);
+      $this->setConfigOverrides($config);
       return $config;
     }
     catch (ParseException $e) {
