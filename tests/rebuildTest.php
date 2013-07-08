@@ -205,11 +205,9 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->assertEquals('{"reroute_email_address":"' . $rebuild_email . '"}', $this->getOutput());
 
     // Check if our overrides were set.
-    // TODO: This test is failing because the functionality is not implemented
-    // properly.
-    // $this->drush('variable-get', array('site_slogan'), array('alias-path' =>
-    // $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
-    // $this->assertEquals('"RebuildMe"', $this->getOutput());
+    $this->drush('variable-get', array('site_slogan'), array('alias-path' =>
+    $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
+    $this->assertEquals('"RebuildMe"', $this->getOutput());
     // Test that emails were sanitized during sql-sync.
     $this->drush('uinf', array('1'), array(
       'alias-path' => $this->getTestsDir(),
