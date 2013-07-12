@@ -79,9 +79,6 @@ function rebuild_drush_command() {
     'arguments' => array(
       'template' => 'The template to use for creating a rebuild file. Options are "remote" or "site-install".',
     ),
-    'options' => array(
-      'format' => 'The format to use for the template. Valid options are "ini" and "yaml".',
-    ),
     'callback' => 'drush_rebuild_create',
   );
 
@@ -141,35 +138,28 @@ function drush_rebuild_create($template = NULL) {
   if (!$template || !in_array($template, $template_options)) {
     return drush_set_error('You must use the "remote" or "site-install" template with this command.');
   }
-  $format = drush_get_option('format');
-  if (!$format) {
-    $format = 'yaml';
-  }
-  $valid_formats = array('ini', 'yaml');
-  if (!in_array($format, $valid_formats)) {
-    return drush_set_error(dt('The format "%format" is not valid!.', array('%format' => $format)));
-  }
-  $config_filename = ($format == 'ini') ? 'rebuild.info' : 'rebuild.yaml';
+
+  $config_filename = 'rebuild.yaml';
 
   $rebuild_dir = drush_server_home() . '/.drush/rebuild';
   $filename = '';
   switch ($template) {
     case 'remote':
-      $filename = ($format == 'ini') ? 'example.rebuild.info' : 'example.rebuild.yaml';
+      $filename = 'example.rebuild.yaml';
       break;
 
     case 'site-install':
-      $filename = ($format == 'ini') ? 'example.site_install.rebuild.info' : 'example.site_install.rebuild.yaml';
+      $filename = 'example.site_install.rebuild.yaml';
       break;
   }
   $current_dir = drush_cwd();
   $ret = copy($rebuild_dir . '/examples/' . $filename, $current_dir . '/' . $config_filename);
   if ($ret) {
-    drush_log(dt('Successfully created a rebuild.info file for you in !path', array('!path' => $current_dir . '/' . $config_filename)), 'success');
+    drush_log(dt('Successfully created a rebuild config file for you in !path', array('!path' => $current_dir . '/' . $config_filename)), 'success');
     return TRUE;
   }
   else {
-    return drush_set_error(dt('Failed to create the rebuild.info file for you.'));
+    return drush_set_error(dt('Failed to create the rebuild config file for you.'));
   }
 }
 
