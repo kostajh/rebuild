@@ -34,6 +34,19 @@ function rebuild_drush_help($section) {
 }
 
 /**
+ * Implements hook_init().
+ *
+ * Require Drush 8.x-6.x.
+ */
+function drush_rebuild_init() {
+  $drush_major_version = substr(DRUSH_VERSION, 0, 1);
+  if ((int) $drush_major_version < 6) {
+    drush_log(dt('You are using Drush !version. Upgrading to Drush 6 is required.', array('!version' => $drush_major_version)), 'error');
+    drush_die();
+  }
+}
+
+/**
  * Implements hook_drush_command().
  */
 function rebuild_drush_command() {
