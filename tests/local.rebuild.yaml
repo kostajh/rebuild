@@ -1,0 +1,4 @@
+drupal:
+  variables:
+    set:
+      site_slogan: RebuildMe

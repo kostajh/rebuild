@@ -12,23 +12,41 @@ class SiteInstall extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
+    if ($this->config['site_install']) {
+      $this->profile = $this->config['site_install']['profile'];
+      $this->site_install_options = $this->config['site_install'];
+      // Unset the profile from the options group.
+      unset($this->site_install_options['profile']);
+      // Swap placeholder values.
+      foreach ($this->site_install_options as $key => &$value) {
+        // If the value starts with "%" then we are referencing a variable
+        // defined in the Drush alias.
+        if (strpos($value, '%') === 0) {
+          if (isset($this->environment['rebuild'][substr($value, 1)])) {
+            $value = $this->environment['rebuild'][substr($value, 1)];
+          }
+          else {
+            drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
+            continue;
+          }
+        }
+      }
+    }
   }
 
   /**
    * Start the site install.
    */
   public function execute() {
-    if (!empty($this->rebuilder->site_install_options)) {
+    if (!empty($this->site_install_options)) {
       drush_log('Beginning site-install', 'ok');
-      $ret = drush_invoke_process($this->rebuilder->environment, 'site-install', array($this->rebuilder->profile), $this->rebuilder->site_install_options, array('quiet' => TRUE, 'integrate' => FALSE));
+      $ret = drush_invoke_process($this->environment, 'site-install', array($this->profile), $this->site_install_options, array('quiet' => TRUE, 'integrate' => FALSE));
       if ($ret['error_status'] == 0) {
-        drush_log(dt('- Successfully installed profile "!profile"', array('!profile' => $this->rebuilder->profile)), 'ok');
+        drush_log(dt('- Successfully installed profile "!profile"', array('!profile' => $this->profile)), 'ok');
         return TRUE;
       }
       else {

@@ -13,16 +13,15 @@ class DrushScript extends Rebuilder {
   /**
    * Constructor.
    *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    * @param string $state
    *   Where we are in the rebuild process. Valid options are 'pre_process',
    *   'post_process' and 'legacy'.
    * @param string $script
    *   Optional; provide the path to the script to execute.
    */
-  public function __construct(Rebuilder $rebuilder, $state, $script = NULL) {
-    $this->rebuilder = $rebuilder;
+  public function __construct($state, $script = NULL) {
+    $this->environment = parent::getEnvironment();
+    $this->config = parent::getConfig();
     $this->state = $state;
     if ($state == 'legacy' && $script) {
       $this->script = $script;
@@ -35,7 +34,7 @@ class DrushScript extends Rebuilder {
    */
   public function legacyMode() {
     if ($ret['error_status'] == 0) {
-      $ret = drush_invoke_process($this->rebuilder->environment, 'php-script', array($this->script));
+      $ret = drush_invoke_process($this->environment, 'php-script', array($this->script));
       drush_log(dt('Executed !file script.', array('!file' => $this->script)), 'ok');
     }
     else {
@@ -48,14 +47,21 @@ class DrushScript extends Rebuilder {
    */
   public function execute() {
     $state = $this->state;
-    if (isset($this->rebuilder->$state)) {
+    if (isset($this->config['drush_scripts'][$state])) {
       drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
-      foreach ($this->rebuilder->$this->state as $filename) {
-        $rebuild_filepath = $this->rebuilder->environment['path-aliases']['%rebuild'];
+      if (!is_array($this->config['drush_scripts'][$state])) {
+        $this->config['drush_scripts'][$state] = array($this->config['drush_scripts'][$state]);
+      }
+      foreach ($this->config['drush_scripts'][$state] as $filename) {
+        $rebuild_filepath = $this->environment['path-aliases']['%rebuild'];
         $file = str_replace(basename($rebuild_filepath), $filename, $rebuild_filepath);
         if (file_exists($file)) {
-          $ret = drush_invoke_process($this->rebuilder->environment, 'php-script', array($file), array('quiet' => TRUE));
+          drush_log(dt('Executing !file script', array('!file' => $file)), 'ok');
+          drush_print('>>>');
+
+          $ret = drush_invoke_process($this->environment, 'php-script', array($file), array('quiet' => FALSE));
           if ($ret['error_status'] == 0) {
+            drush_print('<<<');
             drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
           }
           else {

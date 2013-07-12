@@ -12,21 +12,26 @@ class UserLogin extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
   }
 
   /**
    * Start the process of logging a user in.
    */
-  public function execute() {
-    if (isset($this->rebuilder->uli) && $this->rebuilder->uli === TRUE) {
+  protected function execute() {
+    if (isset($this->config['general']['uli']) && $this->config['general']['uli'] === TRUE) {
       drush_log('Logging you in to the site', 'ok');
-      $ret = drush_invoke_process($this->rebuilder->environment, 'uli', array(), array('integrate' => FALSE, 'quiet' => TRUE));
+      $ret = drush_invoke_process($this->environment,
+                                  'uli',
+                                  array(),
+                                  array(),
+                                  array(
+                                    'integrate' => FALSE,
+                                    'quiet' => TRUE,
+                                  ));
       if ($ret['error_status'] == 0) {
         drush_log('- Successfully logged you in.', 'success');
       }

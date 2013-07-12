@@ -12,12 +12,10 @@ class Modules extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
   }
 
   /**
@@ -26,14 +24,14 @@ class Modules extends Rebuilder {
    * @param string $op
    *   Valid options are 'enable' or 'disable'.
    */
-  public function execute($op) {
+  protected function execute($op) {
     if ($op == 'enable') {
       // Enable modules.
-      if (isset($this->rebuilder->modules_enable) && is_array($this->rebuilder->modules_enable)) {
+      if (isset($this->config['drupal']['modules']['enable']) && is_array($this->config['drupal']['modules']['enable'])) {
         drush_log('Enabling modules', 'ok');
-        $ret = drush_invoke_process($this->rebuilder->environment, 'pm-enable', $this->rebuilder->modules_enable, array(), array('integrate' => FALSE, 'quiet' => TRUE));
+        $ret = drush_invoke_process($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable'], array('strict' => 0), array('integrate' => FALSE, 'quiet' => TRUE));
         if ($ret['error_status'] == 0) {
-          drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->rebuilder->modules_enable))), 'success');
+          drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['enable']))), 'success');
         }
         else {
           return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
@@ -43,11 +41,11 @@ class Modules extends Rebuilder {
 
     if ($op == 'disable') {
       // Disable modules.
-      if (isset($this->rebuilder->modules_disable) && is_array($this->rebuilder->modules_disable)) {
+      if (isset($this->config['drupal']['modules']['disable']) && is_array($this->config['drupal']['modules']['disable'])) {
         drush_log('Disabling modules', 'ok');
-        $ret = drush_invoke_process($this->rebuilder->environment, 'pm-disable', $this->rebuilder->modules_disable, array(), array('quiet' => TRUE, 'integrate' => FALSE));
+        $ret = drush_invoke_process($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable'], array(), array('quiet' => TRUE, 'integrate' => FALSE));
         if ($ret['error_status'] == 0) {
-          drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->rebuilder->modules_disable))), 'success');
+          drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
         }
         else {
           return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));

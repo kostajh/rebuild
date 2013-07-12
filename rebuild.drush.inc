@@ -198,7 +198,6 @@ function drush_rebuild($target = NULL) {
   if ($rebuild_config === FALSE) {
     return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $target)));
   }
-  drush_print_r($rebuild_config);
 
   // Load metadata.
   $data = $drush_rebuild->loadMetadata();
@@ -207,11 +206,11 @@ function drush_rebuild($target = NULL) {
     $source = drush_get_option('source');
     if (!$source) {
       // Check if there is a default source specified in the config.
-      $source = isset($rebuild_config['default_source']) ? $rebuild_config['default_source'] : NULL;
+      $source = isset($rebuild_config['sync']['default_source']) ? $rebuild_config['sync']['default_source'] : NULL;
     }
     if ($source && $drush_rebuild->isValidSource($source)) {
-      $drush_rebuild->source = $source;
-      $data->source = $source;
+      $rebuild_config['sync']['source'] = $source;
+      $drush_rebuild->setConfig($rebuild_config);
     }
     else {
       return drush_set_error(dt('There was no source specified for the rebuild!'));

@@ -14,12 +14,23 @@ class Permissions extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
+    // Build permissions_grant and permissions_revoke arrays.
+    $this->permissions_grant = array();
+    $this->permissions_revoke = array();
+    if (isset($this->config['drupal']['permissions'])) {
+      foreach ($this->config['drupal']['permissions'] as $role => $permissions) {
+        if (isset($permissions['grant'])) {
+          $this->permissions_grant[$role] = implode(", ", $permissions['grant']);
+        }
+        if (isset($permissions['revoke'])) {
+          $this->permissions_revoke[$role] = implode(", ", $permissions['revoke']);
+        }
+      }
+    }
   }
 
   /**
@@ -38,7 +49,7 @@ class Permissions extends Rebuilder {
   protected function grantPermission($role_name, $rid, $permission) {
 
     // Check if permission exists. If not, insert.
-    $permission_exists = drush_invoke_process($this->rebuilder->environment,
+    $permission_exists = drush_invoke_process($this->environment,
       'sql-query',
       array(
         sprintf("SELECT rid FROM role_permission WHERE permission = '%s' AND rid = %s", $permission, $rid),
@@ -50,10 +61,10 @@ class Permissions extends Rebuilder {
       )
     );
     if (!$permission_exists['output']) {
-      $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+      $ret = drush_invoke_process($this->environment, 'sql-query',
         array(sprintf("SELECT module FROM role_permission WHERE permission = '%s'", $permission)), array(), array('quiet' => TRUE, 'integrate' => FALSE));
       $module = preg_replace('/^.+\n/', '', trim($ret['output']));
-      $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+      $ret = drush_invoke_process($this->environment, 'sql-query',
         array(
           sprintf("INSERT INTO role_permission (rid, permission, module) VALUES (%s, '%s', '%s')", $rid, $permission, $module),
         ),
@@ -93,7 +104,7 @@ class Permissions extends Rebuilder {
    */
   protected function revokePermission($role_name, $rid, $permission) {
     // Check if permission exists. If not, insert.
-    $permission_exists = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+    $permission_exists = drush_invoke_process($this->environment, 'sql-query',
       array(
         sprintf("SELECT rid FROM role_permission WHERE permission = '%s' AND rid = %s", $permission, $rid),
       ),
@@ -104,7 +115,7 @@ class Permissions extends Rebuilder {
       )
     );
     if ($permission_exists['output']) {
-      $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+      $ret = drush_invoke_process($this->environment, 'sql-query',
         array(
           sprintf("SELECT module FROM role_permission WHERE permission = '%s' LIMIT 1", $permission),
         ),
@@ -115,7 +126,7 @@ class Permissions extends Rebuilder {
         )
       );
       $module = preg_replace('/^.+\n/', '', trim($ret['output']));
-      $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+      $ret = drush_invoke_process($this->environment, 'sql-query',
         array(
           sprintf("DELETE FROM role_permission WHERE rid = %s AND permission = '%s' AND module = '%s'", $rid, $permission, $module),
         ),
@@ -148,17 +159,17 @@ class Permissions extends Rebuilder {
    * @param string $op
    *   Valid options are 'grant' or 'revoke'.
    */
-  public function execute($op) {
+  protected function execute($op) {
     if ($op == 'grant') {
       // Grant permissions.
-      if (isset($this->rebuilder->permissions_grant) && !empty($this->rebuilder->permissions_grant)) {
+      if (isset($this->permissions_grant) && !empty($this->permissions_grant)) {
         drush_log('Granting permissions', 'ok');
 
         // Get the role ID for each role name.
-        $role_names = array_keys($this->rebuilder->permissions_grant);
+        $role_names = array_keys($this->permissions_grant);
         $roles = array();
         foreach ($role_names as $name) {
-          $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+          $ret = drush_invoke_process($this->environment, 'sql-query',
             array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)),
             array(), array('quiet' => TRUE, 'integrate' => FALSE));
           $roles[$name] = preg_replace('/^.+\n/', '', trim($ret['output']));
@@ -166,7 +177,7 @@ class Permissions extends Rebuilder {
 
         // Loop through the user roles and build an array of permissions.
         $perms = array();
-        foreach ($this->rebuilder->permissions_grant as $role => $permissions_string) {
+        foreach ($this->permissions_grant as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
           $permission = '';
           if (strpos($permissions_string, ",") > 0) {
@@ -191,13 +202,13 @@ class Permissions extends Rebuilder {
 
     if ($op == 'revoke') {
       // Revoke permissions.
-      if (isset($this->rebuilder->permissions_revoke) && !empty($this->rebuilder->permissions_revoke)) {
+      if (isset($this->permissions_revoke) && !empty($this->permissions_revoke)) {
         drush_log('Revoking permissions', 'ok');
         // Get the role ID for each role name.
-        $role_names = array_keys($this->rebuilder->permissions_revoke);
+        $role_names = array_keys($this->permissions_revoke);
         $roles = array();
         foreach ($role_names as $name) {
-          $ret = drush_invoke_process($this->rebuilder->environment, 'sql-query',
+          $ret = drush_invoke_process($this->environment, 'sql-query',
             array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)),
             array(), array('quiet' => TRUE, 'integrate' => FALSE));
           $roles[$name] = preg_replace('/^.+\n/', '', trim($ret['output']));
@@ -205,7 +216,7 @@ class Permissions extends Rebuilder {
 
         // Loop through the user roles and build an array of permissions.
         $perms = array();
-        foreach ($this->rebuilder->permissions_revoke as $role => $permissions_string) {
+        foreach ($this->permissions_revoke as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
           $permission = '';
           if (strpos($permissions_string, ",") > 0) {

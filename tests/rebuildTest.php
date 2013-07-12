@@ -131,7 +131,8 @@ class RebuildTestCase extends Drush_CommandTestCase {
       'drupal-project-rename' => 'prod',
       'destination' => $this->getTestsDir(),
       'cache' => TRUE,
-      'yes' => TRUE)
+      'yes' => TRUE,
+      'quiet' => TRUE)
     );
     $this->drush('site-install', array('minimal'), $options, '@drebuild.prod');
     $this->log('Installed prod site');
@@ -140,7 +141,8 @@ class RebuildTestCase extends Drush_CommandTestCase {
       'drupal-project-rename' => 'dev',
       'destination' => $this->getTestsDir(),
       'cache' => TRUE,
-      'yes' => TRUE)
+      'yes' => TRUE,
+      'quiet' => TRUE)
     );
     $options['site-name'] = 'Dev';
     $this->drush('site-install', array('minimal'), $options, '@drebuild.dev');
@@ -205,9 +207,10 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->assertEquals('{"reroute_email_address":"' . $rebuild_email . '"}', $this->getOutput());
 
     // Check if our overrides were set.
-    $this->drush('variable-get', array('site_slogan'), array('alias-path' =>
-    $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
-    $this->assertEquals('"RebuildMe"', $this->getOutput());
+    $this->drush('variable-get', array('site_slogan'), array(
+      'alias-path' => $this->getTestsDir(),
+      'format' => 'json'), '@drebuild.dev');
+    $this->assertEquals('{"site_slogan":"RebuildMe"}', $this->getOutput());
     // Test that emails were sanitized during sql-sync.
     $this->drush('uinf', array('1'), array(
       'alias-path' => $this->getTestsDir(),

@@ -12,27 +12,27 @@ class Variable extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
   }
 
   /**
    * Set the variables.
    */
-  public function set() {
-    $variables = $this->rebuilder->variables;
-    if (is_array($variables)) {
+  protected function execute() {
+    $variables = $this->config['drupal']['variables'];
+    // Set variables.
+    // TODO: Implement deleting variables.
+    if (isset($variables['set']) && is_array($variables['set'])) {
       drush_log('Setting variables', 'ok');
-      foreach ($variables as $key => $value) {
+      foreach ($variables['set'] as $key => $value) {
         // If the value starts with "%" then we are referencing a variable
         // defined in the Drush alias.
         if (strpos($value, '%') === 0) {
-          if (isset($this->rebuilder->environment['rebuild'][substr($value, 1)])) {
-            $value = $this->rebuilder->environment['rebuild'][substr($value, 1)];
+          if (isset($this->environment['rebuild'][substr($value, 1)])) {
+            $value = $this->environment['rebuild'][substr($value, 1)];
           }
           else {
             drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
@@ -40,7 +40,7 @@ class Variable extends Rebuilder {
           }
         }
 
-        $ret = drush_invoke_process($this->rebuilder->environment, 'variable-set', array($key, $value), array(), array('quiet' => TRUE, 'integrate' => FALSE));
+        $ret = drush_invoke_process($this->environment, 'variable-set', array($key, $value), array(), array('quiet' => TRUE, 'integrate' => FALSE));
         if ($ret['error_status'] == 0) {
           drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
         }

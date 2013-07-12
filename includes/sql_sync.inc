@@ -12,12 +12,10 @@ class SqlSync extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
   }
 
   /**
@@ -25,11 +23,12 @@ class SqlSync extends Rebuilder {
    */
   public function execute() {
     // Execute sql-sync.
-    if (isset($this->rebuilder->target) && isset($this->rebuilder->source)) {
+    if (isset($this->config['general']['target']) && isset($this->config['sync']['source'])) {
       drush_log('Beginning sql-sync', 'ok');
-      $ret = drush_invoke_process($this->rebuilder->environment, 'sql-sync', array($this->rebuilder->source, $this->rebuilder->target), array_merge($this->rebuilder->sql_sync_options, array('quiet' => TRUE, 'integrate' => FALSE)));
+      drush_log(dt('Syncing database from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
+      $ret = drush_invoke_process($this->environment, 'sql-sync', array($this->config['sync']['source'], $this->config['general']['target']), array_merge($this->config['sync']['sql_sync'], array('quiet' => TRUE, 'integrate' => FALSE)));
       if ($ret['error_status'] == 0) {
-        drush_log(dt('Synced database from !source to !target', array('!source' => $this->rebuilder->source, '!target' => $this->rebuilder->target)), 'ok');
+        drush_log(dt('Synced database from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
         return TRUE;
       }
       else {

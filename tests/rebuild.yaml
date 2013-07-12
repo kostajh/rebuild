@@ -3,7 +3,7 @@ general:
   version:  1.0
   overrides: local.rebuild.yaml
 sync:
-  default_source: "@drebuild.prod"
+  default_source: @drebuild.prod
   sql_sync:
     create-db: TRUE
     sanitize: sanitize-email
@@ -18,5 +18,7 @@ drupal:
       reroute_email_address: %email
   permissions:
     anonymous user:
-      grant: ["access site in maintenance mode"]
-      revoke: ["administer comments"]
+      grant:
+        - access site in maintenance mode
+      revoke:
+        - administer comments

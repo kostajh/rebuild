@@ -26,6 +26,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
 class DrushRebuild {
 
   public static $rebuildConfig = array();
+  public static $rebuildEnvironment = array();
 
   /**
    * Return the rebuild configuration.
@@ -37,12 +38,31 @@ class DrushRebuild {
   }
 
   /**
-   * Cache the rebuild configuration in memory.
+   * Return the rebuild environment.
+   * @return array
+   *   The rebuild environment if set or FALSE otherwise.
+   */
+  public function getEnvironment() {
+    return (self::$rebuildEnvironment) ? self::$rebuildEnvironment : FALSE;
+  }
+
+  /**
+   * Set the rebuild environment in memory.
+   *
+   * @param array $environment
+   *   The rebuild environment array.
+   */
+  protected function setEnvironment($environment) {
+    self::$rebuildEnvironment = $environment;
+  }
+
+  /**
+   * Set the rebuild configuration in memory.
    *
    * @param array $config
    *   The rebuild configuration array.
    */
-  protected function setConfig($config) {
+  public function setConfig($config) {
     self::$rebuildConfig = $config;
   }
 
@@ -61,8 +81,8 @@ class DrushRebuild {
    * Handles rebuilding local environment.
    */
   public function rebuild() {
-    $rebuilder = new Rebuilder($this);
-    if (!$rebuilder->start()) {
+    $rebuilder = new Rebuilder();
+    if (!$rebuilder->execute()) {
       return FALSE;
     }
     $diagnostics = new Diagnostics($this);
@@ -114,7 +134,7 @@ class DrushRebuild {
     if (!$env) {
       return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $target)));
     }
-    $this->environment = $env;
+    $this->setEnvironment($env);
     return $env;
   }
 
@@ -136,19 +156,17 @@ class DrushRebuild {
    */
   protected function getConfigOverridesPath() {
     $rebuild_config = $this->getConfig();
-    drush_print('looking for overrides');
-    drush_print_r($rebuild_config);
     // Check if the overrides file is defined as a full path.
-    if (file_exists($rebuild_config['overrides'])) {
-      return $rebuild_config['overrides'];
+    if (file_exists($rebuild_config['general']['overrides'])) {
+      return $rebuild_config['general']['overrides'];
     }
     // If not a full path, check if it is in the same directory with the main
     // rebuild mainfest.
     $rebuild_config_path = $this->environment['path-aliases']['%rebuild'];
     // Get directory of rebuild.info
     $rebuild_config_directory = str_replace(basename($this->environment['path-aliases']['%rebuild']), '', $rebuild_config_path);
-    if (file_exists($rebuild_config_directory . '/' . $rebuild_config['overrides'])) {
-      return $rebuild_config_directory . '/' . $rebuild_config['overrides'];
+    if (file_exists($rebuild_config_directory . '/' . $rebuild_config['general']['overrides'])) {
+      return $rebuild_config_directory . '/' . $rebuild_config['general']['overrides'];
     }
     // Could not find the file, return FALSE.
     return FALSE;
@@ -161,9 +179,11 @@ class DrushRebuild {
    *   The rebuild config, loaded as an array.
    */
   protected function setConfigOverrides(&$rebuild_config) {
+    if (!isset($rebuild_config['general']['overrides'])) {
+      return;
+    }
     if ($overrides_path = $this->getConfigOverridesPath()) {
       $yaml = new Parser();
-      drush_print($overrides_path);
       if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
         $rebuild_config = array_merge_recursive($rebuild_config, $rebuild_config_overrides);
@@ -209,51 +229,14 @@ class DrushRebuild {
     $yaml = new Parser();
     try {
       $config = $yaml->parse(file_get_contents($rebuild_config_path));
-      // We need to make a few adjustments to the config to match the expected
-      // structure from parsing an INI file above.
-      // @TODO this is quite ugly and should be refactored.
-      $config['description'] = $config['general']['description'];
-      $config['version'] = $config['general']['version'];
-      $config['uli'] = $config['general']['uli'];
-      $config['overrides'] = $config['general']['overrides'];
-      $config['pre_process'] = $config['drush_scripts']['pre_process'];
-      $config['post_process'] = $config['drush_scripts']['post_process'];
-      $config['variables'] = $config['drupal']['variables']['set'];
-      $config['modules_enable'] = $config['drupal']['modules']['enable'];
-      $config['modules_disable'] = $config['drupal']['modules']['disable'];
-      $config['permissions_grant'] = array();
-      $config['permissions_revoke'] = array();
-      if (isset($config['drupal']['permissions'])) {
-        foreach ($config['drupal']['permissions'] as $role => $permissions) {
-          if (isset($permissions['grant'])) {
-            $config['permissions_grant'][$role] = implode(", ", $permissions['grant']);
-          }
-          if (isset($permissions['revoke'])) {
-            $config['permissions_revoke'][$role] = implode(", ", $permissions['revoke']);
-          }
-        }
-      }
-      if (isset($config['sync'])) {
-        if (isset($config['sync']['default_source'])) {
-          $config['default_source'] = $config['sync']['default_source'];
-        }
-        if (isset($config['sync']['sql_sync'])) {
-          $config['sql_sync'] = $config['sync']['sql_sync'];
-        }
-        if (isset($config['sync']['pan_sql_sync'])) {
-          $config['pan_sql_sync'] = $config['sync']['pan_sql_sync'];
-        }
-        if (isset($config['sync']['rsync'])) {
-          $config['rsync'] = $config['sync']['rsync'];
-        }
-      }
+      $config['general']['target'] = $this->target;
       drush_log(dt('Loading the rebuild config for !site', array('!site' => $this->target)), 'success');
       drush_log(dt('- Docroot: !path', array('!path' => $this->environment['root'])), 'ok');
-      if (isset($config['description'])) {
-        drush_log(dt('- Description: !desc', array('!desc' => $config['description'])), 'ok');
+      if (isset($config['general']['description'])) {
+        drush_log(dt('- Description: !desc', array('!desc' => $config['general']['description'])), 'ok');
       }
-      if (isset($config['version'])) {
-        drush_log(dt('- Config Version: !version', array('!version' => $config['version'])), 'ok');
+      if (isset($config['general']['version'])) {
+        drush_log(dt('- Config Version: !version', array('!version' => $config['general']['version'])), 'ok');
       }
       if (isset($config['general']['authors'])) {
         drush_log(dt('- Author(s): !authors', array('!authors' => implode(",", $config['general']['authors']))), 'ok');

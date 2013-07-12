@@ -12,30 +12,33 @@ class Rsync extends Rebuilder {
 
   /**
    * Constructor.
-   *
-   * @param Rebuilder $rebuilder
-   *   The Rebuilder class object.
    */
-  public function __construct(Rebuilder $rebuilder) {
-    $this->rebuilder = $rebuilder;
+  public function __construct() {
+    $this->config = parent::getConfig();
+    $this->environment = parent::getEnvironment();
   }
 
   /**
    * Start the process of logging a user in.
    */
-  public function execute() {
-    if (isset($this->rebuilder->rsync) && $this->rebuilder->rsync['files_only']) {
+  protected function execute() {
+    if (isset($this->config['sync']['rsync']) && $this->config['sync']['rsync']['files_only']) {
       drush_log('Beginning rsync', 'ok');
       // Don't bootstrap to the current environment to avoid
       // drush_invoke_process() adding extra slashes to the rsync call.
-      $ret = drush_invoke_process(array(), 'rsync',
-        array(
-          $this->rebuilder->source . ':%files', $this->rebuilder->target . ':%files',
-        ),
-        array('quiet' => TRUE, 'verbose' => FALSE, 'yes' => TRUE)
-      );
+      $ret = drush_invoke_process(array(),
+                                  'rsync',
+                                  array(
+                                    $this->config['sync']['source'] . ':%files',
+                                    $this->config['general']['target'] . ':%files',
+                                  ),
+                                  array(
+                                    'quiet' => TRUE,
+                                    'verbose' => FALSE,
+                                    'yes' => TRUE,
+                                  ));
       if ($ret['error_status'] == 0) {
-        drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->rebuilder->source, '!target' => $this->rebuilder->target)), 'ok');
+        drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
         return TRUE;
       }
       else {
