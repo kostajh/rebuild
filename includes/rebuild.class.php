@@ -432,7 +432,7 @@ class DrushRebuild {
     }
     // Site Install options.
     if (isset($config['site_install'])) {
-      $yaml['site_insttall'] = $config['site_install'];
+      $yaml['site_install'] = $config['site_install'];
     }
     // Drupal settings.
     $yaml['drupal'] = array();
