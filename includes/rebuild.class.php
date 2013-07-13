@@ -372,7 +372,7 @@ class DrushRebuild {
     }
     // Prompt to convert INI file to YAML.
     if ($config = $diagnostics->isIni()) {
-      if (drush_confirm('Your rebuild config file is written in the PHP INI format. Drush Rebuild now uses YAML for its configuration. Do you want me to convert your config file to YAML?')) {
+      if (drush_confirm('Your rebuild config file is written in the PHP INI format. Drush Rebuild now uses YAML for its configuration. Do you Drush Rebuild to attempt to convert your config file to YAML?')) {
         // Convert file.
         if ($this->convertIniToYaml($config)) {
           drush_log('Successfully converted your config file to YAML. Make sure you review the changes.', 'success');
