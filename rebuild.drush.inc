@@ -74,7 +74,7 @@ function rebuild_drush_command() {
   );
 
   $items['rebuild-init'] = array(
-    'description' => 'Create a rebuild file from a template',
+    'description' => 'Create a rebuild config file in the current directory from a template.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'arguments' => array(
       'template' => 'The template to use for creating a rebuild file. Options are "remote" or "site-install".',
@@ -93,7 +93,7 @@ function rebuild_drush_command() {
   );
 
   $items['rebuild-example'] = array(
-    'description' => 'Example Drush Rebuild file',
+    'description' => 'Example Drush Rebuild file.',
     'hidden' => TRUE,
     'topic' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -102,7 +102,7 @@ function rebuild_drush_command() {
   );
 
   $items['rebuild-version'] = array(
-    'description' => 'Show drush rebuild version.',
+    'description' => 'Show Drush Rebuild version.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
