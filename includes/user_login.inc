@@ -24,10 +24,12 @@ class UserLogin extends Rebuilder {
   protected function execute() {
     if (isset($this->config['general']['uli']) && $this->config['general']['uli'] === TRUE) {
       drush_log('Logging you in to the site', 'ok');
+      // TODO: We shouldn't have to set 'strict' => 0, but something has
+      // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
       $ret = drush_invoke_process($this->environment,
                                   'uli',
                                   array(),
-                                  array(),
+                                  array('strict' => 0),
                                   array(
                                     'integrate' => FALSE,
                                     'quiet' => TRUE,

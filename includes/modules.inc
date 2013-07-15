@@ -43,7 +43,9 @@ class Modules extends Rebuilder {
       // Disable modules.
       if (isset($this->config['drupal']['modules']['disable']) && is_array($this->config['drupal']['modules']['disable'])) {
         drush_log('Disabling modules', 'ok');
-        $ret = drush_invoke_process($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable'], array(), array('quiet' => TRUE, 'integrate' => FALSE));
+        // TODO: We shouldn't have to set 'strict' => 0, but something has
+        // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
+        $ret = drush_invoke_process($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable'], array('strict' => 0), array('quiet' => TRUE, 'integrate' => FALSE));
         if ($ret['error_status'] == 0) {
           drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
         }
