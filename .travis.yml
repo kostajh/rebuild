@@ -6,12 +6,13 @@ before_install:
 - pear install drush/drush-6.0.0
 - pear install pear/PHP_CodeSniffer
 - phpenv rehash
+- drush --version
 - drush dl coder --destination=/home/travis/.drush
 - drush cache-clear drush
 - cd ..
 - mv rebuild /home/travis/.drush/
-- wget http://ftp.drupal.org/files/projects/drush-8.x-6.0-beta1.tar.gz
-- tar -zxvf drush-8.x-6.0-beta1.tar.gz
+- wget http://ftp.drupal.org/files/projects/drush-8.x-6.0-rc1.tar.gz
+- tar -zxvf drush-8.x-6.0-rc1.tar.gz
 - mv drush /home/travis/
 before_script:
 - cd /home/travis/.drush/rebuild
