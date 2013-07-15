@@ -56,14 +56,17 @@ class Diagnostics extends DrushRebuild {
    */
   public function isIni() {
     if (isset($this->environment['path-aliases']['%rebuild'])) {
-      $config = parse_ini_file($this->environment['path-aliases']['%rebuild']);
-      if ($config) {
-        return $config;
+      try {
+        $config = parse_ini_file($this->environment['path-aliases']['%rebuild']);
+        if (!empty($config)) {
+          return $config;
+        }
       }
-      else {
+      catch (Exception $e) {
         return FALSE;
       }
     }
+    return FALSE;
   }
 
   /**
