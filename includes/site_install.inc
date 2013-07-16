@@ -44,7 +44,7 @@ class SiteInstall extends Rebuilder {
   public function execute() {
     if (!empty($this->site_install_options)) {
       drush_log('Beginning site-install', 'ok');
-      $ret = drush_invoke_process($this->environment, 'site-install', array($this->profile), $this->site_install_options, array('quiet' => TRUE, 'integrate' => FALSE));
+      $ret = parent::drushInvokeProcess($this->environment, 'site-install', array($this->profile), $this->site_install_options);
       if ($ret['error_status'] == 0) {
         drush_log(dt('- Successfully installed profile "!profile"', array('!profile' => $this->profile)), 'ok');
         return TRUE;

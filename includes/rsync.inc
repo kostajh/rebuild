@@ -26,16 +26,16 @@ class Rsync extends Rebuilder {
       drush_log('Beginning rsync', 'ok');
       // Don't bootstrap to the current environment to avoid
       // drush_invoke_process() adding extra slashes to the rsync call.
-      $ret = drush_invoke_process(array(),
+      $ret = parent::drushInvokeProcess(NULL,
                                   'rsync',
                                   array(
                                     $this->config['sync']['source'] . ':%files',
                                     $this->config['general']['target'] . ':%files',
                                   ),
+                                  array('yes' => TRUE, 'quiet' => TRUE),
                                   array(
-                                    'quiet' => TRUE,
-                                    'verbose' => FALSE,
-                                    'yes' => TRUE,
+                                    'integrate' => FALSE,
+                                    'interactive' => FALSE,
                                   ));
       if ($ret['error_status'] == 0) {
         drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');

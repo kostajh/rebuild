@@ -34,7 +34,7 @@ class DrushScript extends Rebuilder {
    */
   public function legacyMode() {
     if ($ret['error_status'] == 0) {
-      $ret = drush_invoke_process($this->environment, 'php-script', array($this->script));
+      $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($this->script));
       drush_log(dt('Executed !file script.', array('!file' => $this->script)), 'ok');
     }
     else {
@@ -59,7 +59,7 @@ class DrushScript extends Rebuilder {
           drush_log(dt('Executing !file script', array('!file' => $file)), 'ok');
           drush_print('>>>');
 
-          $ret = drush_invoke_process($this->environment, 'php-script', array($file), array('quiet' => FALSE));
+          $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($file), array(), array('quiet' => FALSE));
           if ($ret['error_status'] == 0) {
             drush_print('<<<');
             drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');

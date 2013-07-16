@@ -39,9 +39,7 @@ class Variable extends Rebuilder {
             continue;
           }
         }
-        // TODO: We shouldn't have to set 'strict' => 0, but something has
-        // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
-        $ret = drush_invoke_process($this->environment, 'variable-set', array($key, $value), array('strict' => 0), array('quiet' => TRUE, 'integrate' => FALSE));
+        $ret = parent::drushInvokeProcess($this->environment, 'variable-set', array($key, $value));
         if ($ret['error_status'] == 0) {
           drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
         }

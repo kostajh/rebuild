@@ -29,7 +29,7 @@ class Modules extends Rebuilder {
       // Enable modules.
       if (isset($this->config['drupal']['modules']['enable']) && is_array($this->config['drupal']['modules']['enable'])) {
         drush_log('Enabling modules', 'ok');
-        $ret = drush_invoke_process($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable'], array('strict' => 0), array('integrate' => FALSE, 'quiet' => TRUE));
+        $ret = parent::drushInvokeProcess($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable']);
         if ($ret['error_status'] == 0) {
           drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['enable']))), 'success');
         }
@@ -45,7 +45,7 @@ class Modules extends Rebuilder {
         drush_log('Disabling modules', 'ok');
         // TODO: We shouldn't have to set 'strict' => 0, but something has
         // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
-        $ret = drush_invoke_process($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable'], array('strict' => 0), array('quiet' => TRUE, 'integrate' => FALSE));
+        $ret = parent::drushInvokeProcess($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable']);
         if ($ret['error_status'] == 0) {
           drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
         }

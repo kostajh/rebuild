@@ -28,6 +28,23 @@ class DrushRebuild {
   public static $rebuildConfig = array();
   public static $rebuildEnvironment = array();
 
+
+  /**
+   * Wrapper around parent::drushInvokeProcess().
+   */
+  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = TRUE) {
+    return drush_invoke_process($site_alias_record,
+                                $command_name,
+                                $commandline_args,
+                                array_merge(
+                                  $this->drushInvokeProcessOptions(),
+                                  $commandline_options),
+                                array_merge(
+                                  $this->drushInvokeProcessBackendOptions(),
+                                  $backend_options)
+                                );
+  }
+
   /**
    * Return the rebuild configuration.
    * @return array
@@ -35,6 +52,24 @@ class DrushRebuild {
    */
   public function getConfig() {
     return (self::$rebuildConfig) ? self::$rebuildConfig : FALSE;
+  }
+
+  /**
+   * Returns options that should be used for all parent::drushInvokeProcess() calls.
+   */
+  public function drushInvokeProcessOptions() {
+    return array(
+      'strict' => 0,
+    );
+  }
+
+  /**
+   * Returns default backend options for parent::drushInvokeProcess().
+   */
+  public function drushInvokeProcessBackendOptions() {
+    return array(
+      'dispatch-using-alias' => 'TRUE',
+    );
   }
 
   /**
@@ -185,7 +220,7 @@ class DrushRebuild {
     if ($overrides_path = $this->getConfigOverridesPath()) {
       $yaml = new Parser();
       if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
-        drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['overrides'])), 'success');
+        drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['general']['overrides'])), 'success');
         $rebuild_config = array_merge_recursive($rebuild_config, $rebuild_config_overrides);
         drush_log(dt('%overrides', array(
           '%overrides' => file_get_contents($overrides_path))), 'success');
@@ -320,7 +355,7 @@ class DrushRebuild {
    * Backup the local environment using Drush archive-dump.
    */
   public function backupEnvironment() {
-    $archive_dump = drush_invoke_process($this->target, 'archive-dump');
+    $archive_dump = parent::drushInvokeProcess($this->target, 'archive-dump');
     $backup_path = $archive_dump['object'];
     if (!file_exists($backup_path)) {
       if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
@@ -337,7 +372,7 @@ class DrushRebuild {
     if ($source == $this->target) {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
-    $alias_name = drush_invoke_process($this->environment, 'site-alias', array($source), array('short' => TRUE), array('integrate' => FALSE));
+    $alias_name = $this->drushInvokeProcess($this->environment, 'site-alias', array($source));
     if (empty($alias_name['output'])) {
       return drush_set_error(dt('Could not load an alias for !source.', array('!source' => $source)));
     }

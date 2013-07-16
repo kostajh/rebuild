@@ -49,28 +49,19 @@ class Permissions extends Rebuilder {
   protected function grantPermission($role_name, $rid, $permission) {
 
     // Check if permission exists. If not, insert.
-    $permission_exists = drush_invoke_process($this->environment,
+    $permission_exists = parent::drushInvokeProcess($this->environment,
       'sql-query',
       array(
         sprintf("SELECT rid FROM role_permission WHERE permission = '%s' AND rid = %s", $permission, $rid),
-      ),
-      array(),
-      array(
-        'quiet' => TRUE,
-        'integrate' => FALSE,
-      )
-    );
+      ));
     if (!$permission_exists['output']) {
-      $ret = drush_invoke_process($this->environment, 'sql-query',
-        array(sprintf("SELECT module FROM role_permission WHERE permission = '%s'", $permission)), array(), array('quiet' => TRUE, 'integrate' => FALSE));
+      $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
+        array(sprintf("SELECT module FROM role_permission WHERE permission = '%s'", $permission)));
       $module = preg_replace('/^.+\n/', '', trim($ret['output']));
-      $ret = drush_invoke_process($this->environment, 'sql-query',
+      $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
         array(
           sprintf("INSERT INTO role_permission (rid, permission, module) VALUES (%s, '%s', '%s')", $rid, $permission, $module),
-        ),
-        array(),
-        array('quiet' => TRUE)
-      );
+        ));
       if ($ret['error_status'] == 0) {
         drush_log(dt('- Granted permission "!permission" (!module) to role "!role"',
           array(
@@ -104,35 +95,20 @@ class Permissions extends Rebuilder {
    */
   protected function revokePermission($role_name, $rid, $permission) {
     // Check if permission exists. If not, insert.
-    $permission_exists = drush_invoke_process($this->environment, 'sql-query',
+    $permission_exists = parent::drushInvokeProcess($this->environment, 'sql-query',
       array(
         sprintf("SELECT rid FROM role_permission WHERE permission = '%s' AND rid = %s", $permission, $rid),
-      ),
-      array(),
-      array(
-        'quiet' => TRUE,
-        'integrate' => FALSE,
-      )
-    );
+      ));
     if ($permission_exists['output']) {
-      $ret = drush_invoke_process($this->environment, 'sql-query',
+      $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
         array(
           sprintf("SELECT module FROM role_permission WHERE permission = '%s' LIMIT 1", $permission),
-        ),
-        array(),
-        array(
-          'quiet' => TRUE,
-          'integrate' => FALSE,
-        )
-      );
+        ));
       $module = preg_replace('/^.+\n/', '', trim($ret['output']));
-      $ret = drush_invoke_process($this->environment, 'sql-query',
+      $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
         array(
           sprintf("DELETE FROM role_permission WHERE rid = %s AND permission = '%s' AND module = '%s'", $rid, $permission, $module),
-        ),
-        array(),
-        array('quiet' => TRUE)
-      );
+        ));
       if ($ret['error_status'] == 0) {
         drush_log(dt('- Revoked permission "!permission" (!module) from role "!role"',
           array(
@@ -169,9 +145,8 @@ class Permissions extends Rebuilder {
         $role_names = array_keys($this->permissions_grant);
         $roles = array();
         foreach ($role_names as $name) {
-          $ret = drush_invoke_process($this->environment, 'sql-query',
-            array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)),
-            array(), array('quiet' => TRUE, 'integrate' => FALSE));
+          $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
+            array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)));
           $roles[$name] = preg_replace('/^.+\n/', '', trim($ret['output']));
         }
 
@@ -208,9 +183,8 @@ class Permissions extends Rebuilder {
         $role_names = array_keys($this->permissions_revoke);
         $roles = array();
         foreach ($role_names as $name) {
-          $ret = drush_invoke_process($this->environment, 'sql-query',
-            array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)),
-            array(), array('quiet' => TRUE, 'integrate' => FALSE));
+          $ret = parent::drushInvokeProcess($this->environment, 'sql-query',
+            array(sprintf("SELECT rid FROM role WHERE name = '%s'", $name)));
           $roles[$name] = preg_replace('/^.+\n/', '', trim($ret['output']));
         }
 
