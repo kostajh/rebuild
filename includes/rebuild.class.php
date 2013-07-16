@@ -43,9 +43,7 @@ class DrushRebuild {
                                 array_merge(
                                   $this->drushInvokeProcessOptions(),
                                   $commandline_options),
-                                array_merge(
-                                  $this->drushInvokeProcessBackendOptions(),
-                                  $backend_options)
+                                $backend_options
                                 );
   }
 
@@ -150,7 +148,7 @@ class DrushRebuild {
   public function getVersion() {
     $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
     $drush_rebuild_info = parse_ini_file($drush_info_file);
-    define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['drush_rebuild_version']);
+    define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['version']);
     return DRUSH_REBUILD_VERSION;
   }
 
