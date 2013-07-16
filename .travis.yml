@@ -3,7 +3,7 @@ php:
   - 5.3
 before_install:
 - pear channel-discover pear.drush.org
-- pear install drush/drush-6.0.0
+- pear install drush/drush-6.0.0RC1
 - pear install pear/PHP_CodeSniffer
 - phpenv rehash
 - drush --version
