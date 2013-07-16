@@ -42,7 +42,8 @@ class DrushRebuild {
     }
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
     try {
-      return drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
+      $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
+      return $result;
     }
     catch (Exception $e) {
       drush_set_error(dt('Caught exception: <pre>%e</pre>', array('%e' => print_r($e->getMessage()))));
@@ -380,12 +381,12 @@ class DrushRebuild {
     if ($source == $this->target) {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
-    $alias_name = $this->drushInvokeProcess($this->environment, 'site-alias', array($source));
-    if (empty($alias_name['output'])) {
-      return drush_set_error(dt('Could not load an alias for !source.', array('!source' => $source)));
+    $ret = drush_sitealias_get_record($source);
+    if ($ret['#id'] == $source) {
+      return TRUE;
     }
     else {
-      return TRUE;
+      return drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
     }
   }
 
