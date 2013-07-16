@@ -9,7 +9,7 @@ sync:
     sanitize: sanitize-email
     structure-tables-key: common
   rsync:
-    files_only: "TRUE"
+    files_only: TRUE
 drupal:
   variables:
     set:
@@ -21,4 +21,4 @@ drupal:
       grant:
         - access site in maintenance mode
       revoke:
-        - administer comments
+        - access content

@@ -48,6 +48,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
         'db-url' => 'mysql://root@localhost/drebuild_dev',
         'path-aliases' => array(
           '%rebuild' => $this->getTestsDir() . '/rebuild.yaml',
+          '%files' => 'sites/default/files',
         ),
         'rebuild' => array(
           'email' => 'me@example.com',
@@ -57,6 +58,9 @@ class RebuildTestCase extends Drush_CommandTestCase {
         'root' => $this->getTestsDir() . '/prod',
         'uri' => 'http://prod.drush.rebuild',
         'db-url' => 'mysql://root@localhost/drebuild_prod',
+        'path-aliases' => array(
+          '%files' => 'sites/default/files',
+        ),
         'rebuild' => array(
           'email' => 'me@example.com',
         ),

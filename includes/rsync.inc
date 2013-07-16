@@ -32,7 +32,11 @@ class Rsync extends Rebuilder {
                                     $this->config['sync']['source'] . ':%files',
                                     $this->config['general']['target'] . ':%files',
                                   ),
-                                  array('yes' => TRUE, 'quiet' => TRUE),
+                                  array(
+                                    'yes' => TRUE,
+                                    'quiet' => TRUE,
+                                    'verbose' => FALSE,
+                                  ),
                                   array(
                                     'integrate' => FALSE,
                                     'interactive' => FALSE,

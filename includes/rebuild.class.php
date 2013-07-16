@@ -33,15 +33,17 @@ class DrushRebuild {
    * Wrapper around parent::drushInvokeProcess().
    */
   public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = TRUE) {
+    if (is_array($backend_options)) {
+      $options = $backend_options;
+      $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), $options);
+    }
     return drush_invoke_process($site_alias_record,
                                 $command_name,
                                 $commandline_args,
                                 array_merge(
                                   $this->drushInvokeProcessOptions(),
                                   $commandline_options),
-                                array_merge(
-                                  $this->drushInvokeProcessBackendOptions(),
-                                  $backend_options)
+                                $backend_options
                                 );
   }
 
@@ -55,7 +57,7 @@ class DrushRebuild {
   }
 
   /**
-   * Returns options that should be used for all parent::drushInvokeProcess() calls.
+   * Returns options that should be used for all drushInvokeProcess() calls.
    */
   public function drushInvokeProcessOptions() {
     return array(
@@ -64,11 +66,13 @@ class DrushRebuild {
   }
 
   /**
-   * Returns default backend options for parent::drushInvokeProcess().
+   * Returns default backend options for drushInvokeProcess().
    */
   public function drushInvokeProcessBackendOptions() {
     return array(
       'dispatch-using-alias' => 'TRUE',
+      'integrate' => FALSE,
+      'interactive' => FALSE,
     );
   }
 
