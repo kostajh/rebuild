@@ -17,9 +17,15 @@ Drush Rebuild is simple to install and configure:
 
 ## Dependencies
 
+### YAML
+
 Drush Rebuild requires that config files use YAML format. If you previously used
 the INI format, an attempt will be made to automatically convert your INI format
 file to YAML - but you'll probably want to review and fix manually.
+
+### Drush 6
+
+Development is done against the latest stable builds of Drush 6. As of July 16, this is Drush 8.x-6.x-RC1.
 
 ## Need help?
 
