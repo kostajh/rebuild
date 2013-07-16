@@ -40,14 +40,13 @@ class DrushRebuild {
     else {
       $backend_options = $this->drushInvokeProcessBackendOptions();
     }
-    return drush_invoke_process($site_alias_record,
-                                $command_name,
-                                $commandline_args,
-                                array_merge(
-                                  $this->drushInvokeProcessOptions(),
-                                  $commandline_options),
-                                $backend_options
-                                );
+    $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
+    try {
+      return drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
+    }
+    catch (Exception $e) {
+      drush_set_error(dt('Caught exception: <pre>%e</pre>', array('%e' => print_r($e->getMessage()))));
+    }
   }
 
   /**
@@ -65,6 +64,7 @@ class DrushRebuild {
   public function drushInvokeProcessOptions() {
     return array(
       'yes' => TRUE,
+      'quiet' => TRUE,
     );
   }
 
@@ -77,7 +77,6 @@ class DrushRebuild {
       'integrate' => FALSE,
       'interactive' => FALSE,
       'backend' => 0,
-      'quiet' => TRUE,
     );
   }
 
