@@ -43,7 +43,9 @@ class DrushRebuild {
                                 array_merge(
                                   $this->drushInvokeProcessOptions(),
                                   $commandline_options),
-                                $backend_options
+                                array_merge(
+                                  $this->drushInvokeProcessBackendOptions(),
+                                  $backend_options)
                                 );
   }
 
@@ -73,6 +75,7 @@ class DrushRebuild {
       'dispatch-using-alias' => 'TRUE',
       'integrate' => FALSE,
       'interactive' => FALSE,
+      'backend' => 0,
     );
   }
 
