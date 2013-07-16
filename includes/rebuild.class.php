@@ -37,6 +37,9 @@ class DrushRebuild {
       $options = $backend_options;
       $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), $options);
     }
+    else {
+      $backend_options = $this->drushInvokeProcessBackendOptions();
+    }
     return drush_invoke_process($site_alias_record,
                                 $command_name,
                                 $commandline_args,
@@ -61,7 +64,7 @@ class DrushRebuild {
    */
   public function drushInvokeProcessOptions() {
     return array(
-      'strict' => 0,
+      'yes' => TRUE,
     );
   }
 
@@ -70,10 +73,11 @@ class DrushRebuild {
    */
   public function drushInvokeProcessBackendOptions() {
     return array(
-      'dispatch-using-alias' => 'TRUE',
+      'dispatch-using-alias' => TRUE,
       'integrate' => FALSE,
       'interactive' => FALSE,
       'backend' => 0,
+      'quiet' => TRUE,
     );
   }
 

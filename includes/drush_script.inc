@@ -59,7 +59,7 @@ class DrushScript extends Rebuilder {
           drush_log(dt('Executing !file script', array('!file' => $file)), 'ok');
           drush_print('>>>');
 
-          $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($file), array(), array('quiet' => FALSE));
+          $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($file));
           if ($ret['error_status'] == 0) {
             drush_print('<<<');
             drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
