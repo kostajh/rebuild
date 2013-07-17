@@ -207,7 +207,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
       '@drebuild.dev'
     );
     $aliases = $this->getAliases();
-    $rebuild_email = $aliases['dev']['rebuild']['email'];
+    $rebuild_email = $aliases['dev']['#rebuild']['email'];
     $this->assertEquals('{"reroute_email_address":"' . $rebuild_email . '"}', $this->getOutput());
 
     // Check if our overrides were set.
