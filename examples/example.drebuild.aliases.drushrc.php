@@ -26,7 +26,7 @@ $aliases['local'] = array(
   // For example, if you had variable[site_mail] = %email in your rebuild
   // config, then the value here would be swapped with the placeholder during
   // the rebuild.
-  'rebuild' => array(
+  '#rebuild' => array(
     'email' => 'me@example.com',
   ),
 );
