@@ -3,7 +3,7 @@
 # General options
 general:
   # Enter a description of what your rebuild file does.
-  description: "Rebuilds local development environment from install profile"
+  description: 'Rebuilds local development environment from install profile'
   # Optional - specify a version of your rebuild script
   version: 1.0
   # Specify if user should be logged in after running rebuild
@@ -15,7 +15,7 @@ general:
   # Specify the name of the file that contains any rebuild overrides.
   # Provide the name of the file if it is in the same directory as rebuild.info,
   # or the full path to the file otherwise.
-  overrides: "local.rebuild.info"
+  overrides: 'local.rebuild.info'
   # Drush scripts
   # Specify any PHP scripts that should be executed during the rebuild process.
   # The scripts will be executed using `drush php-eval`. pre_process files will be
@@ -23,16 +23,16 @@ general:
   # at the end of the rebuild process. The files must be in the same directory
   # as your rebuild.info file.
   drush_scripts:
-    pre_process: "example.php"
-    post_process: "after_rebuild.php"
+    pre_process: 'example.php'
+    post_process: 'after_rebuild.php'
 
 # Site install options.
 site_install:
-  profile: "standard"
-  account-mail: "%email"
-  account-pass: "admin"
-  account-name: "admin"
-  site-name: "Local install"
+  profile: 'standard'
+  account-mail: '%email'
+  account-pass: 'admin'
+  account-name: 'admin'
+  site-name: 'Local install'
 
 # Tasks to run on the rebuilt Drupal site.
 drupal:
@@ -42,7 +42,7 @@ drupal:
       preprocess_js: 0
       # Note that %email will load the variable specified in your drush alias
       # under array('rebuild' => 'email')
-      reroute_email_address: "%email"
+      reroute_email_address: '%email'
     delete:
       preprocess_css: 0
 
@@ -58,8 +58,8 @@ drupal:
   # Specify permissions that should be granted in the rebuilt environment.
   permissions:
     anonymous user:
-      grant: ["access devel information", "switch users"]
-      revoke: ["access content"]
+      grant: ['access devel information', 'switch users']
+      revoke: ['access content']
     authenticated user:
-      grant: ["access devel information"]
-      revoke: ["search content"]
+      grant: ['access devel information']
+      revoke: ['search content']

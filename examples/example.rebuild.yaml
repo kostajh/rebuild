@@ -3,7 +3,7 @@
 # General options
 general:
   # Enter a description of what your rebuild file does.
-  description: "Rebuilds local development environment from remote destination"
+  description: 'Rebuilds local development environment from remote destination'
   # Optional - specify a version of your rebuild script
   version: 1.0
   # Specify if user should be logged in after running rebuild
@@ -12,7 +12,7 @@ general:
   # Specify the name of the file that contains any rebuild overrides.
   # Provide the name of the file if it is in the same directory as rebuild.info,
   # or the full path to the file otherwise.
-  overrides: "local.rebuild.info"
+  overrides: 'local.rebuild.info'
   # Drush scripts
   # Specify any PHP scripts that should be executed during the rebuild process.
   # The scripts will be executed using `drush php-eval`. pre_process files will be
@@ -20,26 +20,26 @@ general:
   # at the end of the rebuild process. The files must be in the same directory
   # as your rebuild.info file.
   drush_scripts:
-    pre_process: "example.php"
-    post_process: "after_rebuild.php"
+    pre_process: 'example.php'
+    post_process: 'after_rebuild.php'
 
 # Sync options
 sync:
   # Define the default source for a sql-sync. Not valid for site-install rebuild.
-  default_source: "@example.prod"
+  default_source: '@example.prod'
   # Define options for database sync
   sql_sync:
-    create-db: "TRUE"
-    sanitize: "sanitize-email"
-    structure-tables-key: "common"
+    create-db: 'TRUE'
+    sanitize: 'sanitize-email'
+    structure-tables-key: 'common'
   # Use instead of the above for pantheon rebuilding until sql-sync is supported:
   # pan_sql_sync:
-  #   create-db: "TRUE"
+  #   create-db: 'TRUE'
   # Define options for rsync
-  # Either specify rsync[files_only] = "TRUE", or define a list of rsync options
+  # Either specify rsync[files_only] = 'TRUE', or define a list of rsync options
   # to pass to drush.
   rsync:
-    files_only: "TRUE"
+    files_only: 'TRUE'
 
 # Tasks to run on the rebuilt Drupal site.
 drupal:
@@ -49,7 +49,7 @@ drupal:
       preprocess_js: 0
       # Note that %email will load the variable specified in your drush alias
       # under array('rebuild' => 'email')
-      reroute_email_address: "%email"
+      reroute_email_address: '%email'
     delete:
       preprocess_css: 0
 
