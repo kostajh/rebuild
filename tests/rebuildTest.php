@@ -50,7 +50,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
           '%rebuild' => $this->getTestsDir() . '/rebuild.yaml',
           '%files' => 'sites/default/files',
         ),
-        'rebuild' => array(
+        '#rebuild' => array(
           'email' => 'me@example.com',
         ),
       ),
@@ -61,7 +61,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
         'path-aliases' => array(
           '%files' => 'sites/default/files',
         ),
-        'rebuild' => array(
+        '#rebuild' => array(
           'email' => 'me@example.com',
         ),
       ),
