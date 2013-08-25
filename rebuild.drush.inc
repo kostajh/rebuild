@@ -98,7 +98,7 @@ function rebuild_drush_command() {
     'topic' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_print_file',
-    'callback arguments' => array($rebuild_dir . '/examples/example.rebuild.info'),
+    'callback arguments' => array($rebuild_dir . '/examples/example.rebuild.yaml'),
   );
 
   $items['rebuild-version'] = array(
