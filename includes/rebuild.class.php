@@ -381,13 +381,7 @@ class DrushRebuild {
     if ($source == $this->target) {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
-    $ret = drush_sitealias_get_record($source);
-    if ($ret['#id'] == $source) {
-      return TRUE;
-    }
-    else {
-      return drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
-    }
+    return drush_sitealias_get_record($source) ? TRUE : drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
   }
 
   /**
