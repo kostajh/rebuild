@@ -235,7 +235,9 @@ function drush_rebuild($target = NULL) {
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check.
     if (drush_get_option('backup') && file_exists($drush_rebuild->environment['root'] . '/sites/default/settings.php')) {
-      $drush_rebuild->backupEnvironment();
+      if (!$drush_rebuild->backupEnvironment()) {
+        return FALSE;
+      }
     }
 
     $begin_rebuild_time = time();
