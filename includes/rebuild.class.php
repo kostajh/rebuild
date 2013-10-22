@@ -364,7 +364,7 @@ class DrushRebuild {
    * Backup the local environment using Drush archive-dump.
    */
   public function backupEnvironment() {
-    $archive_dump = parent::drushInvokeProcess($this->target, 'archive-dump');
+    $archive_dump = $this->drushInvokeProcess($this->target, 'archive-dump');
     $backup_path = $archive_dump['object'];
     if (!file_exists($backup_path)) {
       if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
