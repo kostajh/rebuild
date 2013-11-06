@@ -25,7 +25,7 @@ file to YAML - but you'll probably want to review and fix manually.
 
 ### Drush 6
 
-Development is done against the latest stable builds of Drush 6. As of July 16, this is Drush 8.x-6.x-RC1.
+Development is done against the latest stable builds of Drush 6.
 
 ## Need help?
 
