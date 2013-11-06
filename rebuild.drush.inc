@@ -213,9 +213,9 @@ function drush_rebuild($target = NULL) {
       $drush_rebuild->setConfig($rebuild_config);
     }
     elseif (!isset($rebuild_config['sync'])) {
-      // Neither remote sync nor site install are used. Assume that the user 
+      // Neither remote sync nor site install are used. Assume that the user
       // has created a Drush script for rebuilding their site.
-      drush_log("Neither 'sync' nor 'site_install' are defined in your rebuild config. Proceeding with the assumption that you are rebuilding in a custom script. If you did not expect to see this, then check your rebuild config file.", 'warning'); 
+      drush_log("Neither 'sync' nor 'site_install' are defined in your rebuild config. Proceeding with the assumption that you are rebuilding in a custom script. If you did not expect to see this, then check your rebuild config file.", 'warning');
     }
     else {
       return drush_set_error(dt('There was no source specified for the rebuild!'));
