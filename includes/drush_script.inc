@@ -57,7 +57,10 @@ class DrushScript extends Rebuilder {
         $file = str_replace(basename($rebuild_filepath), $filename, $rebuild_filepath);
         if (file_exists($file)) {
           drush_log(dt('Executing !file script', array('!file' => $file)), 'ok');
-          $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($file));
+          // If we are in the 'pre_process' state, assume that the Drupal site
+          // should not be bootstrapped.
+          $environment = ($this->state == 'pre_process') ? '@none' : $this->environment;
+          $ret = parent::drushInvokeProcess($environment, 'php-script', array($file));
           if ($ret['error_status'] == 0) {
             drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
           }
