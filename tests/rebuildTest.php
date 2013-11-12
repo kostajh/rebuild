@@ -23,8 +23,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Gets the current users home directory.
    */
   protected function getHomeDir() {
-    $info = posix_getpwuid(getmyuid());
-    return $info['dir'];
+    return $_SERVER['HOME'];
   }
 
   /**
@@ -83,9 +82,12 @@ class RebuildTestCase extends Drush_CommandTestCase {
    */
   protected function copyAliases() {
     touch($this->getTestsDir() . '/drebuild.aliases.drushrc.php');
-    file_put_contents($this->getTestsDir() . '/drebuild.aliases.drushrc.php', $this->file_aliases($this->getAliases()));
+    foreach ($this->getAliases() as $name => $alias) {
+      $records[] = sprintf('$aliases[\'%s\'] = %s;', $name, var_export($alias, TRUE));
+    }
+    $contents = "<?php\n\n" . implode("\n\n", $records);
+    file_put_contents($this->getTestsDir() . '/drebuild.aliases.drushrc.php', $contents);
   }
-
 
   /**
    * Copy the config to the working dir.
