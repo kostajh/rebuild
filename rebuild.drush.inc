@@ -21,7 +21,10 @@ require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 require_once 'includes/permissions.inc';
 
-require_once 'vendor/autoload.php';
+if (!class_exists('Symfony\Component\Yaml')) {
+  // TODO: Use https://github.com/drush-ops/drush/pull/127 when committed.
+  require_once 'vendor/autoload.php';
+}
 
 /**
  * Implements hook_drush_help().
@@ -38,7 +41,7 @@ function rebuild_drush_help($section) {
  *
  * Require Drush 8.x-6.x.
  */
-function drush_rebuild_init() {
+function drush_env_rebuild_init() {
   $drush_major_version = substr(DRUSH_VERSION, 0, 1);
   if ((int) $drush_major_version < 6) {
     drush_log(dt('You are using Drush !version. Upgrading to Drush 6 is required.', array('!version' => $drush_major_version)), 'error');
@@ -53,7 +56,7 @@ function rebuild_drush_command() {
   // Set path to Drush Rebuild extension.
   $rebuild_dir = drush_server_home() . '/.drush/rebuild';
 
-  $items['rebuild'] = array(
+  $items['env-rebuild'] = array(
     'description' => 'Rebuilds a local Drupal environment.',
     'arguments' => array(),
     'options' => array(
@@ -61,10 +64,13 @@ function rebuild_drush_command() {
         'description' => 'The drush alias to use as the source for the rebuild.',
         'example_value' => '@mysite.local',
       ),
+      'dry-run' => array(
+        'description' => 'List the Drush tasks that will be excecuted, but do not run them.',
+      ),
       'view-config' => 'View the rebuild config.',
       'backup' => 'Backup the local dev environment before rebuilding.',
     ),
-    'aliases' => array('rb'),
+    'aliases' => array('rb', 'rebuild'),
     'examples' => array(
       'drush rebuild @mysite.dev --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
       'drush rebuild @mysite.dev --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
@@ -73,7 +79,7 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['rebuild-init'] = array(
+  $items['env-rebuild-init'] = array(
     'description' => 'Create a rebuild config file in the current directory from a template.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'arguments' => array(
@@ -82,7 +88,7 @@ function rebuild_drush_command() {
     'callback' => 'drush_rebuild_create',
   );
 
-  $items['rebuild-readme'] = array(
+  $items['env-rebuild-readme'] = array(
     'description' => 'Drush Rebuild README',
     'hidden' => TRUE,
     'topic' => TRUE,
@@ -92,7 +98,7 @@ function rebuild_drush_command() {
     'callback arguments' => array($rebuild_dir . '/README.md'),
   );
 
-  $items['rebuild-example'] = array(
+  $items['env-rebuild-example'] = array(
     'description' => 'Example Drush Rebuild file.',
     'hidden' => TRUE,
     'topic' => TRUE,
@@ -101,12 +107,12 @@ function rebuild_drush_command() {
     'callback arguments' => array($rebuild_dir . '/examples/example.rebuild.yaml'),
   );
 
-  $items['rebuild-version'] = array(
+  $items['env-rebuild-version'] = array(
     'description' => 'Show Drush Rebuild version.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['rebuild-info'] = array(
+  $items['env-rebuild-info'] = array(
     'description' => 'Displays rebuild info for an alias.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_rebuild_info',
@@ -169,23 +175,29 @@ function drush_rebuild_create($template = NULL) {
  * @param string $target
  *   The alias name for the environment to be rebuilt.
  */
-function drush_rebuild($target = NULL) {
+function drush_rebuild_env_rebuild($target = NULL) {
 
   $drush_rebuild = new DrushRebuild($target);
 
   // Output version information and return.
   if (drush_get_option('version')) {
-    return drush_print(dt("Drush Rebuild version: !version", array('!version' => $drush_rebuild->getVersion())));
+    drush_print(dt("Drush Rebuild version: !version", array('!version' => $drush_rebuild->getVersion())));
+    return TRUE;
   }
 
   // Check if we are only viewing the script.
   if (drush_get_option('view-config')) {
-    return $drush_rebuild->viewConfig();
+    $drush_rebuild->viewConfig();
+    return TRUE;
   }
-  // Return if no target was specified. Error is handled in constructor for
-  // DrushRebuild.
+
+  // Set if this is a dry run.
+  if (drush_get_option('dry-run')) {
+    $drush_rebuild->setDryRun();
+  }
+  // Return if no target was specified. Error logging handled by DrushRebuild().
   if (!$target) {
-    return;
+    return FALSE;
   }
   // Check requirements.
   if (!$drush_rebuild->checkRequirements()) {
@@ -200,7 +212,7 @@ function drush_rebuild($target = NULL) {
   }
 
   // Load metadata.
-  $data = $drush_rebuild->loadMetadata();
+  $drush_rebuild->loadMetadata();
   if (!isset($rebuild_config['site_install'])) {
     $source = NULL;
     $source = drush_get_option('source');

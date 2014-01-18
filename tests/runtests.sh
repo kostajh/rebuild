@@ -9,7 +9,7 @@
 # with runtests.sh.
 
 DRUSH_PATH="`which drush`"
-DRUSH_DIRNAME="/usr/local/Cellar/drush/5.8/libexec"
+DRUSH_DIRNAME="/home/kosta/.composer/vendor/drush/drush"
 
 if [ $# = 0 ] ; then
   phpunit --bootstrap="$DRUSH_DIRNAME/tests/drush_testcase.inc" .

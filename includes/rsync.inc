@@ -40,6 +40,7 @@ class Rsync extends Rebuilder {
                                   array(
                                     'integrate' => FALSE,
                                     'interactive' => FALSE,
+                                    'dispatch-using-alias' => FALSE,
                                   ));
       if ($ret['error_status'] == 0) {
         drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
