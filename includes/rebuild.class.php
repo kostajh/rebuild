@@ -42,8 +42,9 @@ class DrushRebuild {
       $backend_options = $this->drushInvokeProcessBackendOptions();
     }
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
-    // TODO: Make Drush path configurable.
-    $drush_path = 'drush';
+    // TODO: Make Drush path configurable in YAML.
+    $rebuild_path = str_replace("/includes", '', __DIR__);
+    $drush_path = "$rebuild_path/vendor/bin/drush";
     foreach ($commandline_options as $key => $value) {
       $options[] = sprintf('--%s=%s', $key, $value);
     }
