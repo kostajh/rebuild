@@ -16,4 +16,4 @@ script:
 - drush drupalcs rebuild.drush.inc
 - drush drupalcs includes
 - drush drupalcs tests
-- phpunit --bootstrap=$HOME/composer/vendor/drush/drush/tests/drush_testcase.inc $HOME/.drush/rebuild/tests/rebuildTest.php
+- phpunit --bootstrap=$HOME/.composer/vendor/drush/drush/tests/drush_testcase.inc $HOME/.drush/rebuild/tests/rebuildTest.php
