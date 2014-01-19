@@ -3,16 +3,13 @@ php:
   - 5.3
 before_install:
 - echo 'export PATH=$HOME/.composer/vendor/bin:$PATH' >> $HOME/.bashrc
-- composer global require drush/drush:6.*
 - source $HOME/.bashrc
-- cd /home/travis/.drush/rebuild
-- composer install
+- composer global require drush/drush:6.*
 - drush --version
 - drush dl coder --destination=/home/travis/.drush
 - mv /home/travis/rebuild /home/travis/.drush/
-- drush cache-clear drush
-before_script:
 - cd /home/travis/.drush/rebuild
+- composer install
 - drush cache-clear drush
 script:
 - drush drupalcs rebuild.drush.inc
