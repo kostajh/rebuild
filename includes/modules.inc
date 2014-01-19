@@ -23,6 +23,7 @@ class Modules extends Rebuilder {
    *
    * @param string $op
    *   Valid options are 'enable' or 'disable'.
+   *
    * @return bool
    *   Return TRUE/FALSE on success/error.
    */

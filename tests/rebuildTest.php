@@ -228,7 +228,6 @@ class RebuildTestCase extends Drush_CommandTestCase {
     // Check that hello.world file was rsynced from @prod
     // $this->assertFileExists($this->getTestsDir() .
     // '/dev/sites/default/files/hello.world');
-
     // Test permissions grant.
     $this->drush('sql-query', array(
       'SELECT rid FROM role_permission WHERE rid = 1 AND permission = "access site in maintenance mode"',

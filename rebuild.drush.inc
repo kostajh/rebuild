@@ -145,6 +145,9 @@ function drush_rebuild_info($target = NULL) {
   return $drush_rebuild->getInfo($target);
 }
 
+/**
+ * Displays the error log for a Drush alias.
+ */
 function drush_rebuild_env_rebuild_error_log() {
   $alias = drush_get_context('alias');
   if (!count($alias)) {
