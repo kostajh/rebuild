@@ -38,6 +38,9 @@ class Permissions extends Rebuilder {
    *
    * @param string $op
    *   Valid options are 'grant' or 'revoke'.
+   *
+   * @return bool
+   *   Return TRUE/FALSE on success/error.
    */
   protected function execute($op) {
     if ($op == 'grant') {
@@ -46,22 +49,26 @@ class Permissions extends Rebuilder {
         drush_log('Granting permissions', 'ok');
 
         // Loop through the user roles and build an array of permissions.
-        $perms = array();
         foreach ($this->permissions_grant as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
-          $permission = '';
           if (strpos($permissions_string, ",") > 0) {
             $permissions = explode(",", $permissions_string);
             foreach ($permissions as $perm) {
               // Grant the permission.
               drush_log(dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($perm), '!role' => $role)), 'ok');
-              $ret = parent::drushInvokeProcess($this->environment, 'role-add-perm', array(sprintf('"%s"', $role), sprintf('"%s"', trim($perm))));
+              parent::drushInvokeProcess($this->environment, 'role-add-perm', array(
+                sprintf('"%s"', $role),
+                sprintf('"%s"', trim($perm)),
+              ));
             }
           }
           else {
             // Grant the permission.
             drush_log(dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)), 'ok');
-            $ret = parent::drushInvokeProcess($this->environment, 'role-add-perm', array(sprintf('"%s"', $role), sprintf('"%s"', trim($permissions_string))));
+            parent::drushInvokeProcess($this->environment, 'role-add-perm', array(
+              sprintf('"%s"', $role),
+              sprintf('"%s"', trim($permissions_string)),
+              ));
           }
         }
 
@@ -73,22 +80,26 @@ class Permissions extends Rebuilder {
       if (isset($this->permissions_revoke) && !empty($this->permissions_revoke)) {
         drush_log('Revoking permissions', 'ok');
         // Loop through the user roles and build an array of permissions.
-        $perms = array();
         foreach ($this->permissions_revoke as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
-          $permission = '';
           if (strpos($permissions_string, ",") > 0) {
             $permissions = explode(",", $permissions_string);
             foreach ($permissions as $perm) {
               // Revoke the permission.
-              drush_log(dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)), 'ok');
-              $ret = parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(sprintf('"%s"', $role), sprintf('"%s"', trim($permissions_string))));
+              drush_log(dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($perm), '!role' => $role)), 'ok');
+              parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(
+                sprintf('"%s"', $role),
+                sprintf('"%s"', trim($perm)),
+              ));
             }
           }
           else {
             // Revoke the permission.
             drush_log(dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)), 'ok');
-            $ret = parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(sprintf('"%s"', $role), sprintf('"%s"', trim($permissions_string))));
+            parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(
+              sprintf('"%s"', $role),
+              sprintf('"%s"', trim($permissions_string)),
+            ));
           }
         }
       }

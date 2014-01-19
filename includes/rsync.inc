@@ -24,8 +24,6 @@ class Rsync extends Rebuilder {
   protected function execute() {
     if (isset($this->config['sync']['rsync']) && $this->config['sync']['rsync']['files_only']) {
       drush_log('Beginning rsync', 'ok');
-      // Don't bootstrap to the current environment to avoid
-      // drush_invoke_process() adding extra slashes to the rsync call.
       parent::drushInvokeProcess(NULL,
                                   'rsync',
                                   array(

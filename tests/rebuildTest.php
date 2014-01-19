@@ -81,6 +81,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Copy the predefined aliases into the working directory.
    */
   protected function copyAliases() {
+    $records = array();
     touch($this->getTestsDir() . '/drebuild.aliases.drushrc.php');
     foreach ($this->getAliases() as $name => $alias) {
       $records[] = sprintf('$aliases[\'%s\'] = %s;', $name, var_export($alias, TRUE));
@@ -225,7 +226,8 @@ class RebuildTestCase extends Drush_CommandTestCase {
     );
     $this->assertContains('user+1@localhost', $this->getOutput());
     // Check that hello.world file was rsynced from @prod
-//    $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
+    // $this->assertFileExists($this->getTestsDir() .
+    // '/dev/sites/default/files/hello.world');
 
     // Test permissions grant.
     $this->drush('sql-query', array(

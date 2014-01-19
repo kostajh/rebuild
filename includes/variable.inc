@@ -42,13 +42,8 @@ class Variable extends Rebuilder {
             return drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
           }
         }
-        $ret = parent::drushInvokeProcess($this->environment, 'variable-set', array($key, $value));
-        if ($ret['error_status'] == 0) {
-          drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
-        }
-        else {
-          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
-        }
+        parent::drushInvokeProcess($this->environment, 'variable-set', array($key, $value));
+        drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
       }
     }
     return TRUE;

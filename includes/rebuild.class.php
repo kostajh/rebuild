@@ -34,6 +34,7 @@ class DrushRebuild {
    * Wrapper around parent::drushInvokeProcess().
    */
   public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = NULL) {
+    $options = array();
     if (is_array($backend_options)) {
       $options = $backend_options;
       $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), $options);
@@ -147,10 +148,16 @@ class DrushRebuild {
     self::$rebuildConfig = $config;
   }
 
+  /**
+   * Setter for DryRun.
+   */
   public function setDryRun() {
     self::$dryRun = TRUE;
   }
 
+  /**
+   * Getter for DryRun.
+   */
   public function getDryRun() {
     return self::$dryRun;
   }
@@ -164,7 +171,6 @@ class DrushRebuild {
   public function __construct($target) {
     $this->target = $target;
     $this->environment = $this->loadEnvironment($target);
-    $this->dryRun = FALSE;
   }
 
   /**
@@ -214,7 +220,7 @@ class DrushRebuild {
   public function loadEnvironment($target) {
     // If we are just loading the version, return.
     if (drush_get_option('version')) {
-      return;
+      return TRUE;
     }
     if (!$target) {
       // Enforce the syntax. `drush rebuild @target --source=@source`.
@@ -254,9 +260,9 @@ class DrushRebuild {
     // rebuild mainfest.
     $rebuild_config_path = $this->environment['path-aliases']['%rebuild'];
     // Get directory of rebuild.info
-    $rebuild_config_directory = str_replace(basename($this->environment['path-aliases']['%rebuild']), '', $rebuild_config_path);
-    if (file_exists($rebuild_config_directory . '/' . $rebuild_config['general']['overrides'])) {
-      return $rebuild_config_directory . '/' . $rebuild_config['general']['overrides'];
+    $config_directory = str_replace(basename($this->environment['path-aliases']['%rebuild']), '', $rebuild_config_path);
+    if (file_exists($config_directory . '/' . $rebuild_config['general']['overrides'])) {
+      return $config_directory . '/' . $rebuild_config['general']['overrides'];
     }
     // Could not find the file, return FALSE.
     return FALSE;
@@ -267,16 +273,19 @@ class DrushRebuild {
    *
    * @param array $rebuild_config
    *   The rebuild config, loaded as an array.
+   *
+   * @return bool
+   *   TRUE on success; FALSE on error.
    */
   protected function setConfigOverrides(&$rebuild_config) {
     if (!isset($rebuild_config['general']['overrides'])) {
-      return;
+      return TRUE;
     }
     if ($overrides_path = $this->getConfigOverridesPath()) {
       $yaml = new Parser();
-      if ($rebuild_config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
+      if ($config_overrides = $yaml->parse(file_get_contents($overrides_path))) {
         drush_log(dt('Loading config overrides from !file', array('!file' => $rebuild_config['general']['overrides'])), 'success');
-        $rebuild_config = array_merge_recursive($rebuild_config, $rebuild_config_overrides);
+        $rebuild_config = array_merge_recursive($rebuild_config, $config_overrides);
         drush_log(dt('%overrides', array(
           '%overrides' => file_get_contents($overrides_path))), 'success');
         $this->setConfig($rebuild_config);
@@ -303,9 +312,10 @@ class DrushRebuild {
     if (!isset($this->environment['path-aliases']['%rebuild'])) {
       drush_set_error(dt('Your Drush alias is not properly configured for Drush Rebuild!'));
       drush_set_error(dt('Please add a %rebuild entry to the path-aliases section of the Drush alias for !name', array('!name' => $this->target)));
+      $example_alias = file_get_contents(drush_server_home() . '/.drush/rebuild/examples/example.drebuild.aliases.drushrc.php');
       if (drush_confirm('Would you like to view the example Drush rebuild alias for tips on how to configure your alias?')) {
         drush_set_error(dt('Please review the example alias and documentation on how to configure your alias for Drush Rebuild: !example',
-        array('!example' => drush_print_file(drush_server_home() . '/.drush/rebuild/examples/example.drebuild.aliases.drushrc.php'))));
+        array('!example' => $example_alias)));
       }
       return FALSE;
     }
@@ -440,113 +450,6 @@ class DrushRebuild {
    * @todo Re-organize this functionality.
    */
   public function checkRequirements() {
-    $diagnostics = new Diagnostics($this);
-    if ($diagnostics->isLegacy()) {
-      // Skip other diagnostics checks, execute a rebuild using drush script.
-      drush_log(dt("#########################################################\n# WARNING: You are using a legacy Drush Rebuild script. #\n#########################################################\n\nPlease rewrite !file to use the new Drush Rebuild INI format and !alias to reference the new Rebuild file.\nSee `drush rebuild-readme` for more information.",
-        array(
-          '!file' => $this->environment['path-aliases']['%local-tasks'] . '/tasks.php',
-          '!alias' => $this->environment['#file'])), 'ok');
-      if (drush_confirm('Are you sure you want to continue?')) {
-        $ret = new DrushScript($this, 'legacy', $this->environment['path-aliases']['%local-tasks'] . '/tasks.php');
-        return TRUE;
-      }
-      else {
-        drush_die();
-      }
-    }
-    // Prompt to convert INI file to YAML.
-    if ($config = $diagnostics->isIni()) {
-      if (drush_confirm('Your rebuild config file is written in the PHP INI format. Drush Rebuild now uses YAML for its configuration. Do you Drush Rebuild to attempt to convert your config file to YAML?')) {
-        // Convert file.
-        if ($this->convertIniToYaml($config)) {
-          drush_log('Successfully converted your config file to YAML. Make sure you review the changes.', 'success');
-          return TRUE;
-        }
-        else {
-          return drush_set_error("An automated attempt to convert your config file to YAML failed.");
-        }
-      }
-      else {
-        return drush_set_error('You must convert your config file to YAML format to continue.');
-      }
-    }
     return TRUE;
   }
-
-  /**
-   * Convert an INI config file to YAML.
-   *
-   * @return bool
-   *   Returns TRUE if successful, FALSE otherwise.
-   */
-  public function convertIniToYaml($config) {
-    $dumper = new Dumper();
-    // General section.
-    $yaml = array();
-    if (isset($config['description'])) {
-      $yaml['general']['description'] = $config['description'];
-    }
-    if (isset($config['version'])) {
-      $yaml['general']['version'] = $config['version'];
-    }
-    if (isset($config['uli'])) {
-      $yaml['general']['uli'] = $config['uli'];
-    }
-    if (isset($config['overrides'])) {
-      $yaml['general']['overrides'] = $config['overrides'];
-    }
-    if (isset($config['pre_process'])) {
-      $yaml['general']['drush_scripts']['pre_process'] = $config['pre_process'];
-    }
-    if (isset($config['post_process'])) {
-      $yaml['general']['drush_scripts']['post_process'] = $config['post_process'];
-    }
-    // Sync options.
-    if (isset($config['sql_sync'])) {
-      $yaml['sync']['sql_sync'] = $config['sql_sync'];
-    }
-    if (isset($config['pan_sql_sync'])) {
-      $yaml['sync']['pan_sql_sync'] = $config['pan_sql_sync'];
-    }
-    if (isset($config['rsync'])) {
-      $yaml['sync']['rsync'] = $config['rsync'];
-    }
-    if (isset($config['default_source'])) {
-      $yaml['sync']['default_source'] = $config['default_source'];
-    }
-    // Site Install options.
-    if (isset($config['site_install'])) {
-      $yaml['site_install'] = $config['site_install'];
-    }
-    // Drupal settings.
-    $yaml['drupal'] = array();
-    if (isset($config['variables'])) {
-      $yaml['drupal']['variables']['set'] = $config['variables'];
-    }
-    if (isset($config['modules_enable'])) {
-      $yaml['drupal']['modules']['enable'] = $config['modules_enable'];
-    }
-    if (isset($config['modules_disable'])) {
-      $yaml['drupal']['modules']['disable'] = $config['modules_disable'];
-    }
-    // Permissions.
-    if (isset($config['permissions_grant'])) {
-      foreach ($config['permissions_grant'] as $role => $permission_string) {
-        $yaml['drupal']['permissions'][$role]['grant'] = $permission_string;
-      }
-    }
-    if (isset($config['permissions_revoke'])) {
-      foreach ($config['permissions_revoke'] as $role => $permission_string) {
-        $yaml['drupal']['permissions'][$role]['revoke'] = $permission_string;
-      }
-    }
-    // Write to YAML.
-    $yaml_config = $dumper->dump($yaml, 5);
-    // Overwrite old file.
-    file_put_contents($this->environment['path-aliases']['%rebuild'], $yaml_config);
-    // FIXME: Add error handling.
-    return TRUE;
-  }
-
 }

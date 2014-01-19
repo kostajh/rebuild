@@ -23,23 +23,6 @@ class DrushScript extends Rebuilder {
     $this->environment = parent::getEnvironment();
     $this->config = parent::getConfig();
     $this->state = $state;
-    if ($state == 'legacy' && $script) {
-      $this->script = $script;
-      $this->legacyMode();
-    }
-  }
-
-  /**
-   * Operate in legacy mode. Execute a drush-script to rebuild a site.
-   */
-  public function legacyMode() {
-    if ($ret['error_status'] == 0) {
-      $ret = parent::drushInvokeProcess($this->environment, 'php-script', array($this->script));
-      drush_log(dt('Executed !file script.', array('!file' => $this->script)), 'ok');
-    }
-    else {
-      return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
-    }
   }
 
   /**
@@ -60,13 +43,8 @@ class DrushScript extends Rebuilder {
           // If we are in the 'pre_process' state, assume that the Drupal site
           // should not be bootstrapped.
           $environment = ($this->state == 'pre_process') ? '@none' : $this->environment;
-          $ret = parent::drushInvokeProcess($environment, 'php-script', array($file));
-          if ($ret['error_status'] == 0) {
-            drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
-          }
-          else {
-            return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
-          }
+          parent::drushInvokeProcess($environment, 'php-script', array($file));
+          drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
         }
         else {
           return drush_set_error(dt('Could not load script !file.', array('!file' => $file)));

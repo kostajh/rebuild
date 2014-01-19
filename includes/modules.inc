@@ -23,19 +23,16 @@ class Modules extends Rebuilder {
    *
    * @param string $op
    *   Valid options are 'enable' or 'disable'.
+   * @return bool
+   *   Return TRUE/FALSE on success/error.
    */
   protected function execute($op) {
     if ($op == 'enable') {
       // Enable modules.
       if (isset($this->config['drupal']['modules']['enable']) && is_array($this->config['drupal']['modules']['enable'])) {
         drush_log('Enabling modules', 'ok');
-        $ret = parent::drushInvokeProcess($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable']);
-        if ($ret['error_status'] == 0) {
-          drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['enable']))), 'success');
-        }
-        else {
-          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
-        }
+        parent::drushInvokeProcess($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable']);
+        drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['enable']))), 'success');
       }
     }
 
@@ -45,13 +42,8 @@ class Modules extends Rebuilder {
         drush_log('Disabling modules', 'ok');
         // TODO: We shouldn't have to set 'strict' => 0, but something has
         // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
-        $ret = parent::drushInvokeProcess($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable']);
-        if ($ret['error_status'] == 0) {
-          drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
-        }
-        else {
-          return drush_set_error(dt('An error occurred. %error', array('%error' => print_r($ret['error_log'], TRUE))));
-        }
+        parent::drushInvokeProcess($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable']);
+        drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
       }
     }
     return TRUE;

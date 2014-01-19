@@ -33,21 +33,6 @@ class Diagnostics extends DrushRebuild {
   public function execute() {
   }
 
-
-  /**
-   * Checks if the rebuild file is a drush script (pre-7.x-1.1).
-   */
-  public function isLegacy() {
-    if (isset($this->environment['path-aliases']['%local-tasks']) &&
-      file_exists($this->environment['path-aliases']['%local-tasks'] . '/tasks.php') &&
-      !isset($this->environment['path-aliases']['%rebuild']) && !file_exists($this->environment['path-aliases']['%rebuild'])) {
-      return TRUE;
-    }
-    else {
-      return FALSE;
-    }
-  }
-
   /**
    * Checks if the rebuild file is in INI format.
    *
