@@ -2,13 +2,14 @@ language: php
 php:
   - 5.3
 before_install:
-- echo 'export PATH=/home/travis/.composer/vendor/bin:$PATH' >> /home/travis/.bashrc
+- echo 'export PATH=$HOME/.composer/vendor/bin:$PATH' >> $HOME/.bashrc
 - source /home/travis/.bashrc
 - composer global require drush/drush:6.*
+- phpenv rehash
 - drush --version
-- drush dl coder --destination=/home/travis/.drush
-- mv /home/travis/rebuild /home/travis/.drush/
-- cd /home/travis/.drush/rebuild
+- drush dl coder --destination=$HOME/.drush
+- mv $HOME/rebuild $HOME/.drush/
+- cd $HOME/.drush/rebuild
 - composer install
 - drush cache-clear drush
 script:
