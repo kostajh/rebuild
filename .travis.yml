@@ -2,21 +2,18 @@ language: php
 php:
   - 5.3
 before_install:
-- pear channel-discover pear.drush.org
-- pear install drush/drush-6.0.0RC1
-- pear install pear/PHP_CodeSniffer
-- phpenv rehash
-- drush --version
-- drush dl coder --destination=/home/travis/.drush
-- drush cache-clear drush
-- cd ..
-- mv rebuild /home/travis/.drush/
-- wget http://ftp.drupal.org/files/projects/drush-8.x-6.0-rc1.tar.gz
-- tar -zxvf drush-8.x-6.0-rc1.tar.gz
-- mv drush /home/travis/
-before_script:
+- echo 'export PATH=$HOME/.composer/vendor/bin:$PATH' >> $HOME/.bashrc
+- composer global require drush/drush:6.*
+- source $HOME/.bashrc
 - cd /home/travis/.drush/rebuild
 - composer install
+- drush --version
+- drush dl coder --destination=/home/travis/.drush
+- mv /home/travis/rebuild /home/travis/.drush/
+- drush cache-clear drush
+before_script:
+- cd /home/travis/.drush/rebuild
+- drush cache-clear drush
 script:
 - drush drupalcs rebuild.drush.inc
 - drush drupalcs includes
