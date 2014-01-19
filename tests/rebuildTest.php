@@ -159,7 +159,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->drush('variable-get', array('site_name'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.prod');
     $this->assertEquals('{"site_name":"Prod"}', $this->getOutput());
     // Add a file to sites/default/files in @prod
-    touch($this->getTestsDir() . '/prod/sites/default/files/hello.world');
+    file_put_contents($this->getTestsDir() . '/prod/sites/default/files/hello.world', 'Hello world!');
   }
 
   /**
@@ -181,7 +181,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->installTestSites();
 
     // Run the rebuild.
-    $this->drush('rebuild', array('@drebuild.dev'),
+    $this->drush('env-rebuild', array('@drebuild.dev'),
       array(
         'include' => $this->getHomeDir() . '/.drush/rebuild',
         'alias-path' => $this->getTestsDir(), 'debug' => TRUE,

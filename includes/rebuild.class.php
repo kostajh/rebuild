@@ -33,7 +33,7 @@ class DrushRebuild {
   /**
    * Wrapper around parent::drushInvokeProcess().
    */
-  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options) {
+  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = NULL) {
     if (is_array($backend_options)) {
       $options = $backend_options;
       $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), $options);
@@ -45,9 +45,18 @@ class DrushRebuild {
     // TODO: Make Drush path configurable in YAML.
     $rebuild_path = str_replace("/includes", '', __DIR__);
     $drush_path = "$rebuild_path/vendor/bin/drush";
+    // Pass in global options. When a user executes `drush rebuild`, they may
+    // have passed `--debug` or `--alias-path` options, etc, this needs to get
+    // passed on to the next command.
+    // TODO: Surely there is a better way.
+    $global_options = drush_get_merged_options();
+    unset($global_options['rsync-version'], $global_options['context-path'], $global_options['php-options'], $global_options['notify']);
+    $commandline_options = array_merge($global_options, $commandline_options);
+    $commandline_options['strict'] = '0';
     foreach ($commandline_options as $key => $value) {
       $options[] = sprintf('--%s=%s', $key, $value);
     }
+
     // Not all commands should have the alias name.
     $target = '';
     if ($backend_options['dispatch-using-alias']) {
@@ -64,11 +73,16 @@ class DrushRebuild {
     $backend_output = array_pop($output);
     $parsed = drush_backend_parse_output($backend_output);
 
-    if ($parsed['error_status'] == 1) {
+    if (isset($parsed['error_status']) && $parsed['error_status'] == 1) {
+      drush_print();
       foreach ($parsed['error_log'] as $type => $message) {
         drush_set_error(sprintf('%s', $type), dt('!type: !msg', array('!type' => $type, '!msg' => array_shift($message))));
       }
-      drush_die(dt('Drush Rebuild encountered an error while running command "!cmd". Try re-running the `drush rebuild` with the --verbose or --debug flag to investigate why the error occurred.', array('!cmd' => $cmd)));
+      drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $cmd)));
+      // Write to the error log.
+      drush_cache_set(self::$rebuildConfig['general']['target'], $parsed, 'rebuild-error-log', DRUSH_CACHE_PERMANENT);
+      drush_print();
+      drush_die(dt('To view the errors from the rebuild, run `drush !alias env-rebuild-error-log`', array('!alias' => self::$rebuildConfig['general']['target'])));
     }
     return TRUE;
   }
