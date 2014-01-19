@@ -3,9 +3,11 @@ php:
   - 5.3
 before_install:
 - echo 'export PATH=$HOME/.composer/vendor/bin:$PATH' >> $HOME/.bashrc
+- cat $HOME/.bashrc
+- ls $HOME
 - source /home/travis/.bashrc
 - composer global require drush/drush:6.*
-- phpenv rehash
+- sudo ln -s $HOME/.composer/vendor/bin/drush /usr/local/bin/drush
 - drush --version
 - drush dl coder --destination=$HOME/.drush
 - mv $HOME/rebuild $HOME/.drush/
