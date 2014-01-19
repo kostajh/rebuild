@@ -88,6 +88,21 @@ function rebuild_drush_command() {
     'callback' => 'drush_rebuild_create',
   );
 
+  $items['env-rebuild-error-log'] = array(
+    'description' => 'View the errors from the last rebuild.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'outputformat' => array(
+      'default' => 'yaml',
+      'pipe-format' => 'json',
+      'field-labels' => array('context' => 'Context'),
+      'simplify-single' => TRUE,
+      'table-metadata' => array(
+        'list-separator' => ' ',
+      ),
+      'output-data-type' => 'format-list',
+    ),
+  );
+
   $items['env-rebuild-readme'] = array(
     'description' => 'Drush Rebuild README',
     'hidden' => TRUE,
@@ -128,6 +143,19 @@ function rebuild_drush_command() {
 function drush_rebuild_info($target = NULL) {
   $drush_rebuild = new DrushRebuild($target);
   return $drush_rebuild->getInfo($target);
+}
+
+function drush_rebuild_env_rebuild_error_log() {
+  $alias = drush_get_context('alias');
+  if (!count($alias)) {
+    return drush_set_error(dt('See usage for the command. You need to run this command with an alias.'));
+  }
+  $name = '@' . $alias['#name'];
+  $log = drush_cache_get($name, 'rebuild-error-log');
+  if (!$log) {
+    return drush_set_error(dt('Could not find an error log for !alias', array('!alias' => $name)));
+  }
+  return $log->data;
 }
 
 /**
@@ -272,6 +300,7 @@ function drush_rebuild_env_rebuild($target = NULL) {
           ),
         'ok'
       );
+      return TRUE;
     }
     else {
       return drush_log(dt('Rebuild failed to complete successfully.'), 'error');
