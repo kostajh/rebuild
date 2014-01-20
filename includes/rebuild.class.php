@@ -55,7 +55,16 @@ class DrushRebuild {
     // passed on to the next command.
     // TODO: Surely there is a better way.
     $global_options = drush_get_merged_options();
-    unset($global_options['rsync-version'], $global_options['context-path'], $global_options['php-options'], $global_options['notify']);
+    unset(
+      $global_options['rsync-version'],
+      $global_options['context-path'],
+      $global_options['php-options'],
+      $global_options['notify'],
+      $global_options['#name'],
+      $global_options['#file'],
+      $global_options['#group']
+    );
+
     $commandline_options = array_merge($global_options, $commandline_options);
     $commandline_options['strict'] = '0';
     foreach ($commandline_options as $key => $value) {
