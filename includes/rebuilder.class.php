@@ -21,7 +21,7 @@ class Rebuilder extends DrushRebuild {
   /**
    * Rebuild the local environment.
    */
-  protected function execute() {
+  protected function execute($op = NULL) {
     $pre_process = new DrushScript('pre_process');
     if (!$pre_process->execute()) {
       return FALSE;
