@@ -6,7 +6,9 @@
  */
 
 define('DRUSH_REBUILD_EXTENSION', str_replace('/includes', '', __DIR__));
-require_once DRUSH_REBUILD_EXTENSION . '/vendor/autoload.php';
+if (file_exists(DRUSH_REBUILD_EXTENSION . '/vendor/autoload.php')) {
+  require_once DRUSH_REBUILD_EXTENSION . '/vendor/autoload.php';
+}
 
 use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Dumper;
