@@ -60,7 +60,7 @@ function drush_env_rebuild_init() {
           drush_shell_cd_and_exec($rebuild_extension, 'composer update');
         }
         drush_log(dt('Succeeded in running `composer install`.'), 'success');
-        require_once 'vendor/autoload.php';
+        require_once $rebuild_extension . '/vendor/autoload.php';
       }
       else {
         return drush_set_error('COMPOSER_INSTALL_FAIL', dt('Something went wrong in running `composer install`. Please try running `composer install` manually in "!dir".', array('!dir' => $rebuild_extension)));

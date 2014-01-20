@@ -5,6 +5,9 @@
  * Contains methods for Drush Rebuild.
  */
 
+define('DRUSH_REBUILD_EXTENSION', str_replace('/includes', '', __DIR__));
+require_once DRUSH_REBUILD_EXTENSION . '/vendor/autoload.php';
+
 use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -44,8 +47,7 @@ class DrushRebuild {
     }
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
     // TODO: Make Drush path configurable in YAML.
-    $rebuild_path = str_replace("/includes", '', __DIR__);
-    $drush_path = "$rebuild_path/vendor/bin/drush";
+    $drush_path = DRUSH_REBUILD_EXTENSION . '/vendor/bin/drush';
     // Pass in global options. When a user executes `drush rebuild`, they may
     // have passed `--debug` or `--alias-path` options, etc, this needs to get
     // passed on to the next command.
