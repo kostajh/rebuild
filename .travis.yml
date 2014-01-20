@@ -9,8 +9,6 @@ before_install:
 - drush --version
 - drush dl coder --destination=$HOME/.drush
 - ln -s $TRAVIS_BUILD_DIR $HOME/.drush/rebuild
-- cd $HOME/.drush/rebuild
-- composer install
 - drush cache-clear drush
 script:
 - drush drupalcs rebuild.drush.inc
