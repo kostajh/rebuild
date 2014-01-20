@@ -204,9 +204,6 @@ function drush_rebuild_create($template = NULL) {
 /**
  * Rebuild a local development environment.
  *
- * @param string $target
- *   The alias name for the environment to be rebuilt.
- *
  * @return bool
  *   TRUE on success; FALSE otherwise.
  */
