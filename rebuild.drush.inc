@@ -72,9 +72,9 @@ function rebuild_drush_command() {
     ),
     'aliases' => array('rb', 'rebuild'),
     'examples' => array(
-      'drush rebuild @mysite.dev --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
-      'drush rebuild @mysite.dev --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
-      'drush rebuild @mysite.dev --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
+      'drush @mysite.dev rebuild --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
+      'drush @mysite.dev rebuild --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
+      'drush @mysite.dev rebuild --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -140,9 +140,10 @@ function rebuild_drush_command() {
 /**
  * Display rebuild info for an alias.
  */
-function drush_rebuild_info($target = NULL) {
-  $drush_rebuild = new DrushRebuild($target);
-  return $drush_rebuild->getInfo($target);
+function drush_rebuild_info() {
+  $alias = drush_get_context('alias');
+  $drush_rebuild = new DrushRebuild($alias);
+  $drush_rebuild->getInfo('@' . $alias['#name']);
 }
 
 /**
@@ -205,10 +206,17 @@ function drush_rebuild_create($template = NULL) {
  *
  * @param string $target
  *   The alias name for the environment to be rebuilt.
+ *
+ * @return bool
+ *   TRUE on success; FALSE otherwise.
  */
-function drush_rebuild_env_rebuild($target = NULL) {
+function drush_rebuild_env_rebuild() {
 
-  $drush_rebuild = new DrushRebuild($target);
+  $alias = drush_get_context('alias');
+  if (!count($alias)) {
+    return drush_set_error(dt('Drush Rebuild syntax has changed. You should run `drush @mysite.dev rebuild` instead of `drush rebuild @mysite.dev`.'));
+  }
+  $drush_rebuild = new DrushRebuild($alias);
 
   // Output version information and return.
   if (drush_get_option('version')) {
@@ -226,20 +234,17 @@ function drush_rebuild_env_rebuild($target = NULL) {
   if (drush_get_option('dry-run')) {
     $drush_rebuild->setDryRun();
   }
-  // Return if no target was specified. Error logging handled by DrushRebuild().
-  if (!$target) {
-    return FALSE;
-  }
+
   // Check requirements.
   if (!$drush_rebuild->checkRequirements()) {
-    return drush_set_error(dt('Requirements check failed for !target', array('!target' => $target)));
+    return drush_set_error(dt('Requirements check failed for !target', array('!target' => $alias['#name'])));
   }
 
   // Load the rebuild config.
   $drush_rebuild->loadConfig();
   $rebuild_config = $drush_rebuild->getConfig();
   if ($rebuild_config === FALSE) {
-    return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $target)));
+    return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $alias['#name'])));
   }
 
   // Load metadata.
@@ -279,7 +284,7 @@ function drush_rebuild_env_rebuild($target = NULL) {
   drush_log($backup_info, $status);
   drush_print();
 
-  if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $target)))) {
+  if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias['#name'])))) {
     // Ensure that settings.php is in place before trying to generate a backup.
     // @todo make this a more robust check.
     if (drush_get_option('backup') && file_exists($drush_rebuild->environment['root'] . '/sites/default/settings.php')) {

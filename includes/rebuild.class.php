@@ -55,7 +55,9 @@ class DrushRebuild {
     $commandline_options = array_merge($global_options, $commandline_options);
     $commandline_options['strict'] = '0';
     foreach ($commandline_options as $key => $value) {
-      $options[] = sprintf('--%s=%s', $key, $value);
+      if (!is_array($value)) {
+        $options[] = sprintf('--%s=%s', $key, $value);
+      }
     }
 
     // Not all commands should have the alias name.
@@ -165,12 +167,14 @@ class DrushRebuild {
   /**
    * Constructor.
    *
-   * @param string $target
+   * @param string $alias
    *   The alias of the environment to be rebuilt.
    */
-  public function __construct($target) {
-    $this->target = $target;
-    $this->environment = $this->loadEnvironment($target);
+  public function __construct($alias) {
+    $this->target = '@' . $alias['#name'];
+    $env = drush_sitealias_get_record($this->target);
+    $this->environment = $env;
+    $this->setEnvironment($env);
   }
 
   /**
@@ -206,32 +210,6 @@ class DrushRebuild {
     $drush_rebuild_info = parse_ini_file($drush_info_file);
     define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['version']);
     return DRUSH_REBUILD_VERSION;
-  }
-
-  /**
-   * Load the Drush site alias based on a the alias name.
-   *
-   * @param string $target
-   *   The site alias name.
-   *
-   * @return array
-   *   The Drush environment array for the provided alias name.
-   */
-  public function loadEnvironment($target) {
-    // If we are just loading the version, return.
-    if (drush_get_option('version')) {
-      return TRUE;
-    }
-    if (!$target) {
-      // Enforce the syntax. `drush rebuild @target --source=@source`.
-      return drush_set_error(dt('You must specify a drush alias with the rebuild command.'));
-    }
-    $env = drush_sitealias_get_record($target);
-    if (!$env) {
-      return drush_set_error(dt('Failed to load site alias for !name', array('!name' => $target)));
-    }
-    $this->setEnvironment($env);
-    return $env;
   }
 
   /**

@@ -182,13 +182,14 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->installTestSites();
 
     // Run the rebuild.
-    $this->drush('env-rebuild', array('@drebuild.dev'),
+    $this->drush('env-rebuild', array(),
       array(
         'include' => $this->getHomeDir() . '/.drush/rebuild',
         'alias-path' => $this->getTestsDir(), 'debug' => TRUE,
         'source' => '@drebuild.prod',
         'yes' => TRUE,
-      )
+      ),
+      '@drebuild.dev'
     );
 
     // If site name for Dev is now Prod, the rebuild succeeded.
@@ -254,11 +255,12 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Tests the view config option.
    */
   public function testViewConfig() {
-    $this->drush('rebuild', array('@drebuild.dev'), array(
+    $this->drush('rebuild', array(), array(
       'include' => $this->getHomeDir() . '/.drush/rebuild',
       'alias-path' => $this->getTestsDir(),
       'view-config' => TRUE,
-      )
+      ),
+      '@drebuild.dev'
     );
     $this->assertContains('Rebuilds test Drush Rebuild local development environment from test Drush Rebuild prod destination', $this->getOutput());
   }
@@ -269,12 +271,13 @@ class RebuildTestCase extends Drush_CommandTestCase {
   public function testSiteInstall() {
     copy($this->getHomeDir() . '/.drush/rebuild/tests/site_install.rebuild.yaml', $this->getTestsDir() . '/rebuild.yaml');
     // Run the rebuild.
-    $this->drush('rebuild', array('@drebuild.dev'),
+    $this->drush('rebuild', array(''),
       array(
         'include' => $this->getHomeDir() . '/.drush/rebuild',
         'alias-path' => $this->getTestsDir(), 'debug' => TRUE,
         'yes' => TRUE,
-      )
+      ),
+      '@drebuild.dev'
     );
     // Check if the install succeeded.
     $this->drush('variable-get', array('install_profile'), array('alias-path' => $this->getTestsDir(), 'format' => 'json'), '@drebuild.dev');
