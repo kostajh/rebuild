@@ -21,7 +21,7 @@ require_once 'includes/user_login.inc';
 require_once 'includes/variable.inc';
 require_once 'includes/permissions.inc';
 
-if (!class_exists('Symfony\Component\Yaml')) {
+if (!class_exists('Symfony\Component\Yaml') && file_exists('vendor/autoload.php')) {
   // TODO: Use https://github.com/drush-ops/drush/pull/127 when committed.
   require_once 'vendor/autoload.php';
 }
@@ -39,7 +39,7 @@ function rebuild_drush_help($section) {
 /**
  * Implements hook_init().
  *
- * Require Drush 8.x-6.x.
+ * Require Drush 6.
  */
 function drush_env_rebuild_init() {
   $drush_major_version = substr(DRUSH_VERSION, 0, 1);
@@ -47,6 +47,30 @@ function drush_env_rebuild_init() {
     drush_log(dt('You are using Drush !version. Upgrading to Drush 6 is required.', array('!version' => $drush_major_version)), 'error');
     drush_die();
   }
+  // Check if composer has run.
+  $rebuild_extension = __DIR__;
+  if (!file_exists($rebuild_extension . '/vendor/bin/drush') || !file_exists($rebuild_extension . '/vendor/autoload.php')) {
+    // Check if composer exists on the system.
+    if (drush_shell_exec('which composer')) {
+      // Try auto-installing.
+      drush_log(dt('Running `composer install` for Drush Rebuild, please hold on a for a minute.'), 'ok');
+      if (drush_shell_cd_and_exec($rebuild_extension, 'composer install') && file_exists($rebuild_extension . '/vendor/autoload.php')) {
+        // Run composer update if Drush bin isn't found.
+        if (!file_exists($rebuild_extension . '/vendor/bin/drush')) {
+          drush_shell_cd_and_exec($rebuild_extension, 'composer update');
+        }
+        drush_log(dt('Succeeded in running `composer install`.'), 'success');
+        require_once 'vendor/autoload.php';
+      }
+      else {
+        return drush_set_error('COMPOSER_INSTALL_FAIL', dt('Something went wrong in running `composer install`. Please try running `composer install` manually in "!dir".', array('!dir' => $rebuild_extension)));
+      }
+    }
+    else {
+      return drush_set_error('NO_COMPOSER', dt('Drush Rebuild requires Composer. Please go to http://getcomposer.org and install it.'));
+    }
+  }
+  return TRUE;
 }
 
 /**
