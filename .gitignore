@@ -2,3 +2,4 @@
 *.sublime-workspace
 vendor/
 vendor/*
+composer.lock
