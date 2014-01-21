@@ -62,7 +62,9 @@ class DrushRebuild {
       $global_options['notify'],
       $global_options['#name'],
       $global_options['#file'],
-      $global_options['#group']
+      $global_options['#group'],
+      $global_options['#loaded-config'],
+      $global_options['db-url']
     );
 
     $commandline_options = array_merge($global_options, $commandline_options);
@@ -74,9 +76,18 @@ class DrushRebuild {
     }
 
     // Not all commands should have the alias name.
-    $target = '';
+    $target = ' ';
     if ($backend_options['dispatch-using-alias']) {
-      $target = ' ' . self::$rebuildConfig['general']['target'];
+      // Check if we were passed a complete site alias record.
+      if (isset($site_alias_record) && is_array($site_alias_record) && isset($site_alias_record['#name'])) {
+        $target = ' @' . $site_alias_record['#name'];
+      }
+      elseif (isset($site_alias_record)) {
+        $target = ' ' . $site_alias_record;
+      }
+      else {
+        $target = ' ' . self::$rebuildConfig['general']['target'];
+      }
     }
     $cmd = sprintf('%s%s %s %s %s --backend', $drush_path, $target, $command_name, implode(' ', $commandline_args), implode(' ', $options));
     // Dry run, just print command and return.
@@ -84,15 +95,22 @@ class DrushRebuild {
       return drush_log(dt('DRY RUN: !cmd', array('!cmd' => $cmd)), 'ok');
     }
     // Run command.
-    drush_shell_exec($cmd);
+    $ret = drush_shell_exec($cmd);
     $output = drush_shell_exec_output();
     $backend_output = array_pop($output);
     $parsed = drush_backend_parse_output($backend_output);
 
-    if (isset($parsed['error_status']) && $parsed['error_status'] == 1) {
+    if (!$ret) {
       drush_print();
-      foreach ($parsed['error_log'] as $type => $message) {
-        drush_set_error(sprintf('%s', $type), dt('!type: !msg', array('!type' => $type, '!msg' => array_shift($message))));
+      if (isset($parsed['error_log'])) {
+        foreach ($parsed['error_log'] as $type => $message) {
+          drush_set_error(sprintf('%s', $type), dt('!type: !msg', array('!type' => $type, '!msg' => array_shift($message))));
+        }
+      }
+      else {
+        // Sometimes we don't get output that is parsed properly.
+        drush_set_error(dt('!msg', array('!msg' => trim(array_values($backend_output)))));
+        $parsed = $backend_output;
       }
       drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $cmd)));
       // Write to the error log.
@@ -429,6 +447,10 @@ class DrushRebuild {
     if ($source == $this->target) {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
+    // Check that we can connect to the source.
+    drush_log(dt('Checking that we can access the SQL database for !site', array('!site' => $source)), 'ok');
+    $this->drushInvokeProcess($source, 'sql-query', array('"DESC system"'));
+    drush_log(dt('Established connection with SQL database for !site!', array('!site' => $source)), 'success');
     return drush_sitealias_get_record($source) ? TRUE : drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
   }
 
