@@ -96,7 +96,7 @@ class DrushRebuild {
       }
       drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $cmd)));
       // Write to the error log.
-      drush_cache_set(self::$rebuildConfig['general']['target'], $parsed, 'rebuild-error-log', DRUSH_CACHE_PERMANENT);
+      drush_cache_set(str_replace('@', '', self::$rebuildConfig['general']['target']), $parsed, 'rebuild-error-log', DRUSH_CACHE_PERMANENT);
       drush_print();
       drush_die(dt('To view the errors from the rebuild, run `drush !alias env-rebuild-error-log`', array('!alias' => self::$rebuildConfig['general']['target'])));
     }

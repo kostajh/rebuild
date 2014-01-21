@@ -178,7 +178,7 @@ function drush_rebuild_env_rebuild_error_log() {
   if (!count($alias)) {
     return drush_set_error(dt('See usage for the command. You need to run this command with an alias.'));
   }
-  $name = '@' . $alias['#name'];
+  $name = $alias['#name'];
   $log = drush_cache_get($name, 'rebuild-error-log');
   if (!$log) {
     return drush_set_error(dt('Could not find an error log for !alias', array('!alias' => $name)));
