@@ -34,27 +34,6 @@ class Diagnostics extends DrushRebuild {
   }
 
   /**
-   * Checks if the rebuild file is in INI format.
-   *
-   * @return array
-   *   Return a $config array or FALSE if not INI format.
-   */
-  public function isIni() {
-    if (isset($this->environment['path-aliases']['%rebuild'])) {
-      try {
-        $config = parse_ini_file($this->environment['path-aliases']['%rebuild']);
-        if (!empty($config)) {
-          return $config;
-        }
-      }
-      catch (Exception $e) {
-        return FALSE;
-      }
-    }
-    return FALSE;
-  }
-
-  /**
    * Ensure that the options provided in the loaded config are valid.
    *
    * @return array
