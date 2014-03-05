@@ -48,8 +48,7 @@ class DrushRebuild {
       $backend_options = $this->drushInvokeProcessBackendOptions();
     }
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
-    // TODO: Make Drush path configurable in YAML.
-    $drush_path = DRUSH_REBUILD_EXTENSION . '/vendor/bin/drush';
+    $drush_path = DRUSH_COMMAND;
     // Pass in global options. When a user executes `drush rebuild`, they may
     // have passed `--debug` or `--alias-path` options, etc, this needs to get
     // passed on to the next command.
