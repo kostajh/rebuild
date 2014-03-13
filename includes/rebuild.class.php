@@ -304,9 +304,6 @@ class DrushRebuild {
         return drush_set_error(dt('Failed to load overrides file! Check that it is valid YAML format.'));
       }
     }
-    else {
-      return drush_set_error(dt('Could not load the overrides file.'));
-    }
   }
 
   /**
