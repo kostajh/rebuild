@@ -6,13 +6,13 @@
  */
 
 // Main classes.
-require_once 'includes/rebuild.class.php';
-require_once 'includes/rebuilder.class.php';
-require_once 'includes/diagnostics.class.php';
+require_once 'src/DrushRebuild/DrushRebuild.php';
+require_once 'src/DrushRebuild/Rebuilder.class.php';
+require_once 'src/DrushRebuild/Diagnostics.php';
 
 // Helpers.
-require_once 'includes/site_install.inc';
-require_once 'includes/sql_sync.inc';
+require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
 require_once 'includes/pan_sql_sync.inc';
 require_once 'includes/rsync.inc';
 require_once 'includes/drush_script.inc';
