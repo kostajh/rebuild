@@ -5,7 +5,7 @@
  * Rsync functionality.
  */
 
-require_once __DIR__ . '/rebuilder.php';
+require_once dirname(__DIR__) . '/Rebuilder.php';
 
 /**
  * Handles rsync options for the rebuild.

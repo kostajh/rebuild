@@ -5,6 +5,8 @@
  * Diagnostics related code.
  */
 
+require_once 'DrushRebuild.php';
+
 /**
  * Provides methods for diagnosing rebuild configuration.
  */

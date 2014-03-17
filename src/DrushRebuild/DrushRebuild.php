@@ -207,22 +207,21 @@ class DrushRebuild {
    */
   public function rebuild() {
     // TODO: Loop through rebuild components.
-    $components = array('Rsync');
+    $components = array('Variable');
     foreach ($components as $class) {
-      drush_print($class);
-      $class = new $component();
-      drush_log($class->startMessage, 'ok');
+      $rebuilder = new $class();
+      drush_log($rebuilder->startMessage(), 'ok');
       $options = array();
       // TODO: Some classes need specific options.
-      $command = $class->command($this->config, $this->environment, $options);
-      drushInvokeProcess(
+      $command = $rebuilder->command($this->config, $this->environment, $options);
+      $this->drushInvokeProcess(
         $command['alias'],
         $command['command'],
         $command['arguments'],
         $command['options'],
         $command['backend-options']
       );
-      drush_log($class->completionMessage, 'success');
+      drush_log($rebuilder->completionMessage, 'success');
     }
     $diagnostics = new Diagnostics($this);
     return $diagnostics->verifyCompletedRebuild();

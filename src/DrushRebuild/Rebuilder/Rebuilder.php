@@ -8,6 +8,7 @@
 interface DrushRebuilder {
   /**
    * Constructor.
+
    */
   public function __construct(array $config, array $environment, array $options = array());
 

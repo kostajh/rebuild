@@ -7,19 +7,18 @@
 
 // Main classes.
 require_once 'src/DrushRebuild/DrushRebuild.php';
-require_once 'src/DrushRebuild/Rebuilder.class.php';
 require_once 'src/DrushRebuild/Diagnostics.php';
 
 // Helpers.
-require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
-require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
-require_once 'includes/pan_sql_sync.inc';
-require_once 'includes/rsync.inc';
-require_once 'includes/drush_script.inc';
-require_once 'includes/modules.inc';
-require_once 'includes/user_login.inc';
-require_once 'includes/variable.inc';
-require_once 'includes/permissions.inc';
+//require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/PanSqlSync.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/Rsync.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/DrushScript.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/Module.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/UserLogin.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/Variable.php';
+//require_once 'src/DrushRebuild/Rebuilder/Component/Permission.php';
 
 /**
  * Implements hook_drush_help().
