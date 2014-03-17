@@ -5,44 +5,51 @@
  * Rsync functionality.
  */
 
+require_once __DIR__ . '/rebuilder.php';
+
 /**
  * Handles rsync options for the rebuild.
  */
-class Rsync extends Rebuilder {
+class Rsync implements DrushRebuilder {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
   }
 
   /**
-   * Start the process of logging a user in.
+   * {@inheritdoc}
    */
-  protected function execute() {
-    if (isset($this->config['sync']['rsync']) && $this->config['sync']['rsync']['files_only']) {
-      drush_log('Beginning rsync', 'ok');
-      parent::drushInvokeProcess(NULL,
-                                  'rsync',
-                                  array(
-                                    $this->config['sync']['source'] . ':%files',
-                                    $this->config['general']['target'] . ':%files',
-                                  ),
-                                  array(
-                                    'yes' => TRUE,
-                                    'quiet' => TRUE,
-                                    'verbose' => FALSE,
-                                  ),
-                                  array(
-                                    'integrate' => FALSE,
-                                    'interactive' => FALSE,
-                                    'dispatch-using-alias' => FALSE,
-                                  ));
-      drush_log(dt('Rsynced files from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
-    }
-    return TRUE;
+  public function startMessage() {
+    return dt('Beginning rsync');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function command() {
+    return array(
+      'alias' => NULL,
+      'command' => 'rsync',
+      'arguments' => array($this->config['sync']['source'] . ':%files', $this->config['general']['target'] . ':%files'),
+      'options' => array('yes' => TRUE, 'quiet' => TRUE, 'verbose' => FALSE),
+      'backend-options' => array(),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return dt('Rsynced files from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target']));
   }
 
 }

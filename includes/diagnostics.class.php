@@ -61,7 +61,7 @@ class Diagnostics extends DrushRebuild {
    * Verifies a completed rebuild.
    */
   public function verifyCompletedRebuild() {
-    // Check to see if we can bootstrap to the site.
+    // TODO: Check to see if we can bootstrap to the site.
     return TRUE;
   }
 

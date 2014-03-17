@@ -206,9 +206,23 @@ class DrushRebuild {
    * Handles rebuilding local environment.
    */
   public function rebuild() {
-    $rebuilder = new Rebuilder();
-    if (!$rebuilder->execute()) {
-      return FALSE;
+    // TODO: Loop through rebuild components.
+    $components = array('Rsync');
+    foreach ($components as $class) {
+      drush_print($class);
+      $class = new $component();
+      drush_log($class->startMessage, 'ok');
+      $options = array();
+      // TODO: Some classes need specific options.
+      $command = $class->command($this->config, $this->environment, $options);
+      drushInvokeProcess(
+        $command['alias'],
+        $command['command'],
+        $command['arguments'],
+        $command['options'],
+        $command['backend-options']
+      );
+      drush_log($class->completionMessage, 'success');
     }
     $diagnostics = new Diagnostics($this);
     return $diagnostics->verifyCompletedRebuild();

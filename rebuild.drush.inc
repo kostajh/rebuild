@@ -75,6 +75,15 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
+  $items['env-rebuild-component'] = array(
+    'description' => 'Rebuilds a component of an environment.',
+    'arguments' => array(
+      'component' => 'The component to rebuild, e.g. "sql".',
+    ),
+    'hidden' => TRUE,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+  );
+
   $items['env-rebuild-init'] = array(
     'description' => 'Create a rebuild config file in the current directory from a template.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -195,6 +204,15 @@ function drush_rebuild_create($template = NULL) {
   else {
     return drush_set_error(dt('Failed to create the rebuild config file for you.'));
   }
+}
+
+/**
+ * Rebuilds a component of an environment.
+ *
+ * @param string $component
+ */
+function drush_rebuild_env_rebuild_component($component) {
+  drush_print('hi');
 }
 
 /**
