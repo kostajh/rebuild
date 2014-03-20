@@ -37,11 +37,13 @@ class Rsync implements DrushRebuilder {
    */
   public function command() {
     return array(
-      'alias' => NULL,
-      'command' => 'rsync',
-      'arguments' => array($this->config['sync']['source'] . ':%files', $this->config['general']['target'] . ':%files'),
-      'options' => array('yes' => TRUE, 'quiet' => TRUE, 'verbose' => FALSE),
-      'backend-options' => array(),
+      array(
+        'alias' => NULL,
+        'command' => 'rsync',
+        'arguments' => array($this->config['sync']['source'] . ':%files', $this->config['general']['target'] . ':%files'),
+        'options' => array('yes' => TRUE, 'quiet' => TRUE, 'verbose' => FALSE),
+        'backend-options' => array(),
+      ),
     );
   }
 

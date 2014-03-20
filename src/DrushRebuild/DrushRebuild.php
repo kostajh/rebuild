@@ -33,84 +33,12 @@ class DrushRebuild {
   /**
    * Wrapper around parent::drushInvokeProcess().
    */
-  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = NULL) {
-    $options = array();
-    if (is_array($backend_options)) {
-      $options = $backend_options;
-      $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), $options);
-    }
-    else {
-      $backend_options = $this->drushInvokeProcessBackendOptions();
-    }
-    $commandline_options = array_merge($this->drushInvokeProcessOptions(), $commandline_options);
-    $drush_path = DRUSH_COMMAND;
-    // Pass in global options. When a user executes `drush rebuild`, they may
-    // have passed `--debug` or `--alias-path` options, etc, this needs to get
-    // passed on to the next command.
-    // TODO: Surely there is a better way.
-    $global_options = drush_get_merged_options();
-    unset(
-      $global_options['rsync-version'],
-      $global_options['context-path'],
-      $global_options['php-options'],
-      $global_options['notify'],
-      $global_options['#name'],
-      $global_options['#file'],
-      $global_options['#group'],
-      $global_options['#loaded-config'],
-      $global_options['db-url']
-    );
-
-    $commandline_options = array_merge($global_options, $commandline_options);
-    $commandline_options['strict'] = '0';
-    foreach ($commandline_options as $key => $value) {
-      if (!is_array($value)) {
-        $options[] = sprintf('--%s=%s', $key, $value);
-      }
-    }
-
-    // Not all commands should have the alias name.
-    $target = ' ';
-    if ($backend_options['dispatch-using-alias']) {
-      // Check if we were passed a complete site alias record.
-      if (isset($site_alias_record) && is_array($site_alias_record) && isset($site_alias_record['#name'])) {
-        $target = ' @' . $site_alias_record['#name'];
-      }
-      elseif (isset($site_alias_record)) {
-        $target = ' ' . $site_alias_record;
-      }
-      else {
-        $target = ' ' . self::$rebuildConfig['general']['target'];
-      }
-    }
-    $cmd = sprintf('%s%s %s %s %s --backend', $drush_path, $target, $command_name, implode(' ', $commandline_args), implode(' ', $options));
-    // Dry run, just print command and return.
-    if ($this->getDryRun() == TRUE) {
-      return drush_log(dt('DRY RUN: !cmd', array('!cmd' => $cmd)), 'ok');
-    }
-    // Run command.
-    $ret = drush_shell_exec($cmd);
-    $output = drush_shell_exec_output();
-    $backend_output = array_pop($output);
-    $parsed = drush_backend_parse_output($backend_output);
-
-    if (!$ret) {
-      drush_print();
-      if (isset($parsed['error_log'])) {
-        foreach ($parsed['error_log'] as $type => $message) {
-          drush_set_error(sprintf('%s', $type), dt('!type: !msg', array('!type' => $type, '!msg' => array_shift($message))));
-        }
-      }
-      else {
-        // Sometimes we don't get output that is parsed properly.
-        drush_set_error(dt('!msg', array('!msg' => trim(array_values($backend_output)))));
-        $parsed = $backend_output;
-      }
-      drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $cmd)));
-      // Write to the error log.
-      drush_cache_set(str_replace('@', '', self::$rebuildConfig['general']['target']), $parsed, 'rebuild-error-log', DRUSH_CACHE_PERMANENT);
-      drush_print();
-      drush_die(dt('To view the errors from the rebuild, run `drush !alias env-rebuild-error-log`', array('!alias' => self::$rebuildConfig['general']['target'])));
+  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = FALSE) {
+    $commandline_options = array_merge($this->drushInvokeProcessOptions(), (array) $commandline_options);
+    $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
+    if (!$result) {
+      drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $command_name)));
+      return drush_die();
     }
     return TRUE;
   }
@@ -142,7 +70,7 @@ class DrushRebuild {
       'dispatch-using-alias' => TRUE,
       'integrate' => FALSE,
       'interactive' => FALSE,
-      'backend' => 0,
+      'backend' => FALSE,
     );
   }
 
@@ -209,19 +137,22 @@ class DrushRebuild {
     // TODO: Loop through rebuild components.
     $components = array('Variable');
     foreach ($components as $class) {
-      $rebuilder = new $class();
-      drush_log($rebuilder->startMessage(), 'ok');
       $options = array();
+      $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), $options);
+      drush_log($rebuilder->startMessage(), 'ok');
       // TODO: Some classes need specific options.
-      $command = $rebuilder->command($this->config, $this->environment, $options);
-      $this->drushInvokeProcess(
-        $command['alias'],
-        $command['command'],
-        $command['arguments'],
-        $command['options'],
-        $command['backend-options']
-      );
-      drush_log($rebuilder->completionMessage, 'success');
+      $commands = $rebuilder->commands();
+      foreach ($commands as $command) {
+        drush_log($command['progress-message'], 'ok');
+        $this->drushInvokeProcess(
+          $command['alias'],
+          $command['command'],
+          $command['arguments'],
+          $command['options'],
+          $command['backend-options']
+        );
+      }
+      drush_log($rebuilder->completionMessage(), 'success');
     }
     $diagnostics = new Diagnostics($this);
     return $diagnostics->verifyCompletedRebuild();

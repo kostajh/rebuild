@@ -5,28 +5,42 @@
  * Variable-set related code.
  */
 
+require_once dirname(__DIR__) . '/Rebuilder.php';
+
 /**
  * Handles variable-set functionality.
  */
-class Variable extends Rebuilder {
+class Variable implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
   }
 
   /**
-   * Set the variables.
+   * {@inheritdoc}
    */
-  protected function execute() {
+  public function startMessage() {
+    return dt('Setting variables');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
     $variables = $this->config['drupal']['variables'];
+    $commands = array();
     // Set variables.
     // TODO: Implement deleting variables.
     if (isset($variables['set']) && is_array($variables['set'])) {
-      drush_log('Setting variables', 'ok');
       foreach ($variables['set'] as $key => $value) {
         // If the value starts with "%" then we are referencing a variable
         // defined in the Drush alias.
@@ -42,10 +56,21 @@ class Variable extends Rebuilder {
             return drush_set_error(dt('Attempted to reference an undefined variable in your Drush alias.'));
           }
         }
-        parent::drushInvokeProcess($this->environment, 'variable-set', array($key, $value));
-        drush_log(dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)), 'success');
+        $commands[] = array(
+          'alias' => $this->environment,
+          'command' => 'variable-set',
+          'arguments' => array($key, $value),
+          'progress-message' => dt('- Set "!var" to "!value"', array('!var' => $key, '!value' => $value)),
+        );
       }
     }
-    return TRUE;
+    return $commands;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return dt('Finished setting variables.');
   }
 }

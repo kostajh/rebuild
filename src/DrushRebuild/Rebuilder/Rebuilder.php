@@ -5,17 +5,20 @@
  * Interface for Drush Rebuild classes.
  */
 
-interface DrushRebuilder {
+interface DrushRebuilderInterface {
+
   /**
    * Constructor.
-
    */
   public function __construct(array $config, array $environment, array $options = array());
 
   /**
-   * The command callback to pass to DrushInvokeProcess().
+   * The command callback to pass to drushInvokeProcess().
+   *
+   * @return array
+   *   An array of command callbacks to pass to drushInvokeProcess().
    */
-  public function command();
+  public function commands();
 
   /**
    * The message to log before starting.

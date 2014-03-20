@@ -224,7 +224,7 @@ function drush_rebuild_env_rebuild() {
 
   $alias = drush_get_context('alias');
   if (!count($alias)) {
-    return drush_set_error(dt('Drush Rebuild syntax has changed. You should run `drush @mysite.dev rebuild` instead of `drush rebuild @mysite.dev`.'));
+    return drush_set_error(dt('Drush Rebuild requires the use of a Drush alias. Try running `drush @mysite.dev rebuild`.'));
   }
   $drush_rebuild = new DrushRebuild($alias);
 
