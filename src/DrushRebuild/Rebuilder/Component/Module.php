@@ -5,48 +5,67 @@
  * Module related code.
  */
 
+require_once dirname(__DIR__) . '/Rebuilder.php';
+
 /**
  * Handles module enable/disable functions.
  */
-class Modules extends Rebuilder {
+class Module implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
   }
 
   /**
-   * Start the process of enabling / disabling modules.
-   *
-   * @param string $op
-   *   Valid options are 'enable' or 'disable'.
-   *
-   * @return bool
-   *   Return TRUE/FALSE on success/error.
+   * {@inheritdoc}
    */
-  protected function execute($op) {
-    if ($op == 'enable') {
-      // Enable modules.
-      if (isset($this->config['drupal']['modules']['enable']) && is_array($this->config['drupal']['modules']['enable'])) {
-        drush_log('Enabling modules', 'ok');
-        parent::drushInvokeProcess($this->environment, 'pm-enable', $this->config['drupal']['modules']['enable']);
-        drush_log(dt('- Enabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['enable']))), 'success');
-      }
-    }
+  public function startMessage() {
+    return 'Enabling/disabling modules';
+  }
 
-    if ($op == 'disable') {
-      // Disable modules.
-      if (isset($this->config['drupal']['modules']['disable']) && is_array($this->config['drupal']['modules']['disable'])) {
-        drush_log('Disabling modules', 'ok');
-        // TODO: We shouldn't have to set 'strict' => 0, but something has
-        // changed between Drush 6 beta 1 and Drush 6 rc1 that requires us to.
-        parent::drushInvokeProcess($this->environment, 'pm-disable', $this->config['drupal']['modules']['disable']);
-        drush_log(dt('- Disabled modules: !module.', array('!module' => implode(", ", $this->config['drupal']['modules']['disable']))), 'success');
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return 'Finished enabling/disabling modules.';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
+    $commands = array();
+    // Enable modules.
+    if (isset($this->config['drupal']['modules']['enable']) && is_array($this->config['drupal']['modules']['enable'])) {
+      foreach ($this->config['drupal']['modules']['enable'] as $module) {
+        $commands[] = array(
+          'alias' => $this->environment,
+          'command' => 'pm-enable',
+          'arguments' => $module,
+          'progress-message' => dt('- !module', array('!module' => $module)),
+        );
       }
     }
-    return TRUE;
+    // Disable modules.
+    if (isset($this->config['drupal']['modules']['disable']) && is_array($this->config['drupal']['modules']['disable'])) {
+      foreach ($this->config['drupal']['modules']['disable'] as $module) {
+        $commands[] = array(
+          'alias' => $this->environment,
+          'command' => 'pm-disable',
+          'arguments' => $module,
+          'progress-message' => dt('- !module', array('!module' => $module)),
+        );
+      }
+    }
+    return $commands;
   }
 }

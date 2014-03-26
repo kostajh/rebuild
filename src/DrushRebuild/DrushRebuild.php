@@ -9,6 +9,8 @@ use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Exception\ParseException;
 
+require_once $_SERVER['HOME'] . '/' . '.composer/vendor/autoload.php';
+
 /**
  * The main Drush Rebuild class.
  *
@@ -29,16 +31,21 @@ class DrushRebuild {
   public static $rebuildEnvironment = array();
   public static $dryRun = FALSE;
 
-
   /**
    * Wrapper around parent::drushInvokeProcess().
    */
   public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = FALSE) {
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), (array) $commandline_options);
-    $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
-    if (!$result) {
-      drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $command_name)));
-      return drush_die();
+    // TODO: Re-implement `--dry-run`.
+    if ($this->getDryRun()) {
+      $command = $command_name . ' ' . implode(' ', $commandline_args) . ' ' . implode(' --', $commandline_options) . ' ' . implode(' --', $backend_options);
+    }
+    else {
+      $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
+      if (!$result) {
+        drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $command_name)));
+        return drush_die();
+      }
     }
     return TRUE;
   }
@@ -131,16 +138,56 @@ class DrushRebuild {
   }
 
   /**
+   * Get components for the rebuild.
+   */
+  public function getComponents() {
+    $config = $this->getConfig();
+    $components = array();
+    // Add preprocess scripts.
+    if (isset($config['general']['drush_scripts']['pre_process'])) {
+      $components[] = array('DrushScript' => array('state' => 'pre_process'));
+    }
+    // Site-install or sql-sync?
+    if (isset($config['site_install'])) {
+      $components[] = array('SiteInstall' => array());
+    }
+    if (isset($config['sync']['sql_sync'])) {
+      $components[] = array('SqlSync' => array());
+    }
+    if (isset($config['sync']['pan_sql_sync'])) {
+      $components[] = array('PanSqlSync' => array());
+    }
+    if (isset($config['sync']['rsync'])) {
+      $components[] = array('Rsync' => array());
+    }
+    if (isset($config['drupal']['variables'])) {
+      $components[] = array('Variable' => array());
+    }
+    if (isset($config['drupal']['modules'])) {
+      $components[] = array('Module' => array());
+    }
+    if (isset($config['drupal']['permissions'])) {
+      $components[] = array('Permissions' => array());
+    }
+    return $components;
+  }
+
+  /**
    * Handles rebuilding local environment.
    */
   public function rebuild() {
-    // TODO: Loop through rebuild components.
-    $components = array('Variable');
-    foreach ($components as $class) {
-      $options = array();
+    // Loop through rebuild components.
+    $components = $this->getComponents();
+    $curr = 1;
+    foreach ($components as $component) {
+      drush_log(dt('Step !curr of !total', array('!curr' => $curr, '!total' => count($components))), 'ok');
+      $class = current(array_keys($component));
+      if (!class_exists($class)) {
+        drush_set_error(dt('The class !class does not exist.', array('!class' => $class)));
+        drush_die();
+      }
       $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), $options);
       drush_log($rebuilder->startMessage(), 'ok');
-      // TODO: Some classes need specific options.
       $commands = $rebuilder->commands();
       foreach ($commands as $command) {
         drush_log($command['progress-message'], 'ok');
@@ -153,6 +200,7 @@ class DrushRebuild {
         );
       }
       drush_log($rebuilder->completionMessage(), 'success');
+      $curr++;
     }
     $diagnostics = new Diagnostics($this);
     return $diagnostics->verifyCompletedRebuild();

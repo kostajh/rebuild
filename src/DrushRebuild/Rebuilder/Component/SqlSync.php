@@ -5,30 +5,55 @@
  * SQL Sync code.
  */
 
+require_once dirname(__DIR__) . '/Rebuilder.php';
+
 /**
  * Handles sql-sync component of rebuild.
  */
-class SqlSync extends Rebuilder {
+class SqlSync implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
   }
 
   /**
-   * Start the sql-sync.
+   * {@inheritdoc}
    */
-  public function execute() {
-    // Execute sql-sync.
-    if (isset($this->config['general']['target']) && isset($this->config['sync']['source'])) {
-      drush_log('Beginning sql-sync', 'ok');
-      drush_log(dt('Syncing database from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
-      parent::drushInvokeProcess($this->environment, 'sql-sync', array($this->config['sync']['source'], $this->config['general']['target']), $this->config['sync']['sql_sync'], array('dispatch-using-alias' => FALSE));
-      drush_log(dt('Synced database from !source to !target', array('!source' => $this->config['sync']['source'], '!target' => $this->config['general']['target'])), 'ok');
-    }
-    return TRUE;
+  public function startMessage() {
+    return dt('Beginning sql-sync');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return dt('Finished syncing database.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
+    return array(
+      array(
+        'alias' => $this->environment,
+        'command' => 'sql-sync',
+        'arguments' => array($this->config['sync']['source'], $this->config['general']['target']),
+        'options' => $this->config['sync']['sql_sync'],
+        'backend-options' => array('dispatch-using-alias' => FALSE),
+        'progress-message' => dt('- Syncing database from !source to !target', array(
+          '!source' => $this->config['sync']['source'],
+          '!target' => $this->config['general']['target'])),
+      ),
+    );
   }
 }

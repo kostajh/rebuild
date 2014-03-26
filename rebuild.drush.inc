@@ -10,12 +10,12 @@ require_once 'src/DrushRebuild/DrushRebuild.php';
 require_once 'src/DrushRebuild/Diagnostics.php';
 
 // Helpers.
-//require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/PanSqlSync.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/PanSqlSync.php';
 //require_once 'src/DrushRebuild/Rebuilder/Component/Rsync.php';
 //require_once 'src/DrushRebuild/Rebuilder/Component/DrushScript.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/Module.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/Module.php';
 //require_once 'src/DrushRebuild/Rebuilder/Component/UserLogin.php';
 require_once 'src/DrushRebuild/Rebuilder/Component/Variable.php';
 //require_once 'src/DrushRebuild/Rebuilder/Component/Permission.php';
