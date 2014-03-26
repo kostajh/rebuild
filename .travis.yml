@@ -4,14 +4,15 @@ php:
 before_install:
 - pear install pear/PHP_CodeSniffer
 - phpenv rehash
+- sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' $HOME/.bashrc
+- source $HOME/.bashrc
 - composer global require drush/drush:6.*
-- sudo ln -s $HOME/.composer/vendor/bin/drush /usr/local/bin/drush
 - drush --version
 - drush dl coder --destination=$HOME/.drush
 - ln -s $TRAVIS_BUILD_DIR $HOME/.drush/rebuild
 - drush cache-clear drush
 script:
 - drush drupalcs rebuild.drush.inc
-- drush drupalcs includes
+- drush drupalcs src
 - drush drupalcs tests
 - phpunit --bootstrap=$HOME/.composer/vendor/drush/drush/tests/drush_testcase.inc $HOME/.drush/rebuild/tests/rebuildTest.php

@@ -25,7 +25,7 @@ class DrushScript implements DrushRebuilderInterface {
     $this->options = $options;
   }
 
-/**
+  /**
    * {@inheritdoc}
    */
   public function startMessage() {

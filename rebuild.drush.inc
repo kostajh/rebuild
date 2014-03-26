@@ -72,15 +72,6 @@ function rebuild_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['env-rebuild-component'] = array(
-    'description' => 'Rebuilds a component of an environment.',
-    'arguments' => array(
-      'component' => 'The component to rebuild, e.g. "sql".',
-    ),
-    'hidden' => TRUE,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-  );
-
   $items['env-rebuild-init'] = array(
     'description' => 'Create a rebuild config file in the current directory from a template.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
@@ -204,15 +195,6 @@ function drush_rebuild_create($template = NULL) {
 }
 
 /**
- * Rebuilds a component of an environment.
- *
- * @param string $component
- */
-function drush_rebuild_env_rebuild_component($component) {
-  drush_print('hi');
-}
-
-/**
  * Rebuild a local development environment.
  *
  * @return bool
@@ -280,16 +262,8 @@ function drush_rebuild_env_rebuild() {
 
   // Show rebuild meta-data for the alias.
   $drush_rebuild->showMetadata();
-  drush_print();
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias['#name'])))) {
-    // Ensure that settings.php is in place before trying to generate a backup.
-    // @todo make this a more robust check.
-    if (drush_get_option('backup') && file_exists($drush_rebuild->environment['root'] . '/sites/default/settings.php')) {
-      if (!$drush_rebuild->backupEnvironment()) {
-        return FALSE;
-      }
-    }
 
     $begin_rebuild_time = time();
     $ret = $drush_rebuild->rebuild();
@@ -304,7 +278,7 @@ function drush_rebuild_env_rebuild() {
           '!min' => gmdate("i", $total_rebuild_time),
           '!sec' => gmdate("s", $total_rebuild_time))
           ),
-        'ok'
+        'success'
       );
       return TRUE;
     }

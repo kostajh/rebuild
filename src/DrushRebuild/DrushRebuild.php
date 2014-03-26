@@ -290,11 +290,10 @@ class DrushRebuild {
         drush_log(dt('%overrides', array(
           '%overrides' => file_get_contents($overrides_path))), 'success');
         $this->setConfig($rebuild_config);
-        drush_print();
         return TRUE;
       }
-      else {
-        return drush_set_error(dt('Failed to load overrides file! Check that it is valid YAML format.'));
+      elseif (file_exists($overrides_path)) {
+        return drush_log(dt('Failed to load overrides file! Check that it is valid YAML format.'));
       }
     }
   }
@@ -437,8 +436,8 @@ class DrushRebuild {
       return drush_set_error(dt('You cannot use the local alias as the source for a rebuild.'));
     }
     // Check that we can connect to the source.
-    drush_log(dt('Checking that we can access the SQL database for !site', array('!site' => $source)), 'ok');
-    $this->drushInvokeProcess($source, 'sql-query', array('"DESC system"'));
+    drush_log(dt('Checking that SQL database for !site is accessible', array('!site' => $source)), 'ok');
+    $this->drushInvokeProcess($source, 'sql-query', array('"SHOW TABLES"'));
     drush_log(dt('Established connection with SQL database for !site!', array('!site' => $source)), 'success');
     return drush_sitealias_get_record($source) ? TRUE : drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
   }

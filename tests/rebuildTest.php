@@ -227,7 +227,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
     );
     $this->assertContains('user+1@localhost', $this->getOutput());
     // Check that hello.world file was rsynced from @prod
-     $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
+    $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
     // Test permissions grant.
     $this->drush('sql-query', array(
       'SELECT rid FROM role_permission WHERE rid = 1 AND permission = "access site in maintenance mode"',
@@ -237,7 +237,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
       ),
       '@drebuild.dev'
     );
-    //$this->assertContains('1', $this->getOutput());
+    // $this->assertContains('1', $this->getOutput());
     // Test permissions revoke.
     $this->drush('sql-query', array(
       'SELECT rid FROM role_permission WHERE rid = 3 AND permission = "administer comments"',

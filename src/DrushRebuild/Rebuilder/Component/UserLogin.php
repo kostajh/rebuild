@@ -44,7 +44,7 @@ class UserLogin implements DrushRebuilderInterface {
     return array(
       array(
         'alias' => $this->environment,
-        'command' => 'uli'
+        'command' => 'uli',
       ),
     );
   }
