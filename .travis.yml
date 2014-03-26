@@ -7,6 +7,7 @@ before_install:
 - sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' $HOME/.bashrc
 - source $HOME/.bashrc
 - composer global require drush/drush:6.*
+- composer global update
 - drush --version
 - drush dl coder --destination=$HOME/.drush
 - ln -s $TRAVIS_BUILD_DIR $HOME/.drush/rebuild
