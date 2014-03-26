@@ -9,16 +9,16 @@
 require_once 'src/DrushRebuild/DrushRebuild.php';
 require_once 'src/DrushRebuild/Diagnostics.php';
 
-// Helpers.
+// Components.
 require_once 'src/DrushRebuild/Rebuilder/Component/SiteInstall.php';
 require_once 'src/DrushRebuild/Rebuilder/Component/SqlSync.php';
 require_once 'src/DrushRebuild/Rebuilder/Component/PanSqlSync.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/Rsync.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/DrushScript.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/Rsync.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/DrushScript.php';
 require_once 'src/DrushRebuild/Rebuilder/Component/Module.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/UserLogin.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/UserLogin.php';
 require_once 'src/DrushRebuild/Rebuilder/Component/Variable.php';
-//require_once 'src/DrushRebuild/Rebuilder/Component/Permission.php';
+require_once 'src/DrushRebuild/Rebuilder/Component/Permission.php';
 
 /**
  * Implements hook_drush_help().
@@ -63,13 +63,11 @@ function rebuild_drush_command() {
         'description' => 'List the Drush tasks that will be excecuted, but do not run them.',
       ),
       'view-config' => 'View the rebuild config.',
-      'backup' => 'Backup the local dev environment before rebuilding.',
     ),
     'aliases' => array('rb', 'rebuild'),
     'examples' => array(
       'drush @mysite.dev rebuild --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
       'drush @mysite.dev rebuild --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
-      'drush @mysite.dev rebuild --backup' => 'Creates an archive dump of the environment @mysite.dev before rebuilding the environment.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
@@ -282,16 +280,6 @@ function drush_rebuild_env_rebuild() {
 
   // Show rebuild meta-data for the alias.
   $drush_rebuild->showMetadata();
-  // Check backup options.
-  if (!drush_get_option('backup')) {
-    $backup_info = 'A backup of your current dev environment will not be created!';
-    $status = 'warning';
-  }
-  else {
-    $backup_info = 'A backup of your current dev environment will be created.';
-    $status = 'ok';
-  }
-  drush_log($backup_info, $status);
   drush_print();
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias['#name'])))) {

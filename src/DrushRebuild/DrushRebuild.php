@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-require_once $_SERVER['HOME'] . '/' . '.composer/vendor/autoload.php';
+require_once dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
 
 /**
  * The main Drush Rebuild class.
@@ -167,7 +167,11 @@ class DrushRebuild {
       $components[] = array('Module' => array());
     }
     if (isset($config['drupal']['permissions'])) {
-      $components[] = array('Permissions' => array());
+      $components[] = array('Permission' => array('op' => 'grant'));
+      $components[] = array('Permission' => array('op' => 'revoke'));
+    }
+    if (isset($config['general']['drush_scripts']['post_process'])) {
+      $components[] = array('DrushScript' => array('state' => 'post_process'));
     }
     return $components;
   }
@@ -178,6 +182,8 @@ class DrushRebuild {
   public function rebuild() {
     // Loop through rebuild components.
     $components = $this->getComponents();
+    // TODO: Validate components.
+    // $this->validateComponents();
     $curr = 1;
     foreach ($components as $component) {
       drush_log(dt('Step !curr of !total', array('!curr' => $curr, '!total' => count($components))), 'ok');
@@ -186,7 +192,7 @@ class DrushRebuild {
         drush_set_error(dt('The class !class does not exist.', array('!class' => $class)));
         drush_die();
       }
-      $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), $options);
+      $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), array_values($component));
       drush_log($rebuilder->startMessage(), 'ok');
       $commands = $rebuilder->commands();
       foreach ($commands as $command) {
@@ -194,9 +200,9 @@ class DrushRebuild {
         $this->drushInvokeProcess(
           $command['alias'],
           $command['command'],
-          $command['arguments'],
-          $command['options'],
-          $command['backend-options']
+          isset($command['arguments']) ? $command['arguments'] : array(),
+          isset($command['options']) ? $command['options'] : array(),
+          isset($command['backend-options']) ? $command['backend-options'] : array()
         );
       }
       drush_log($rebuilder->completionMessage(), 'success');

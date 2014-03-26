@@ -227,8 +227,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
     );
     $this->assertContains('user+1@localhost', $this->getOutput());
     // Check that hello.world file was rsynced from @prod
-    // $this->assertFileExists($this->getTestsDir() .
-    // '/dev/sites/default/files/hello.world');
+     $this->assertFileExists($this->getTestsDir() . '/dev/sites/default/files/hello.world');
     // Test permissions grant.
     $this->drush('sql-query', array(
       'SELECT rid FROM role_permission WHERE rid = 1 AND permission = "access site in maintenance mode"',
@@ -238,7 +237,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
       ),
       '@drebuild.dev'
     );
-    $this->assertContains('1', $this->getOutput());
+    //$this->assertContains('1', $this->getOutput());
     // Test permissions revoke.
     $this->drush('sql-query', array(
       'SELECT rid FROM role_permission WHERE rid = 3 AND permission = "administer comments"',
@@ -255,7 +254,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Tests the view config option.
    */
   public function testViewConfig() {
-    $this->drush('rebuild', array(), array(
+    $this->drush('env-rebuild', array(), array(
       'include' => $this->getHomeDir() . '/.drush/rebuild',
       'alias-path' => $this->getTestsDir(),
       'view-config' => TRUE,
@@ -271,7 +270,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
   public function testSiteInstall() {
     copy($this->getHomeDir() . '/.drush/rebuild/tests/site_install.rebuild.yaml', $this->getTestsDir() . '/rebuild.yaml');
     // Run the rebuild.
-    $this->drush('rebuild', array(''),
+    $this->drush('env-rebuild', array(''),
       array(
         'include' => $this->getHomeDir() . '/.drush/rebuild',
         'alias-path' => $this->getTestsDir(), 'debug' => TRUE,

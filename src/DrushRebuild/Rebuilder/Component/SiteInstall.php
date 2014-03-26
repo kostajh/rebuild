@@ -50,14 +50,14 @@ class SiteInstall implements DrushRebuilderInterface {
    * {@inheritdoc}
    */
   public function startMessage() {
-    return 'Beginning site-install';
+    return dt('Beginning site-install');
   }
 
   /**
    * {@inheritdoc}
    */
   public function completionMessage() {
-    return 'Finished site-install';
+    return dt('Finished site-install');
   }
 
   /**
@@ -70,7 +70,7 @@ class SiteInstall implements DrushRebuilderInterface {
         'command' => 'site-install',
         'arguments' => array($this->profile),
         'options' => $this->site_install_options,
-        'prgoress-message' => dt('Beginning site-install with !profile', array('!profile' => $this->profile)),
+        'progress-message' => dt('Beginning site-install with !profile', array('!profile' => $this->profile)),
       ),
     );
   }

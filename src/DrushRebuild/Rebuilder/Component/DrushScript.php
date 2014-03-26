@@ -5,53 +5,60 @@
  * Drush script related code.
  */
 
+require_once dirname(__DIR__) . '/Rebuilder.php';
+
 /**
  * Handles executing drush scripts.
  */
-class DrushScript extends Rebuilder {
+class DrushScript implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
-   *
-   * @param string $state
-   *   Where we are in the rebuild process. Valid options are 'pre_process',
-   *   'post_process' and 'legacy'.
-   * @param string $script
-   *   Optional; provide the path to the script to execute.
+   * {@inheritdoc}
    */
-  public function __construct($state, $script = NULL) {
-    $this->environment = parent::getEnvironment();
-    $this->config = parent::getConfig();
-    $this->state = $state;
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
+  }
+
+/**
+   * {@inheritdoc}
+   */
+  public function startMessage() {
+    return dt('Executing !state Drush scripts.', array('!state' => $this->options['state']));
   }
 
   /**
-   * Start executing drush scripts.
+   * {@inheritdoc}
    */
-  public function execute() {
-    $state = $this->state;
-    if (isset($this->config['drush_scripts'][$state])) {
-      drush_log(dt('Executing !state scripts.', array('!state' => $this->state)), 'ok');
-      if (!is_array($this->config['drush_scripts'][$state])) {
-        $this->config['drush_scripts'][$state] = array($this->config['drush_scripts'][$state]);
-      }
-      foreach ($this->config['drush_scripts'][$state] as $filename) {
-        $rebuild_filepath = $this->environment['path-aliases']['%rebuild'];
-        $file = str_replace(basename($rebuild_filepath), $filename, $rebuild_filepath);
-        if (file_exists($file)) {
-          drush_log(dt('Executing !file script', array('!file' => $file)), 'ok');
-          // If we are in the 'pre_process' state, assume that the Drupal site
-          // should not be bootstrapped.
-          $environment = ($this->state == 'pre_process') ? '@none' : $this->environment;
-          parent::drushInvokeProcess($environment, 'php-script', array($file));
-          drush_log(dt('Executed !file script.', array('!file' => $file)), 'ok');
-        }
-        else {
-          return drush_set_error(dt('Could not load script !file.', array('!file' => $file)));
-        }
-      }
+  public function completionMessage() {
+    return dt('Finished executing !state Drush scripts.', array('!state' => $this->options['state']));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
+    $state = $this->options['state'];
+    $commands = array();
+    if (!is_array($this->config['drush_scripts'][$state])) {
+      $this->config['drush_scripts'][$state] = array($this->config['drush_scripts'][$state]);
     }
-    return TRUE;
+    foreach ($this->config['drush_scripts'][$state] as $filename) {
+      $rebuild_filepath = $this->environment['path-aliases']['%rebuild'];
+      $file = str_replace(basename($rebuild_filepath), $filename, $rebuild_filepath);
+      $environment = ($this->state == 'pre_process') ? '@none' : $this->environment;
+      $commands[] = array(
+        'alias' => $environment,
+        'command' => 'php-script',
+        'arguments' => array($file),
+        'progress-message' => dt('Executing !file script', array('!file' => $file)),
+      );
+    }
+    return $commands;
   }
-
 }

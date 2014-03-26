@@ -10,14 +10,19 @@
  *
  * Compatible with Drupal 6/7/8.
  */
-class Permissions extends Rebuilder {
+class Permission implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
     // Build permissions_grant and permissions_revoke arrays.
     $this->permissions_grant = array();
     $this->permissions_revoke = array();
@@ -34,20 +39,28 @@ class Permissions extends Rebuilder {
   }
 
   /**
-   * Start the process of granting / revoking permissions.
-   *
-   * @param string $op
-   *   Valid options are 'grant' or 'revoke'.
-   *
-   * @return bool
-   *   Return TRUE/FALSE on success/error.
+   * {@inheritdoc}
    */
-  protected function execute($op) {
+  public function startMessage() {
+    return dt('Setting permissions');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return dt('Finished setting permissions');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
+    $op = $this->options['op'];
+    $commands = array();
     if ($op == 'grant') {
       // Grant permissions.
       if (isset($this->permissions_grant) && !empty($this->permissions_grant)) {
-        drush_log('Granting permissions', 'ok');
-
         // Loop through the user roles and build an array of permissions.
         foreach ($this->permissions_grant as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
@@ -55,20 +68,28 @@ class Permissions extends Rebuilder {
             $permissions = explode(",", $permissions_string);
             foreach ($permissions as $perm) {
               // Grant the permission.
-              drush_log(dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($perm), '!role' => $role)), 'ok');
-              parent::drushInvokeProcess($this->environment, 'role-add-perm', array(
-                sprintf('"%s"', $role),
-                sprintf('"%s"', trim($perm)),
-              ));
+              $commands[] = array(
+                'alias' => $this->environment,
+                'command' => 'role-add-perm',
+                'arguments' => array(
+                  sprintf('"%s"', $role),
+                  sprintf('"%s"', trim($perm)),
+                ),
+                'progress-message' => dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($perm), '!role' => $role)),
+              );
             }
           }
           else {
             // Grant the permission.
-            drush_log(dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)), 'ok');
-            parent::drushInvokeProcess($this->environment, 'role-add-perm', array(
-              sprintf('"%s"', $role),
-              sprintf('"%s"', trim($permissions_string)),
-              ));
+            $commands[] = array(
+              'alias' => $this->environment,
+              'command' => 'role-add-perm',
+              'arguments' => array(
+                sprintf('"%s"', $role),
+                sprintf('"%s"', trim($permissions_string)),
+              ),
+              'progress-message' => dt('Granting "!perm" to the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)),
+            );
           }
         }
 
@@ -78,7 +99,6 @@ class Permissions extends Rebuilder {
     if ($op == 'revoke') {
       // Revoke permissions.
       if (isset($this->permissions_revoke) && !empty($this->permissions_revoke)) {
-        drush_log('Revoking permissions', 'ok');
         // Loop through the user roles and build an array of permissions.
         foreach ($this->permissions_revoke as $role => $permissions_string) {
           // Check if multiple permission strings are defined for the role.
@@ -86,24 +106,32 @@ class Permissions extends Rebuilder {
             $permissions = explode(",", $permissions_string);
             foreach ($permissions as $perm) {
               // Revoke the permission.
-              drush_log(dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($perm), '!role' => $role)), 'ok');
-              parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(
-                sprintf('"%s"', $role),
-                sprintf('"%s"', trim($perm)),
-              ));
+              $commands[] = array(
+                'alias' => $this->environment,
+                'command' => 'role-remove-perm',
+                'arguments' => array(
+                  sprintf('"%s"', $role),
+                  sprintf('"%s"', trim($perm)),
+                ),
+                'progress-message' => dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($perm), '!role' => $role)),
+              );
             }
           }
           else {
             // Revoke the permission.
-            drush_log(dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)), 'ok');
-            parent::drushInvokeProcess($this->environment, 'role-remove-perm', array(
-              sprintf('"%s"', $role),
-              sprintf('"%s"', trim($permissions_string)),
-            ));
+            $commands[] = array(
+              'alias' => $this->environment,
+              'command' => 'role-remove-perm',
+              'arguments' => array(
+                sprintf('"%s"', $role),
+                sprintf('"%s"', trim($permissions_string)),
+              ),
+              'progress-message' => dt('Revoking "!perm" for the "!role" role.', array('!perm' => trim($permissions_string), '!role' => $role)),
+            );
           }
         }
       }
     }
-    return TRUE;
+    return $commands;
   }
 }

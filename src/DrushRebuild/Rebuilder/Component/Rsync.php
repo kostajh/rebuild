@@ -10,7 +10,7 @@ require_once dirname(__DIR__) . '/Rebuilder.php';
 /**
  * Handles rsync options for the rebuild.
  */
-class Rsync implements DrushRebuilder {
+class Rsync implements DrushRebuilderInterface {
 
   protected $config = array();
   protected $environment = array();
@@ -35,7 +35,7 @@ class Rsync implements DrushRebuilder {
   /**
    * {@inheritdoc}
    */
-  public function command() {
+  public function commands() {
     return array(
       array(
         'alias' => NULL,

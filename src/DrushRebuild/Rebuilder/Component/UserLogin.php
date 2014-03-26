@@ -8,25 +8,46 @@
 /**
  * Handles user-login code.
  */
-class UserLogin extends Rebuilder {
+class UserLogin implements DrushRebuilderInterface {
+
+  protected $config = array();
+  protected $environment = array();
+  protected $options = array();
 
   /**
-   * Constructor.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->config = parent::getConfig();
-    $this->environment = parent::getEnvironment();
+  public function __construct(array $config, array $environment, array $options = array()) {
+    $this->config = $config;
+    $this->environment = $environment;
+    $this->options = $options;
   }
 
   /**
-   * Start the process of logging a user in.
+   * {@inheritdoc}
    */
-  protected function execute() {
-    if (isset($this->config['general']['uli']) && $this->config['general']['uli'] === TRUE) {
-      drush_log('Logging you in to the site', 'ok');
-      parent::drushInvokeProcess($this->environment, 'uli');
-      drush_log('- Successfully logged you in.', 'success');
-    }
-    return TRUE;
+  public function startMessage() {
+    return dt('Logging you in to the site');
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function completionMessage() {
+    return dt('- Successfully logged you in.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function commands() {
+    return array(
+      array(
+        'alias' => $this->environment,
+        'command' => 'uli'
+      ),
+    );
+  }
+
+
 }
