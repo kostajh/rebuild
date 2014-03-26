@@ -9,8 +9,6 @@ use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-require_once dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
-
 /**
  * The main Drush Rebuild class.
  *
