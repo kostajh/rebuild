@@ -8,8 +8,7 @@
 # Any parameters that may be passed to phpunit may also be used
 # with runtests.sh.
 
-DRUSH_PATH="`which drush`"
-DRUSH_DIRNAME="/home/kosta/.composer/vendor/drush/drush"
+DRUSH_DIRNAME="$HOME/.composer/vendor/drush/drush"
 
 if [ $# = 0 ] ; then
   phpunit --bootstrap="$DRUSH_DIRNAME/tests/drush_testcase.inc" .
