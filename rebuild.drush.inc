@@ -7,9 +7,6 @@
 
 require_once dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
 
-// DEBUG
-print "DEBUG";
-print dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
 // Main classes.
 require_once 'src/DrushRebuild/DrushRebuild.php';
 require_once 'src/DrushRebuild/Diagnostics.php';
