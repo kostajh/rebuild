@@ -1,22 +1,16 @@
-.. Drush Rebuild documentation master file, created by
-   sphinx-quickstart on Thu Mar 27 14:23:34 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Drush Rebuild documentation
+===========================
 
-Welcome to Drush Rebuild's documentation!
-=========================================
+Drush Rebuild is a utility that makes rebuilding your local Drupal development environments a snap.
 
-Contents:
+.. image:: rebuild.gif
+
+User Guide
+----------
 
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   overview
+   usage
+   configuration
