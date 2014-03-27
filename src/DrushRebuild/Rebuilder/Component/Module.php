@@ -50,7 +50,7 @@ class Module implements DrushRebuilderInterface {
         $commands[] = array(
           'alias' => $this->environment,
           'command' => 'pm-enable',
-          'arguments' => $module,
+          'arguments' => array($module),
           'progress-message' => dt('- !module', array('!module' => $module)),
         );
       }
@@ -61,7 +61,7 @@ class Module implements DrushRebuilderInterface {
         $commands[] = array(
           'alias' => $this->environment,
           'command' => 'pm-disable',
-          'arguments' => $module,
+          'arguments' => array($module),
           'progress-message' => dt('- !module', array('!module' => $module)),
         );
       }

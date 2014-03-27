@@ -32,11 +32,26 @@ class DrushRebuild {
   /**
    * Wrapper around parent::drushInvokeProcess().
    */
-  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = FALSE) {
+  public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = array('backend' => FALSE)) {
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), (array) $commandline_options);
-    // TODO: Re-implement `--dry-run`.
+    $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), (array) $backend_options);
+    // If dry run, just output the command.
     if ($this->getDryRun()) {
-      $command = $command_name . ' ' . implode(' ', $commandline_args) . ' ' . implode(' --', $commandline_options) . ' ' . implode(' --', $backend_options);
+      $options_flattened = $backend_flattened = '';
+      foreach ($commandline_options as $opt => $value) {
+        if (!$value) {
+          $value = 'FALSE';
+        }
+        $options_flattened .= ' --' . $opt . '=' . $value;
+      }
+      foreach ($backend_options as $opt => $value) {
+        if (!$value) {
+          $value = 'FALSE';
+        }
+        $backend_flattened .= ' --' . $opt . '=' . $value;
+      }
+      $command = $command_name . ' ' . implode(' ', $commandline_args) . $options_flattened . $backend_flattened;
+      drush_log(dt('DRUSH REBUILD: drush !cmd', array('!cmd' => $command)), 'ok');
     }
     else {
       $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
@@ -194,7 +209,9 @@ class DrushRebuild {
       drush_log($rebuilder->startMessage(), 'ok');
       $commands = $rebuilder->commands();
       foreach ($commands as $command) {
-        drush_log($command['progress-message'], 'ok');
+        if (!$this->getDryRun()) {
+          drush_log($command['progress-message'], 'ok');
+        }
         $this->drushInvokeProcess(
           $command['alias'],
           $command['command'],
