@@ -50,7 +50,7 @@ class DrushRebuild {
         }
         $backend_flattened .= ' --' . $opt . '=' . $value;
       }
-      $command = $command_name . ' ' . implode(' ', $commandline_args) . $options_flattened . $backend_flattened;
+      $command = '@' . $site_alias_record['#name'] . ' ' . $command_name . ' ' . implode(' ', $commandline_args) . $options_flattened . $backend_flattened;
       drush_log(dt('DRUSH REBUILD: drush !cmd', array('!cmd' => $command)), 'ok');
     }
     else {
@@ -452,9 +452,19 @@ class DrushRebuild {
     }
     // Check that we can connect to the source.
     drush_log(dt('Checking that SQL database for !site is accessible', array('!site' => $source)), 'ok');
-    $this->drushInvokeProcess($source, 'sql-query', array('"SHOW TABLES"'));
-    drush_log(dt('Established connection with SQL database for !site!', array('!site' => $source)), 'success');
-    return drush_sitealias_get_record($source) ? TRUE : drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
+    $site_alias_record = drush_sitealias_get_record($source);
+    if (!$site_alias_record) {
+      return drush_set_error(dt('Could not load an alias for !source!', array('!source' => $source)));
+    }
+    // TODO: We should use $this->drushInvokeProcess().
+    $ret = drush_invoke_process($site_alias_record, 'sql-query', array("SHOW TABLES"), array(), array('integrate' => FALSE));
+    if ($ret['error_status'] == 0) {
+      drush_log(dt('Established connection with SQL database for !site!', array('!site' => $source)), 'success');
+    }
+    else {
+      return drush_set_error(dt('Failed to establish connection with SQL database for !site.', array('!site' => $source)));
+    }
+    return TRUE;
   }
 
   /**
