@@ -30,7 +30,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
   protected function installTestSites() {
     $options = array(
       'site-name' => 'Dev',
-      'alias-path' => $this->getTestsDir() . '/fixtures',
+      'alias-path' => $this->getTestsDir() . '/fixtures/aliases/dev',
       'yes' => TRUE,
       'quiet' => TRUE,
     );
