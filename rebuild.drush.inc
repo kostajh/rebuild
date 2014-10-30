@@ -37,7 +37,7 @@ function rebuild_drush_help($section) {
  *
  * Require Drush 6 or later.
  */
-function drush_env_rebuild_init() {
+function drush_site_rebuild_init() {
   $drush_major_version = substr(DRUSH_VERSION, 0, 1);
   if ((int) $drush_major_version < 6) {
     drush_log(dt('You are using Drush !version. Upgrading to Drush 6 is required.', array('!version' => $drush_major_version)), 'error');
@@ -53,7 +53,7 @@ function rebuild_drush_command() {
   // Set path to Drush Rebuild extension.
   $rebuild_dir = drush_server_home() . '/.drush/rebuild';
 
-  $items['env-rebuild'] = array(
+  $items['site-rebuild'] = array(
     'description' => 'Rebuilds a local Drupal environment.',
     'arguments' => array(),
     'options' => array(
@@ -62,19 +62,20 @@ function rebuild_drush_command() {
         'example_value' => '@mysite.local',
       ),
       'dry-run' => array(
-        'description' => 'List the Drush tasks that will be excecuted, but do not run them.',
+        'description' => 'List the Drush tasks that will be executed, but do not run them.',
       ),
       'view-config' => 'View the rebuild config.',
     ),
     'aliases' => array('rb', 'rebuild'),
     'examples' => array(
-      'drush @mysite.dev rebuild --source=@mysite.prod' => 'Rebuild the enviornment at @mysite.dev using the source --@mysite.prod',
-      'drush @mysite.dev rebuild --view-config' => 'View the config for rebuilding @mysite.dev. Does not execute any tasks.',
+      'drush @mysite.local rebuild --source=@mysite.prod' => 'Rebuild the environment at @mysite.local using the source --@mysite.prod',
+      'drush @mysite.local rebuild --view-config' => 'View the config for rebuilding @mysite.local. Does not execute any tasks.',
+      'drush @mysite.local rebuild --dry-run' => 'List the Drush tasks that will be executed, but do not run them.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['env-rebuild-init'] = array(
+  $items['site-rebuild-init'] = array(
     'description' => 'Create a rebuild config file in the current directory from a template.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'arguments' => array(
@@ -83,7 +84,7 @@ function rebuild_drush_command() {
     'callback' => 'drush_rebuild_create',
   );
 
-  $items['env-rebuild-error-log'] = array(
+  $items['site-rebuild-error-log'] = array(
     'description' => 'View the errors from the last rebuild.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'outputformat' => array(
@@ -98,7 +99,7 @@ function rebuild_drush_command() {
     ),
   );
 
-  $items['env-rebuild-readme'] = array(
+  $items['site-rebuild-readme'] = array(
     'description' => 'Drush Rebuild README',
     'hidden' => TRUE,
     'topic' => TRUE,
@@ -108,7 +109,7 @@ function rebuild_drush_command() {
     'callback arguments' => array($rebuild_dir . '/README.md'),
   );
 
-  $items['env-rebuild-example'] = array(
+  $items['site-rebuild-example'] = array(
     'description' => 'Example Drush Rebuild file.',
     'hidden' => TRUE,
     'topic' => TRUE,
@@ -117,12 +118,12 @@ function rebuild_drush_command() {
     'callback arguments' => array($rebuild_dir . '/examples/example.rebuild.yaml'),
   );
 
-  $items['env-rebuild-version'] = array(
+  $items['site-rebuild-version'] = array(
     'description' => 'Show Drush Rebuild version.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
-  $items['env-rebuild-info'] = array(
+  $items['site-rebuild-info'] = array(
     'description' => 'Displays rebuild info for an alias.',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_rebuild_info',
@@ -144,7 +145,7 @@ function drush_rebuild_info() {
 /**
  * Displays the error log for a Drush alias.
  */
-function drush_rebuild_env_rebuild_error_log() {
+function drush_rebuild_site_rebuild_error_log() {
   $alias = drush_get_context('alias');
   if (!count($alias)) {
     return drush_set_error(dt('See usage for the command. You need to run this command with an alias.'));
@@ -197,24 +198,34 @@ function drush_rebuild_create($template = NULL) {
 }
 
 /**
+ * Return the version number of Drush Rebuild.
+ */
+function _drush_rebuild_get_version() {
+  $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
+  $drush_rebuild_info = parse_ini_file($drush_info_file);
+  define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['version']);
+  return DRUSH_REBUILD_VERSION;
+}
+
+/**
  * Rebuild a local development environment.
  *
  * @return bool
  *   TRUE on success; FALSE otherwise.
  */
-function drush_rebuild_env_rebuild() {
-
-  $alias = drush_get_context('alias');
-  if (!count($alias)) {
-    return drush_set_error(dt('Drush Rebuild requires the use of a Drush alias. Try running `drush @mysite.dev rebuild`.'));
-  }
-  $drush_rebuild = new DrushRebuild($alias);
+function drush_rebuild_site_rebuild() {
 
   // Output version information and return.
   if (drush_get_option('version')) {
-    drush_print(dt("Drush Rebuild version: !version", array('!version' => $drush_rebuild->getVersion())));
+    drush_print(dt("Drush Rebuild version: !version", array('!version' => _drush_rebuild_get_version())));
     return TRUE;
   }
+
+  $alias = drush_get_context('alias');
+  if (!count($alias)) {
+    return drush_set_error(dt('Drush Rebuild requires the use of a Drush alias. Try running `drush @{site}.{local_env} rebuild`.'));
+  }
+  $drush_rebuild = new DrushRebuild($alias);
 
   // Check if we are only viewing the script.
   if (drush_get_option('view-config')) {
@@ -289,6 +300,6 @@ function drush_rebuild_env_rebuild() {
     }
   }
   else {
-    drush_log(dt('Aborted rebuild for !name', array('!name' => $target)), 'warning');
+    drush_log(dt('Aborted rebuild for !name', array('!name' => $alias['#name'])), 'warning');
   }
 }

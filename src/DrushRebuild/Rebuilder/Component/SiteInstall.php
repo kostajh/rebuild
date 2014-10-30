@@ -70,7 +70,7 @@ class SiteInstall implements DrushRebuilderInterface {
         'command' => 'site-install',
         'arguments' => array($this->profile),
         'options' => $this->site_install_options,
-        'progress-message' => dt('Beginning site-install with !profile', array('!profile' => $this->profile)),
+        'progress-message' => dt('Running site-install with profile !profile', array('!profile' => $this->profile)),
       ),
     );
   }

@@ -35,32 +35,32 @@ class DrushRebuild {
   public function drushInvokeProcess($site_alias_record, $command_name, $commandline_args = array(), $commandline_options = array(), $backend_options = array('backend' => FALSE)) {
     $commandline_options = array_merge($this->drushInvokeProcessOptions(), (array) $commandline_options);
     $backend_options = array_merge($this->drushInvokeProcessBackendOptions(), (array) $backend_options);
-    // If dry run, just output the command.
+    // If dry run, just output the command list.
+    $options_flattened = $backend_flattened = '';
+    foreach ($commandline_options as $opt => $value) {
+      if (!$value) {
+        $value = 'FALSE';
+      }
+      $options_flattened .= ' --' . $opt . '=' . $value;
+    }
+    foreach ($backend_options as $opt => $value) {
+      if (!$value) {
+        $value = 'FALSE';
+      }
+      $backend_flattened .= ' --' . $opt . '=' . $value;
+    }
+    $drush_command = trim(shell_exec('which drush'));
+    $command = $drush_command . ' @' . $site_alias_record['#name'] . ' ' . $command_name . ' ' . implode(' ', $commandline_args) . $options_flattened . $backend_flattened;
     if ($this->getDryRun()) {
-      $options_flattened = $backend_flattened = '';
-      foreach ($commandline_options as $opt => $value) {
-        if (!$value) {
-          $value = 'FALSE';
-        }
-        $options_flattened .= ' --' . $opt . '=' . $value;
-      }
-      foreach ($backend_options as $opt => $value) {
-        if (!$value) {
-          $value = 'FALSE';
-        }
-        $backend_flattened .= ' --' . $opt . '=' . $value;
-      }
-      $command = '@' . $site_alias_record['#name'] . ' ' . $command_name . ' ' . implode(' ', $commandline_args) . $options_flattened . $backend_flattened;
-      drush_log(dt('DRUSH REBUILD: drush !cmd', array('!cmd' => $command)), 'ok');
+      return drush_log(dt('DRUSH REBUILD: !cmd', array('!cmd' => $command)), 'ok');
     }
-    else {
-      $result = drush_invoke_process($site_alias_record, $command_name, $commandline_args, $commandline_options, $backend_options);
-      if (!$result) {
-        drush_set_error(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $command_name)));
-        return drush_die();
-      }
+    $result = drush_shell_exec($command . ' --strict=0');
+    if (!$result) {
+      $error_log_backend = drush_shell_exec_output();
+      $parsed = drush_backend_parse_output(implode($error_log_backend, "\n"));
+      drush_print_r($parsed);
+      throw new Exception(dt('Drush Rebuild encountered an error while running command "!cmd".', array('!cmd' => $command_name)));
     }
-    return TRUE;
   }
 
   /**
@@ -90,7 +90,7 @@ class DrushRebuild {
       'dispatch-using-alias' => TRUE,
       'integrate' => FALSE,
       'interactive' => FALSE,
-      'backend' => FALSE,
+      'backend' => TRUE,
     );
   }
 
@@ -199,29 +199,37 @@ class DrushRebuild {
     // $this->validateComponents();
     $curr = 1;
     foreach ($components as $component) {
-      drush_log(dt('Step !curr of !total', array('!curr' => $curr, '!total' => count($components))), 'ok');
-      $class = current(array_keys($component));
-      if (!class_exists($class)) {
-        drush_set_error(dt('The class !class does not exist.', array('!class' => $class)));
+      try {
+        drush_log(dt('Step !curr of !total', array(
+              '!curr' => $curr,
+              '!total' => count($components)
+            )), 'ok');
+        $class = current(array_keys($component));
+        if (!class_exists($class)) {
+          drush_set_error(dt('The class !class does not exist.', array('!class' => $class)));
+          drush_die();
+        }
+        $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), array_values($component));
+        drush_log($rebuilder->startMessage(), 'ok');
+        $commands = $rebuilder->commands();
+        foreach ($commands as $command) {
+          if (!$this->getDryRun()) {
+            drush_log($command['progress-message'], 'ok');
+          }
+          $this->drushInvokeProcess(
+            $command['alias'],
+            $command['command'],
+            isset($command['arguments']) ? $command['arguments'] : array(),
+            isset($command['options']) ? $command['options'] : array(),
+            isset($command['backend-options']) ? $command['backend-options'] : array()
+          );
+        }
+        drush_log($rebuilder->completionMessage(), 'success');
+        $curr++;
+      } catch (Exception $e) {
+        drush_set_error($e->getMessage());
         drush_die();
       }
-      $rebuilder = new $class($this->getConfig(), $this->getEnvironment(), array_values($component));
-      drush_log($rebuilder->startMessage(), 'ok');
-      $commands = $rebuilder->commands();
-      foreach ($commands as $command) {
-        if (!$this->getDryRun()) {
-          drush_log($command['progress-message'], 'ok');
-        }
-        $this->drushInvokeProcess(
-          $command['alias'],
-          $command['command'],
-          isset($command['arguments']) ? $command['arguments'] : array(),
-          isset($command['options']) ? $command['options'] : array(),
-          isset($command['backend-options']) ? $command['backend-options'] : array()
-        );
-      }
-      drush_log($rebuilder->completionMessage(), 'success');
-      $curr++;
     }
     $diagnostics = new Diagnostics($this);
     return $diagnostics->verifyCompletedRebuild();
@@ -273,7 +281,7 @@ class DrushRebuild {
       return $rebuild_config['general']['overrides'];
     }
     // If not a full path, check if it is in the same directory with the main
-    // rebuild mainfest.
+    // rebuild manifest.
     $rebuild_config_path = $this->environment['path-aliases']['%rebuild'];
     // Get directory of rebuild.info
     $config_directory = str_replace(basename($this->environment['path-aliases']['%rebuild']), '', $rebuild_config_path);
@@ -426,20 +434,6 @@ class DrushRebuild {
     $data['last_rebuild'] = time();
     $data['rebuild_times'] = $rebuild_times;
     drush_cache_set($this->target, $data, 'rebuild', DRUSH_CACHE_PERMANENT);
-  }
-
-  /**
-   * Backup the local environment using Drush archive-dump.
-   */
-  public function backupEnvironment() {
-    $archive_dump = $this->drushInvokeProcess($this->target, 'archive-dump');
-    $backup_path = $archive_dump['object'];
-    if (!file_exists($backup_path)) {
-      if (!drush_confirm(dt('Backing up your development environment failed. Are you sure you want to continue?'))) {
-        return FALSE;
-      }
-    }
-    return TRUE;
   }
 
   /**
