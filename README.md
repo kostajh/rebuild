@@ -4,4 +4,4 @@ Drush Rebuild is a utility for rebuilding your local development environments. I
 
 [![Build Status](https://travis-ci.org/kostajh/rebuild.png?branch=7.x-1.x)](https://travis-ci.org/kostajh/rebuild)
 
-For usage, installation, and configuration tips, [read the docs](https://drushrebuild.readthedocs.org).
+For usage, installation, and configuration tips, [read the docs](https://drush-rebuild.readthedocs.org).
