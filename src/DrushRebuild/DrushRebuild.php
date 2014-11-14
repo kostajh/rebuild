@@ -257,7 +257,7 @@ class DrushRebuild {
       try {
         drush_log(dt('Step !curr of !total', array(
               '!curr' => $curr,
-              '!total' => count($components)
+              '!total' => count($components),
             )), 'ok');
         $class = current(array_keys($component));
         if (!class_exists($class)) {
