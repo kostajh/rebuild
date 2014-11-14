@@ -5,7 +5,9 @@
  * Functions for rebuilding a local development environment.
  */
 
-require_once dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
+if (file_exists(dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php')) {
+  require_once dirname(dirname(DRUSH_BASE_PATH)) . '/autoload.php';
+}
 
 // Main classes.
 require_once 'src/DrushRebuild/DrushRebuild.php';
@@ -30,20 +32,6 @@ function rebuild_drush_help($section) {
     case 'meta:rebuild:title':
       return dt('Rebuild commands');
   }
-}
-
-/**
- * Implements hook_init().
- *
- * Require Drush 6 or later.
- */
-function drush_site_rebuild_init() {
-  $drush_major_version = substr(DRUSH_VERSION, 0, 1);
-  if ((int) $drush_major_version < 6) {
-    drush_log(dt('You are using Drush !version. Upgrading to Drush 6 is required.', array('!version' => $drush_major_version)), 'error');
-    drush_die();
-  }
-  return TRUE;
 }
 
 /**
@@ -203,8 +191,7 @@ function drush_rebuild_create($template = NULL) {
 function _drush_rebuild_get_version() {
   $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
   $drush_rebuild_info = parse_ini_file($drush_info_file);
-  define('DRUSH_REBUILD_VERSION', $drush_rebuild_info['version']);
-  return DRUSH_REBUILD_VERSION;
+  return $drush_rebuild_info['version'];
 }
 
 /**
@@ -214,26 +201,23 @@ function _drush_rebuild_get_version() {
  *   TRUE on success; FALSE otherwise.
  */
 function drush_rebuild_site_rebuild() {
-
   // Output version information and return.
   if (drush_get_option('version')) {
-    drush_print(dt("Drush Rebuild version: !version", array('!version' => _drush_rebuild_get_version())));
-    return TRUE;
+    return drush_print(dt("Drush Rebuild version: !version", array('!version' => _drush_rebuild_get_version())));
   }
 
   $alias = drush_get_context('alias');
   if (!count($alias)) {
-    return drush_set_error(dt('Drush Rebuild requires the use of a Drush alias. Try running `drush @{site}.{local_env} rebuild`.'));
+    return drush_set_error(dt('Drush Rebuild requires the use of a Drush alias. Try running `drush @{site}.{local_environment} rebuild`.'));
   }
   $drush_rebuild = new DrushRebuild($alias);
 
   // Check if we are only viewing the script.
   if (drush_get_option('view-config')) {
-    $drush_rebuild->viewConfig();
-    return TRUE;
+    return $drush_rebuild->viewConfig();
   }
 
-  // Set if this is a dry run.
+  // Set a flag if this is a dry run.
   if (drush_get_option('dry-run')) {
     $drush_rebuild->setDryRun();
   }
@@ -244,7 +228,6 @@ function drush_rebuild_site_rebuild() {
   }
 
   // Load the rebuild config.
-  $drush_rebuild->loadConfig();
   $rebuild_config = $drush_rebuild->getConfig();
   if ($rebuild_config === FALSE) {
     return drush_set_error(dt('There was an error loading the rebuild config for !site', array('!site' => $alias['#name'])));
@@ -252,10 +235,9 @@ function drush_rebuild_site_rebuild() {
 
   // Load metadata.
   $drush_rebuild->loadMetadata();
+  // TODO: This should be done in checkRequirements.
   if (!isset($rebuild_config['site_install'])) {
-    $source = NULL;
-    $source = drush_get_option('source');
-    if (!$source) {
+    if (!$source = drush_get_option('source')) {
       // Check if there is a default source specified in the config.
       $source = isset($rebuild_config['sync']['default_source']) ? $rebuild_config['sync']['default_source'] : NULL;
     }
@@ -269,7 +251,7 @@ function drush_rebuild_site_rebuild() {
       drush_log("Neither 'sync' nor 'site_install' are defined in your rebuild config. Proceeding with the assumption that you are rebuilding in a custom script. If you did not expect to see this, then check your rebuild config file.", 'warning');
     }
     else {
-      return drush_set_error(dt('There was no source specified for the rebuild!'));
+      return drush_set_error(dt('There was no source environment specified for the rebuild!'));
     }
   }
 
@@ -277,13 +259,12 @@ function drush_rebuild_site_rebuild() {
   $drush_rebuild->showMetadata();
 
   if (drush_confirm(dt('Proceed with rebuilding the environment for !name', array('!name' => $alias['#name'])))) {
-
     $begin_rebuild_time = time();
     $ret = $drush_rebuild->rebuild();
     drush_print();
     if ($ret) {
-      $rebuild_completed_time = time();
-      $total_rebuild_time = $rebuild_completed_time - $begin_rebuild_time;
+      $completed_time = time();
+      $total_rebuild_time = $completed_time - $begin_rebuild_time;
       // Update meta-data.
       $drush_rebuild->updateMetadata($total_rebuild_time);
       drush_log(dt('Rebuild completed in !min minute(s) and !sec second(s).',
@@ -295,11 +276,9 @@ function drush_rebuild_site_rebuild() {
       );
       return TRUE;
     }
-    else {
-      return drush_log(dt('Rebuild failed to complete successfully.'), 'error');
-    }
+    // Rebuild failed.
+    return drush_log(dt('Rebuild failed to complete successfully.'), 'error');
   }
-  else {
-    drush_log(dt('Aborted rebuild for !name', array('!name' => $alias['#name'])), 'warning');
-  }
+  // User cancelled the rebuild.
+  drush_log(dt('Aborted rebuild for !name', array('!name' => $alias['#name'])), 'warning');
 }

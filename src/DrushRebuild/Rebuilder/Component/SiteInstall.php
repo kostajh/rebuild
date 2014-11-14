@@ -68,9 +68,9 @@ class SiteInstall implements DrushRebuilderInterface {
       array(
         'alias' => $this->environment,
         'command' => 'site-install',
-        'arguments' => array($this->profile),
+        'arguments' => array($this->profile, 'install_configure_form.update_status_module="array(FALSE,FALSE)"'),
         'options' => $this->site_install_options,
-        'progress-message' => dt('Running site-install with profile !profile', array('!profile' => $this->profile)),
+        'progress-message' => dt('Installing the !profile profile', array('!profile' => $this->profile)),
       ),
     );
   }
