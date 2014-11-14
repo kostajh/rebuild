@@ -189,7 +189,7 @@ function drush_rebuild_create($template = NULL) {
  * Return the version number of Drush Rebuild.
  */
 function _drush_rebuild_get_version() {
-  $drush_info_file = dirname(__FILE__) . '/../rebuild.info';
+  $drush_info_file = dirname(__FILE__) . '/rebuild.info';
   $drush_rebuild_info = parse_ini_file($drush_info_file);
   return $drush_rebuild_info['version'];
 }

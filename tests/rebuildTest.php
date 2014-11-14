@@ -48,10 +48,10 @@ class RebuildTestCase extends Drush_CommandTestCase {
     $this->drush('cc', array('drush'));
     // @todo Copy test scripts.
     // Install Drupal on Prod with site name "Drush Rebuild Prod".
-    $this->installTestSites();
-
+    // $this->installTestSites();
+    $this->drush('rebuild', array(), array('version' => TRUE));
     // Run the rebuild.
-    $this->drush('env-rebuild', array(),
+    $this->drush('rebuild', array(),
       array(
         'include' => $this->getHomeDir() . '/.drush/rebuild',
         'alias-path' => $this->getTestsDir(),
