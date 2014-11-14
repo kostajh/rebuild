@@ -20,6 +20,9 @@
 class RebuildTestCase extends Drush_CommandTestCase {
 
   protected function getTestsDir() {
+    if (isset($_SERVER['TRAVIS_BUILD_DIR'])) {
+      return $_SERVER['TRAVIS_BUILD_DIR'] . '/tests';
+    }
     return $this->getHomeDir() . '/.drush/rebuild/tests';
   }
 
