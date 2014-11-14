@@ -124,7 +124,7 @@ class RebuildTestCase extends Drush_CommandTestCase {
    * Tests the view config option.
    */
   public function testViewConfig() {
-    $this->drush('env-rebuild', array(), array(
+    $this->drush('rebuild', array(), array(
       'include' => $this->getHomeDir() . '/.drush/rebuild',
       'alias-path' => $this->getTestsDir() . '/fixtures/aliases/dev/drebuild.aliases.drushrc.php',
       'view-config' => TRUE,
