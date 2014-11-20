@@ -73,7 +73,7 @@ The ``sync`` or ``site_install`` section tells Drush that we are either using
 ``sql-sync`` or ``site-install`` for rebuilding a local site. They are mutually
 exclusive; you can't have both in the same config.
 
-sql_sync
+sync
 --------
 
 This section lets you define options for syncing a remote database to
@@ -81,10 +81,11 @@ your local environment.
 
 .. code-block:: yaml
 
-  sql_sync:
-    create-db: 'TRUE'
-    sanitize: sanitize-email
-    structure-tables-key: common
+  sync:
+    sql_sync:
+      create-db: 'TRUE'
+      sanitize: sanitize-email
+      structure-tables-key: common
 
 If you just wanted database syncing without any
 additional options, you could write:
