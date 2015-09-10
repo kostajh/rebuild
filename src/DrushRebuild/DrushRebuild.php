@@ -212,7 +212,7 @@ class DrushRebuild {
     $config = $this->getConfig();
     $components = array();
     // Add preprocess scripts.
-    if (isset($config['general']['drush_scripts']['pre_process'])) {
+    if (isset($config['drush_scripts']['pre_process'])) {
       $components[] = array('DrushScript' => array('state' => 'pre_process'));
     }
     // Site-install or sql-sync?
@@ -238,7 +238,7 @@ class DrushRebuild {
       $components[] = array('Permission' => array('op' => 'grant'));
       $components[] = array('Permission' => array('op' => 'revoke'));
     }
-    if (isset($config['general']['drush_scripts']['post_process'])) {
+    if (isset($config['drush_scripts']['post_process'])) {
       $components[] = array('DrushScript' => array('state' => 'post_process'));
     }
     return $components;

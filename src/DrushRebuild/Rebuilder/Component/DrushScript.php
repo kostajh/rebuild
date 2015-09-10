@@ -43,7 +43,7 @@ class DrushScript implements DrushRebuilderInterface {
    * {@inheritdoc}
    */
   public function commands() {
-    $state = $this->options['state'];
+    $state = $this->options[0]['state'];
     $commands = array();
     if (!is_array($this->config['drush_scripts'][$state])) {
       $this->config['drush_scripts'][$state] = array($this->config['drush_scripts'][$state]);
